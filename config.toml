@@ -1,0 +1,20 @@
+baseurl = "https://www.example.com/"
+title = "Less is more"
+author = "Xuejie Xiao"
+canonifyurls = true
+languagecode = "en"
+theme = "black-and-light"
+
+pygmentsstyle       = "bw"
+pygmentscodefences  = true
+
+[params]
+  sitename = "Less is More"
+  disableWebFonts = false
+
+[[menu.main]]
+    name = "About"
+    url  = "about"
+[[menu.main]]
+    name = "Projects"
+    url  = "https://github.com/xxuejie"
