@@ -1,4 +1,3 @@
 #!/bin/bash
 
-hugo
-cd public && git add --all && git commit -m "Publishing to master" && cd ..
+hugo && cd public && git add --all && git commit -m "Publishing to master" && cd ..
