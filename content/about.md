@@ -7,7 +7,7 @@ I'm Xuejie Xiao, this is my new site for writing.
 
 I'm currently a blockchain engineer at [Cryptape](https://www.cryptape.com/) working on [Nervos CKB](https://www.nervos.org/). I'm the main developer on [CKB VM](https://github.com/nervosnetwork/ckb-vm).
 
-Even though I've heard about Bitcoin for quite some time, I didn't really have enough time to fully dive into the blockchain world since 2017. I've worked on wallets and mining pool, then found out my true interest lies in blockchain VM. I've been doing research on virtual machine technologies for blockchain for quite some time, and CKB VM is my latest contribution.
+Even though I've heard about Bitcoin for quite some time, I didn't really have enough time to fully dive into the blockchain world till 2017. I've worked on wallets and mining pool, then found out my true interest lies in blockchain VM. I've been doing research on virtual machine technologies for blockchain for quite some time, and CKB VM is my latest contribution.
 
 I also believe the power of simplicity. The only way to make reliable software for the future, should be designing software that are so simple that any bug is obvious. This world is already full of leaky abstraction, let's try hard not to add another one.
 
