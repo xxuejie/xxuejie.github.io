@@ -42,7 +42,7 @@
     &lt;span style=&#34;font-weight:bold&#34;&gt;pub&lt;/span&gt; type_: Option&amp;lt;Script&amp;gt;,
 }
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-&lt;p&gt;From the data structure we can see that &lt;code&gt;lock&lt;/code&gt; and &lt;code&gt;type&lt;/code&gt; shared the same structure, later we can they they are also executed in the same environment, the differences between them are just in a few tiny bits:&lt;/p&gt;
+&lt;p&gt;From the data structure we can see that &lt;code&gt;lock&lt;/code&gt; and &lt;code&gt;type&lt;/code&gt; shared the same structure, later we can show that they are also executed in the same environment, the differences between them are just in a few tiny bits:&lt;/p&gt;
 
 &lt;ul&gt;
 &lt;li&gt;&lt;code&gt;lock&lt;/code&gt; is required, while &lt;code&gt;type&lt;/code&gt; is optional&lt;/li&gt;
