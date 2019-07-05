@@ -8,7 +8,7 @@
     <language>en</language>
     <lastBuildDate>Fri, 05 Jul 2019 00:00:00 +0000</lastBuildDate>
     
-	<atom:link href="https://xxuejie.github.io/index.xml" rel="self" type="application/rss+xml" />
+        <atom:link href="https://xxuejie.github.io/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
@@ -17,8 +17,118 @@
       <pubDate>Fri, 05 Jul 2019 00:00:00 +0000</pubDate>
       
       <guid>https://xxuejie.github.io/2019_07_05_introduction_to_ckb_script_programming_validation_model/</guid>
-      <description>As of now, the cell validation model in CKB has been more or less stablized, hence I&amp;rsquo;m starting a series of article introducing CKB script programming here. My goal here is to fill in all the missing implementation details one need to write CKB scripts after reading the whitepaper, so you can start exploring this beautiful wonderland CKB presents.
-You might noticed that I call the code running on CKB as script, not smart contract.</description>
+      <description>
+
+&lt;p&gt;As of now, the cell validation model in CKB has been more or less stablized, hence I&amp;rsquo;m starting a series of article introducing CKB script programming here. My goal here is to fill in all the missing implementation details one need to write CKB scripts after reading the whitepaper, so you can start exploring this beautiful wonderland CKB presents.&lt;/p&gt;
+
+&lt;p&gt;You might noticed that I call the code running on CKB as &lt;code&gt;script&lt;/code&gt;, not &lt;code&gt;smart contract&lt;/code&gt;. This is because smart contract is quite a confusing term to me, and I want to use a different word here to indicate CKB&amp;rsquo;s unique programmability. A script in CKB&amp;rsquo;s sense need not be just a script we see in scripting languages such as Ruby, JS, it actually refers to the RISC-V format binary you run on CKB VM.&lt;/p&gt;
+
+&lt;p&gt;This first post here, is dedicated to the brand &lt;a href=&#34;https://github.com/nervosnetwork/ckb/pull/913&#34;&gt;new verification model&lt;/a&gt; introduced in CKB v0.14.0. It might sound boring but I promise you this is the last post without actual examples to play with :P&lt;/p&gt;
+
+&lt;p&gt;Note even though I believe CKB&amp;rsquo;s programming model is quite stable now, development is still happening so there might be changes. I will try my best to make sure this post is updated but if anything confuses you, this post is describing CKB as of &lt;a href=&#34;https://github.com/nervosnetwork/ckb/commit/a02c675c50c5969a588fa7f6356f08861d8f5f92&#34;&gt;this commit&lt;/a&gt; now.&lt;/p&gt;
+
+&lt;h1 id=&#34;overview&#34;&gt;Overview&lt;/h1&gt;
+
+&lt;p&gt;Below illustrates a real transaction on CKB:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://xxuejie.github.io/images/tx.svg&#34; alt=&#34;Transaction Example&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;There are a lot of things going on in this graph, and we will come back to this graph again in later posts. Today, we will just focus on 2 entities in the cell data structure: &lt;code&gt;lock&lt;/code&gt; and &lt;code&gt;type&lt;/code&gt;.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-rust&#34; data-lang=&#34;rust&#34;&gt;&lt;span style=&#34;font-weight:bold&#34;&gt;pub&lt;/span&gt; &lt;span style=&#34;font-weight:bold&#34;&gt;struct&lt;/span&gt; &lt;span style=&#34;font-weight:bold&#34;&gt;CellOutput&lt;/span&gt; {
+    &lt;span style=&#34;font-weight:bold&#34;&gt;pub&lt;/span&gt; capacity: &lt;span style=&#34;font-weight:bold&#34;&gt;Capacity&lt;/span&gt;,
+    &lt;span style=&#34;font-weight:bold&#34;&gt;pub&lt;/span&gt; data: &lt;span style=&#34;font-weight:bold&#34;&gt;Bytes&lt;/span&gt;,
+    &lt;span style=&#34;font-weight:bold&#34;&gt;pub&lt;/span&gt; lock: &lt;span style=&#34;font-weight:bold&#34;&gt;Script&lt;/span&gt;,
+    &lt;span style=&#34;&#34;&gt;#[serde(rename = &lt;/span&gt;&lt;span style=&#34;font-style:italic&#34;&gt;&amp;#34;type&amp;#34;&lt;/span&gt;&lt;span style=&#34;&#34;&gt;)]&lt;/span&gt;
+    &lt;span style=&#34;font-weight:bold&#34;&gt;pub&lt;/span&gt; type_: Option&amp;lt;Script&amp;gt;,
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;From the data structure we can see that &lt;code&gt;lock&lt;/code&gt; and &lt;code&gt;type&lt;/code&gt; shared the same structure, later we can they they are also executed in the same environment, the differences between them are just in a few tiny bits:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;lock&lt;/code&gt; is required, while &lt;code&gt;type&lt;/code&gt; is optional&lt;/li&gt;
+&lt;li&gt;Mentally, they are used to capture different use cases.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;We will first start with &lt;code&gt;type&lt;/code&gt; script here.&lt;/p&gt;
+
+&lt;h1 id=&#34;type-script&#34;&gt;Type Script&lt;/h1&gt;
+
+&lt;p&gt;Note the name here is just a lucky accident, it is not related to the beloved &lt;a href=&#34;https://www.typescriptlang.org/&#34;&gt;programming language&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;If you think about it, a transaction on CKB(or most UTXO-based blockchains) just transforms one set of cells(or UTXOs) to another set of cells. What&amp;rsquo;s interesting, is the actual transformation here. That&amp;rsquo;s where we start to design CKB&amp;rsquo;s verification model: how can we build a model to better validate the cell transformations?&lt;/p&gt;
+
+&lt;p&gt;That&amp;rsquo;s where a &lt;code&gt;type&lt;/code&gt; script comes in play: a type script is used to validate certain rules in the cell transformation phase. Some examples here include:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Validating UDT(user defined token) balances to ensure no new token is invalidly issued.&lt;/li&gt;
+&lt;li&gt;Ensuring a unique name is assigned to a cell that might be mutated. Note this is a fun one, please expect a future article dedicated entirely to this topic.&lt;/li&gt;
+&lt;li&gt;Implementing economic constructs. In fact NervosDAO is completely implemented as a &lt;a href=&#34;https://github.com/nervosnetwork/ckb-system-scripts/blob/66d7da8ec72dffaa7e9c55904833951eca2422a9/c/dao.c&#34;&gt;type script&lt;/a&gt; with minimal support from the consensus layer.&lt;/li&gt;
+&lt;li&gt;A bitcoin VM can be compiled to RISC-V binary, which can transform CKB into an alternative bitcoin implementation :)&lt;/li&gt;
+&lt;li&gt;Keep in mind that in addition to data, cell can be used to store code as well, hence a type script can also be used to run tests on the code in cell to ensure certain behavior.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;In a nutshell, type script can be used to capture any validation logic you need in the cell transformation. Combined with CKB&amp;rsquo;s flexible virtual machine, I believe this will provide endless potentials.&lt;/p&gt;
+
+&lt;h1 id=&#34;lock-script&#34;&gt;Lock Script&lt;/h1&gt;
+
+&lt;p&gt;Type script captures the cell transformation logic, but there&amp;rsquo;s still one thing missing from the picture: how can I guard my own cell from someone else? In other words, how can I ensure my tokens stay mine in an ever-changing world?&lt;/p&gt;
+
+&lt;p&gt;This is why we designed the always required lock script. A cell can only be consumed when the lock script can be executed sucessfully. This is different from type script, which might be totally optional. A lock script is always there to guard the security of a cell.&lt;/p&gt;
+
+&lt;p&gt;Typically, you would expect that a lock script contains a signature verification phase, like all the other blockchains do, but there are also brand new use cases unlocked by CKB:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;The actual signature algorithm is totally determined by the lock script, and you are free to use any lock script. That means you are free to incorporate any signature algorithms that suit your need. In the official CKB distribution we are including &lt;a href=&#34;https://github.com/nervosnetwork/ckb-system-scripts/blob/66d7da8ec72dffaa7e9c55904833951eca2422a9/c/secp256k1_blake160_sighash_all.c&#34;&gt;secp256k1 algorithm&lt;/a&gt; as the default lock script. But you don&amp;rsquo;t have to use this, if someone implements a lock script using schnorr signature, you are more than welcome to use that one.&lt;/li&gt;
+&lt;li&gt;In addition to signature verification, a lock script can also include other rules to unlock the cell as well. For example, I can configure my lock script to pass if the transaction contains an output cell that uses my lock script, but has more capacity than my consumed cell. This way when someone sends me capacity, they can consume my existing cell and create a new cell for me. They don&amp;rsquo;t have to create a new cell for me like bitcoin requires.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;In my personal opinion, the best part of CKB, is that a lock script created by the community is treated exactly the same way as the official default one. No priviledge is granted to the official scripts. Unlike some other blockchains, CKB provides the freedom to develop CKB scripts back to the whole community.&lt;/p&gt;
+
+&lt;h1 id=&#34;execution-model&#34;&gt;Execution Model&lt;/h1&gt;
+
+&lt;p&gt;Now let&amp;rsquo;s see when lock and type scripts are executed.&lt;/p&gt;
+
+&lt;h2 id=&#34;back-to-the-example&#34;&gt;Back to the Example&lt;/h2&gt;
+
+&lt;p&gt;Here&amp;rsquo;s the transaction we see earlier again:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://xxuejie.github.io/images/tx.svg&#34; alt=&#34;Transaction Example&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;For this example, the execution flow is as follows:&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;code&gt;Lock Script 1&lt;/code&gt; is executed once.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Lock Script 2&lt;/code&gt; is executed once.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Type Script 1&lt;/code&gt; is executed once.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Type Script 2&lt;/code&gt; is executed once.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;In later posts we can see both lock and type scripts are executed in the same environment, and both have access to the whole transaction. If any of the script fails, the whole transaction fails. Only when all the scripts succeed, the transaction is considered validated.&lt;/p&gt;
+
+&lt;p&gt;There&amp;rsquo;re couple of points worth mentioning:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Even though there are 2 input cells with &lt;code&gt;Lock Script 1&lt;/code&gt;, it is only executed once, it&amp;rsquo;s up to the actual lock script to locate all the input cells with the same lock script and validate both signature.&lt;/li&gt;
+&lt;li&gt;Only lock scripts in input cells are executed in this transaction, for example, &lt;code&gt;Lock Script 3&lt;/code&gt; is not executed here.&lt;/li&gt;
+&lt;li&gt;Even though an input cell and an output cell both contain &lt;code&gt;Type Script 1&lt;/code&gt;, it is only executed once.&lt;/li&gt;
+&lt;li&gt;Type scripts in both input and output cells are executed, which include &lt;code&gt;Type Script 1&lt;/code&gt; and &lt;code&gt;Type Script 2&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;Some cells do not have type scripts, in this case we just omit the execution.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&#34;rules&#34;&gt;Rules&lt;/h2&gt;
+
+&lt;p&gt;Now to summary the rules:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Lock scripts in input cells are collected and deduped, each unique lock script is executed and only executed once.&lt;/li&gt;
+&lt;li&gt;Type scripts in input and output cells(if existed) are collected together and deduped, each unique type script is executed and only executed once.&lt;/li&gt;
+&lt;li&gt;If any script fails, the whole transaction validation fails.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1 id=&#34;what-s-next&#34;&gt;What&amp;rsquo;s Next&lt;/h1&gt;
+
+&lt;p&gt;Now that cell model is covered, we will look at how to actual write a CKB VM script in the next post. The default secp256k1 lock script will be examined to show the life of a CKB VM script.&lt;/p&gt;
+</description>
     </item>
     
     <item>
@@ -27,9 +137,18 @@ You might noticed that I call the code running on CKB as script, not smart contr
       <pubDate>Tue, 29 Jan 2019 00:00:00 +0000</pubDate>
       
       <guid>https://xxuejie.github.io/about/</guid>
-      <description>I&amp;rsquo;m Xuejie Xiao, this is my new site for writing.
-I&amp;rsquo;m currently a blockchain engineer at Cryptape working on Nervos CKB. I&amp;rsquo;m the main developer on CKB VM.
-Even though I&amp;rsquo;ve heard about Bitcoin for quite some time, I didn&amp;rsquo;t really have enough time to fully dive into the blockchain world till 2017. I&amp;rsquo;ve worked on wallets and mining pool, then found out my true interest lies in blockchain VM. I&amp;rsquo;ve been doing research on virtual machine technologies for blockchain for quite some time, and CKB VM is my latest contribution.</description>
+      <description>&lt;p&gt;I&amp;rsquo;m Xuejie Xiao, this is my new site for writing.&lt;/p&gt;
+
+&lt;p&gt;I&amp;rsquo;m currently a blockchain engineer at &lt;a href=&#34;https://www.cryptape.com/&#34;&gt;Cryptape&lt;/a&gt; working on &lt;a href=&#34;https://www.nervos.org/&#34;&gt;Nervos CKB&lt;/a&gt;. I&amp;rsquo;m the main developer on &lt;a href=&#34;https://github.com/nervosnetwork/ckb-vm&#34;&gt;CKB VM&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;Even though I&amp;rsquo;ve heard about Bitcoin for quite some time, I didn&amp;rsquo;t really have enough time to fully dive into the blockchain world till 2017. I&amp;rsquo;ve worked on wallets and mining pool, then found out my true interest lies in blockchain VM. I&amp;rsquo;ve been doing research on virtual machine technologies for blockchain for quite some time, and CKB VM is my latest contribution.&lt;/p&gt;
+
+&lt;p&gt;I also believe the power of simplicity. The only way to make reliable software for the future, should be designing software that are so simple that any bug is obvious. This world is already full of leaky abstraction, let&amp;rsquo;s try hard not to add another one.&lt;/p&gt;
+
+&lt;p&gt;Before that, I worked for &lt;a href=&#34;https://citrusbyte.com/&#34;&gt;Citrusbyte&lt;/a&gt; where we did software consulting services for large enterprise organizations and startups, such as Apple, AT&amp;amp;T, Cast &amp;amp; Crew, etc. I was also once a PhD candidate at &lt;a href=&#34;https://www.syracuse.edu/&#34;&gt;Syracuse University&lt;/a&gt; focusing on high performance computing and cloud computing. Some of my work back then could be found at &lt;a href=&#34;https://ieeexplore.ieee.org/document/7004222/&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;I also spent years working with latest web technologies, such as &lt;a href=&#34;https://webassembly.org/&#34;&gt;WebAssembly&lt;/a&gt; and &lt;a href=&#34;https://github.com/emscripten-core/emscripten&#34;&gt;emscripten&lt;/a&gt;. I created &lt;a href=&#34;https://github.com/xxuejie/webruby&#34;&gt;webruby&lt;/a&gt;, an introduction on webruby could be found at &lt;a href=&#34;http://rubykaigi.org/2013/talk/S07/&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
+</description>
     </item>
     
   </channel>
