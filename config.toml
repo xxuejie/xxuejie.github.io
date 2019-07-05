@@ -4,6 +4,7 @@ author = "Xuejie Xiao"
 canonifyurls = true
 languagecode = "en"
 theme = "black-and-light"
+staticDir = ["static"]
 
 pygmentsstyle       = "bw"
 pygmentscodefences  = true
@@ -14,10 +15,13 @@ pygmentscodefences  = true
 
 [[menu.main]]
     name = "About"
-    url  = "about"
+    url  = "/about"
 [[menu.main]]
     name = "Twitter"
     url  = "https://twitter.com/xxuejie"
 [[menu.main]]
     name = "Github"
     url  = "https://github.com/xxuejie"
+[[menu.main]]
+    name = "RSS"
+    url  = "/index.xml"
