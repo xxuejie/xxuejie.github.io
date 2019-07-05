@@ -29,7 +29,7 @@ pub struct CellOutput {
 }
 ```
 
-From the data structure we can see that `lock` and `type` shared the same structure, later we can they they are also executed in the same environment, the differences between them are just in a few tiny bits:
+From the data structure we can see that `lock` and `type` shared the same structure, later we can show that they are also executed in the same environment, the differences between them are just in a few tiny bits:
 
 * `lock` is required, while `type` is optional
 * Mentally, they are used to capture different use cases.
