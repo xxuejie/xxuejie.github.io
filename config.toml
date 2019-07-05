@@ -20,7 +20,7 @@ pygmentscodefences  = true
     name = "Twitter"
     url  = "https://twitter.com/xxuejie"
 [[menu.main]]
-    name = "Github"
+    name = "GitHub"
     url  = "https://github.com/xxuejie"
 [[menu.main]]
     name = "RSS"
