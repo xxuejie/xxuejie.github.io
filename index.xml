@@ -2,31 +2,31 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Less is more</title>
-    <link>https://xxuejie.github.io/</link>
+    <link>https://xxuejie.space/</link>
     <description>Recent content on Less is more</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
     <lastBuildDate>Fri, 05 Jul 2019 00:00:00 +0000</lastBuildDate>
     
-	<atom:link href="https://xxuejie.github.io/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://xxuejie.space/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>Introduction to CKB Script Programming 1: Validation Model</title>
-      <link>https://xxuejie.github.io/2019_07_05_introduction_to_ckb_script_programming_validation_model/</link>
+      <link>https://xxuejie.space/2019_07_05_introduction_to_ckb_script_programming_validation_model/</link>
       <pubDate>Fri, 05 Jul 2019 00:00:00 +0000</pubDate>
       
-      <guid>https://xxuejie.github.io/2019_07_05_introduction_to_ckb_script_programming_validation_model/</guid>
+      <guid>https://xxuejie.space/2019_07_05_introduction_to_ckb_script_programming_validation_model/</guid>
       <description>As of now, the cell validation model in CKB has been more or less stablized, hence I&amp;rsquo;m starting a series of article introducing CKB script programming here. My goal here is to fill in all the missing implementation details one need to write CKB scripts after reading the whitepaper, so you can start exploring this beautiful wonderland CKB presents.
 You might noticed that I call the code running on CKB as script, not smart contract.</description>
     </item>
     
     <item>
       <title>About</title>
-      <link>https://xxuejie.github.io/about/</link>
+      <link>https://xxuejie.space/about/</link>
       <pubDate>Tue, 29 Jan 2019 00:00:00 +0000</pubDate>
       
-      <guid>https://xxuejie.github.io/about/</guid>
+      <guid>https://xxuejie.space/about/</guid>
       <description>I&amp;rsquo;m Xuejie Xiao, this is my new site for writing.
 I&amp;rsquo;m currently a blockchain engineer at Cryptape working on Nervos CKB. I&amp;rsquo;m the main developer on CKB VM.
 Even though I&amp;rsquo;ve heard about Bitcoin for quite some time, I didn&amp;rsquo;t really have enough time to fully dive into the blockchain world till 2017. I&amp;rsquo;ve worked on wallets and mining pool, then found out my true interest lies in blockchain VM. I&amp;rsquo;ve been doing research on virtual machine technologies for blockchain for quite some time, and CKB VM is my latest contribution.</description>
