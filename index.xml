@@ -6,10 +6,20 @@
     <description>Recent content on Less is more</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Tue, 29 Jan 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Fri, 05 Jul 2019 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="https://xxuejie.github.io/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Introduction to CKB Script Programming 1: Validation Model</title>
+      <link>https://xxuejie.github.io/2019_07_05_introduction_to_ckb_script_programming_validation_model/</link>
+      <pubDate>Fri, 05 Jul 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://xxuejie.github.io/2019_07_05_introduction_to_ckb_script_programming_validation_model/</guid>
+      <description>As of now, the cell validation model in CKB has been more or less stablized, hence I&amp;rsquo;m starting a series of article introducing CKB script programming here. My goal here is to fill in all the missing implementation details one need to write CKB scripts after reading the whitepaper, so you can start exploring this beautiful wonderland CKB presents.
+You might noticed that I call the code running on CKB as script, not smart contract.</description>
+    </item>
     
     <item>
       <title>About</title>
