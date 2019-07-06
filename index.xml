@@ -2,21 +2,21 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Less is more</title>
-    <link>https://xxuejie.github.io/</link>
+    <link>https://xuejie.space/</link>
     <description>Recent content on Less is more</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
     <lastBuildDate>Fri, 05 Jul 2019 00:00:00 +0000</lastBuildDate>
     
-        <atom:link href="https://xxuejie.github.io/index.xml" rel="self" type="application/rss+xml" />
+        <atom:link href="https://xuejie.space/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>Introduction to CKB Script Programming 1: Validation Model</title>
-      <link>https://xxuejie.github.io/2019_07_05_introduction_to_ckb_script_programming_validation_model/</link>
+      <link>https://xuejie.space/2019_07_05_introduction_to_ckb_script_programming_validation_model/</link>
       <pubDate>Fri, 05 Jul 2019 00:00:00 +0000</pubDate>
       
-      <guid>https://xxuejie.github.io/2019_07_05_introduction_to_ckb_script_programming_validation_model/</guid>
+      <guid>https://xuejie.space/2019_07_05_introduction_to_ckb_script_programming_validation_model/</guid>
       <description>
 
 &lt;p&gt;As of now, the cell validation model in CKB has been more or less stablized, hence I&amp;rsquo;m starting a series of article introducing CKB script programming here. My goal here is to fill in all the missing implementation details one need to write CKB scripts after reading the whitepaper, so you can start exploring this beautiful wonderland CKB presents.&lt;/p&gt;
@@ -31,7 +31,7 @@
 
 &lt;p&gt;Below illustrates a real transaction on CKB:&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&#34;https://xxuejie.github.io/images/tx.svg&#34; alt=&#34;Transaction Example&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://xuejie.space/images/tx.svg&#34; alt=&#34;Transaction Example&#34; /&gt;&lt;/p&gt;
 
 &lt;p&gt;There are a lot of things going on in this graph, and we will come back to this graph again in later posts. Today, we will just focus on 2 entities in the cell data structure: &lt;code&gt;lock&lt;/code&gt; and &lt;code&gt;type&lt;/code&gt;.&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-rust&#34; data-lang=&#34;rust&#34;&gt;&lt;span style=&#34;font-weight:bold&#34;&gt;pub&lt;/span&gt; &lt;span style=&#34;font-weight:bold&#34;&gt;struct&lt;/span&gt; &lt;span style=&#34;font-weight:bold&#34;&gt;CellOutput&lt;/span&gt; {
@@ -92,7 +92,7 @@
 
 &lt;p&gt;Here&amp;rsquo;s the transaction we see earlier again:&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&#34;https://xxuejie.github.io/images/tx.svg&#34; alt=&#34;Transaction Example&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://xuejie.space/images/tx.svg&#34; alt=&#34;Transaction Example&#34; /&gt;&lt;/p&gt;
 
 &lt;p&gt;For this example, the execution flow is as follows:&lt;/p&gt;
 
@@ -133,10 +133,10 @@
     
     <item>
       <title>About</title>
-      <link>https://xxuejie.github.io/about/</link>
+      <link>https://xuejie.space/about/</link>
       <pubDate>Tue, 29 Jan 2019 00:00:00 +0000</pubDate>
       
-      <guid>https://xxuejie.github.io/about/</guid>
+      <guid>https://xuejie.space/about/</guid>
       <description>&lt;p&gt;I&amp;rsquo;m Xuejie Xiao, this is my new site for writing.&lt;/p&gt;
 
 &lt;p&gt;I&amp;rsquo;m currently a blockchain engineer at &lt;a href=&#34;https://www.cryptape.com/&#34;&gt;Cryptape&lt;/a&gt; working on &lt;a href=&#34;https://www.nervos.org/&#34;&gt;Nervos CKB&lt;/a&gt;. I&amp;rsquo;m the main developer on &lt;a href=&#34;https://github.com/nervosnetwork/ckb-vm&#34;&gt;CKB VM&lt;/a&gt;.&lt;/p&gt;
