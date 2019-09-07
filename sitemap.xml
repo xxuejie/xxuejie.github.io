@@ -3,14 +3,18 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
-    <loc>https://xuejie.space/2019_07_13_introduction_to_ckb_script_programming_script_basics/</loc>
-    <lastmod>2019-07-13T00:00:00+00:00</lastmod>
+    <loc>https://xuejie.space/2019_09_06_introduction_to_ckb_script_programming_udt/</loc>
+    <lastmod>2019-09-06T00:00:00+00:00</lastmod>
   </url>
   
   <url>
     <loc>https://xuejie.space/</loc>
+    <lastmod>2019-09-06T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://xuejie.space/2019_07_13_introduction_to_ckb_script_programming_script_basics/</loc>
     <lastmod>2019-07-13T00:00:00+00:00</lastmod>
-    <priority>0</priority>
   </url>
   
   <url>
@@ -25,12 +29,10 @@
   
   <url>
     <loc>https://xuejie.space/categories/</loc>
-    <priority>0</priority>
   </url>
   
   <url>
     <loc>https://xuejie.space/tags/</loc>
-    <priority>0</priority>
   </url>
   
 </urlset>

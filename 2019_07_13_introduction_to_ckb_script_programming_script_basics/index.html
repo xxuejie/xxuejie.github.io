@@ -556,7 +556,7 @@ pry(main)&gt; tx2.witnesses[0].data.clear
 pry(main)&gt; tx2 = tx2.sign(wallet.key, api.compute_transaction_hash(tx2))
 pry(main)&gt; api.send_transaction(tx2)
 CKB::<span style="font-style:italic">RPCError</span>: jsonrpc <span style="font-style:italic">error</span>: {<span style="font-style:italic">:code</span>=&gt;-3, <span style="font-style:italic">:message</span>=&gt;<span style="font-style:italic">&#34;InvalidTx(ScriptFailure(ValidationFailure(-1)))&#34;</span>}
-from <span style="font-style:italic">/home/u</span>buntu<span style="font-style:italic">/code/</span>ckb-sdk-ruby<span style="font-style:italic">/lib/</span>ckb<span style="font-style:italic">/rpc.rb:164:in `rpc_request&#39;</span></code></pre></div>
+from <span style="font-style:italic">/home/u</span>buntu/code/ckb-sdk-ruby/lib/ckb/rpc.rb:164<span style="font-style:italic">:in</span> <span style="font-style:italic">`rpc_request&#39;</span></code></pre></div>
 <p>We can see our carrot script rejects a transaction that generates a cell with carrot. Now I can use this script to make sure all my cells are free from carrots!</p>
 
 <p>So to recap, to deploy and run a script as type script, what we need to do is:</p>
@@ -625,24 +625,26 @@ ret = ckb_load_tx_hash(tx_hash, &amp;len, 0);
 
 <ul>
 <li>If we just want to know if a cell exists and don&rsquo;t need any of the data, we can just pass in <code>NULL</code> as the data buffer, and a <code>len</code> variable with value 0. This way the syscall would skip data filling and just provided available data length and correct return code for processing.</li>
-<li>In the carrot example, we are looping through all inputs in the transaction, but here we just care about input cells of the same lock script. CKB named cells with the same lock(or type) script as cells with the same <code>group</code>. And here, we can use <code>CKB_SOURCE_GROUP_INPUT</code> instead of <code>CKB_SOURCE_INPUT</code> denoting the syscalls to only count cells in the same group, i.e., cells who have the same lock script as the current cell.</li>
-</ul>
+
+<li><p>In the carrot example, we are looping through all inputs in the transaction, but here we just care about input cells of the same lock script. CKB named cells with the same lock(or type) script as cells with the same <code>group</code>. And here, we can use <code>CKB_SOURCE_GROUP_INPUT</code> instead of <code>CKB_SOURCE_INPUT</code> denoting the syscalls to only count cells in the same group, i.e., cells who have the same lock script as the current cell.</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">len = WITNESS_SIZE;
 ret = ckb_load_witness(witness, &amp;len, 0, index, CKB_SOURCE_GROUP_INPUT);
 <span style="font-weight:bold">if</span> (ret != CKB_SUCCESS) {
-  <span style="font-weight:bold">return</span> ERROR_SYSCALL;
+<span style="font-weight:bold">return</span> ERROR_SYSCALL;
 }
 <span style="font-weight:bold">if</span> (len &gt; WITNESS_SIZE) {
-  <span style="font-weight:bold">return</span> ERROR_WITNESS_TOO_LONG;
+<span style="font-weight:bold">return</span> ERROR_WITNESS_TOO_LONG;
 }
 
 <span style="font-weight:bold">if</span> (!(witness_table = ns(Witness_as_root(witness)))) {
-  <span style="font-weight:bold">return</span> ERROR_ENCODING;
+<span style="font-weight:bold">return</span> ERROR_ENCODING;
 }
 args = ns(Witness_data(witness_table));
 <span style="font-weight:bold">if</span> (ns(Bytes_vec_len(args)) &lt; 1) {
-  <span style="font-weight:bold">return</span> ERROR_WRONG_NUMBER_OF_ARGUMENTS;
-}</code></pre></div>
+<span style="font-weight:bold">return</span> ERROR_WRONG_NUMBER_OF_ARGUMENTS;
+}</code></pre></div></li>
+</ul>
+
 <p>Continue down the path, we are loading the witness for current input. Corresponding witnesses and inputs have the same index. Right now CKB uses flatbuffer as the serialization format in syscalls, so if this feels weird to you, <a href="https://github.com/dvidelabs/flatcc">flatcc&rsquo;s documentation</a> is your best friend.</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="font-style:italic">/* Load signature */</span>
 len = TEMP_SIZE;
@@ -760,6 +762,8 @@ pry(main)&gt; api.send_transaction(tx)
     
       <a class="basic-alignment left" href="https://xuejie.space/2019_07_05_introduction_to_ckb_script_programming_validation_model/">&laquo; Introduction to CKB Script Programming 1: Validation Model</a>
     
+    
+      <a class="basic-alignment left" href="https://xuejie.space/2019_09_06_introduction_to_ckb_script_programming_udt/">Introduction to CKB Script Programming 3: UDT &raquo;</a>
     
   </div>
 </section>

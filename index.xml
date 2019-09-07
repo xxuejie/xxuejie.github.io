@@ -5,10 +5,337 @@
     <description>Recent content on Less is more</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Sat, 13 Jul 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Fri, 06 Sep 2019 00:00:00 +0000</lastBuildDate>
     
         <atom:link href="https://xuejie.space/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Introduction to CKB Script Programming 3: UDT</title>
+      <link>https://xuejie.space/2019_09_06_introduction_to_ckb_script_programming_udt/</link>
+      <pubDate>Fri, 06 Sep 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://xuejie.space/2019_09_06_introduction_to_ckb_script_programming_udt/</guid>
+      <description>
+
+&lt;p&gt;CKB&amp;rsquo;s cell model and VM enables many new use cases. However that doesn&amp;rsquo;t mean we need to ditch existing ones. One common use in existing blockchains, is to issue new tokens with special purpose/meaning from the token issuer. In Ethereum, we call those ERC20 tokens, let&amp;rsquo;s see how we can build a similar concept in CKB. To distinguish from ERC20, we call the tokens issued in CKB &lt;code&gt;user defined token&lt;/code&gt;, or UDT for short.&lt;/p&gt;
+
+&lt;p&gt;This post uses CKB v0.20.0 in the examples. Specifically, I&amp;rsquo;m using the following commit in each project:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/nervosnetwork/ckb&#34;&gt;ckb&lt;/a&gt;: 472252ac5333b2b19ea3ec50d54e68b627bf6ac5&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/nervosnetwork/ckb-duktape&#34;&gt;ckb-duktape&lt;/a&gt;: 55849c20b43a212120e0df7ad5d64b2c70ea51ac&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/nervosnetwork/ckb-sdk-ruby&#34;&gt;ckb-sdk-ruby&lt;/a&gt;: 1c2a3c3f925e47e421f9e3c07164ececf3b6b9f6&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1 id=&#34;data-model&#34;&gt;Data Model&lt;/h1&gt;
+
+&lt;p&gt;While Ethereum has a unique storage space for each contract account, CKB spreads data among multiple cells. A cell&amp;rsquo;s lock &amp;amp; type script then tells which account the cell belongs to, as well as how you can interact with the cell. The consequence of this, is that unlike ERC20 which stores all token users&amp;rsquo; balances in the ERC20 contract&amp;rsquo;s storage space, in CKB we will need a new design to store the balances of UDT users.&lt;/p&gt;
+
+&lt;p&gt;We could, of course, designate a special cell to keep the balances of all UDT users. This solution would look a lot like Ethereum&amp;rsquo;s ERC20 design. But several problems arise:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;The token issuer would have to provide storage space for keeping all the users&amp;rsquo; balances. As the number of user grows, the storage space would also grow, in CKB&amp;rsquo;s economic model, this won&amp;rsquo;t be an effective design.&lt;/li&gt;
+&lt;li&gt;Consider that updating a cell in CKB is essentially destroying the old cell and re-create a new one, having a single cell with all balances would create a bottleneck: every action which needs to update UDT balance would have to update the one and only cell. People will compete on using the cell.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;While there are solutions which can mitigate or even solve the above problems, we started to question the basic design here: does it really make sense to keep all UDTs in a single place? Once transferred, the UDTs really should belong to the receiver, why should the balance still be kept in a central place?&lt;/p&gt;
+
+&lt;p&gt;That leads to our proposed design here:&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;A special type script denotes that the cell stores UDTs.&lt;/li&gt;
+&lt;li&gt;The first 4 bytes of the cell data contains the amount of UDTs in current cell.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;This design has several implications:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;The storage cost for a UDT cell is always constant, it is irrelevant to the amount of UDTs stored in the cell.&lt;/li&gt;
+&lt;li&gt;A user can transfer either all or part of the UDTs in a cell to others&lt;/li&gt;
+&lt;li&gt;In practice, there might be numerous cells containing the same UDTs.&lt;/li&gt;
+&lt;li&gt;The lock script used to guard a UDT is decoupled from the UDT itself.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Each token user then keeps their UDTs in their own cells. They are responsible for providing the storage space for the UDTs, and ensure their own tokens are secure. This way UDTs can truly belong to each individual UDT user.&lt;/p&gt;
+
+&lt;p&gt;One question remains here: if tokens are stored in numerous cells belonging to each user instead of a single place, how can we ensure the tokens are indeed created by token issuer? What if someone forges tokens on their own? In Ethereum, this is probably a problem, but as we shall see in this post, a type script in CKB can prevent all those attacks, ensuring your token is safe.&lt;/p&gt;
+
+&lt;h1 id=&#34;writing-the-udt-script&#34;&gt;Writing the UDT Script&lt;/h1&gt;
+
+&lt;p&gt;Given the above design, a minimal UDT type script should guard the following rules:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;In a UDT transfer transaction, the sum of UDTs in the output cells should equal the sum of UDTs in the input cells.&lt;/li&gt;
+&lt;li&gt;Only the token issuer can generate new tokens in the initial token creation process.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;This might sound a little ambitious, but we will see that with a type script and some CKB&amp;rsquo;s unique design patterns, the eagle can be landed :P&lt;/p&gt;
+
+&lt;p&gt;For simplicity, we will write the UDT script here in pure JavaScript, while a C version might help in saving cycles, the functionality will be the same.&lt;/p&gt;
+
+&lt;p&gt;First, we will need to loop through all input cells and gather the sum of UDTs:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;diff --git a/udt.js b/udt.js
+index e69de29..4a20bd0 100644
+--- a/udt.js
++++ b/udt.js
+@@ -0,0 +1,17 @@
++var input_index = 0;
++var input_coins = 0;
++var buffer = new ArrayBuffer(4);
++var ret = CKB.CODE.INDEX_OUT_OF_BOUND;
++
++while (true) {
++  ret = CKB.raw_load_cell_data(buffer, 0, input_index, CKB.SOURCE.GROUP_INPUT);
++  if (ret === CKB.CODE.INDEX_OUT_OF_BOUND) {
++    break;
++  }
++  if (ret !== 4) {
++    throw &amp;quot;Invalid input cell!&amp;quot;;
++  }
++  var view = new DataView(buffer);
++  input_coins += view.getUint32(0, true);
++  input_index += 1;
++}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;As explained in the previous post, CKB requires us to use a loop to iterate through all inputs in the same &lt;code&gt;group&lt;/code&gt; and fetch the data. In C we would use &lt;code&gt;ckb_load_cell_data&lt;/code&gt;, which is wrapped into a JS function &lt;code&gt;CKB.raw_load_cell_data&lt;/code&gt;. As indicated by the ArrayBuffer, we are only interested in the first 4 bytes of the cell data, since those 4 bytes will contain the amount of UDTs.&lt;/p&gt;
+
+&lt;p&gt;Note that here we perform a simple add operation on &lt;code&gt;input_coins&lt;/code&gt;, this is very dangerous. We are doing it just for simplicity, in a production setting, you should check if the value will hold in a 32-bit integer value. Higher precision number types should be used if needed.&lt;/p&gt;
+
+&lt;p&gt;Similarly, we can fetch the sum of output coins and do the comparision:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;diff --git a/udt.js b/udt.js
+index 4a20bd0..e02b993 100644
+--- a/udt.js
++++ b/udt.js
+@@ -15,3 +15,23 @@ while (true) {
+   input_coins += view.getUint32(0);
+   input_index += 1;
+ }
++
++var output_index = 0;
++var output_coins = 0;
++
++while (true) {
++  ret = CKB.raw_load_cell_data(buffer, 0, output_index, CKB.SOURCE.GROUP_OUTPUT);
++  if (ret === CKB.CODE.INDEX_OUT_OF_BOUND) {
++    break;
++  }
++  if (ret !== 4) {
++    throw &amp;quot;Invalid output cell!&amp;quot;;
++  }
++  var view = new DataView(buffer);
++  output_coins += view.getUint32(0, true);
++  output_index += 1;
++}
++
++if (input_coins !== output_coins) {
++  throw &amp;quot;Input coins do not equal output coins!&amp;quot;;
++}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;This is almost all we need to validate the first rule: the sum of UDTs in the output cells should equal the sum of UDTs in the input cells. In other words, with this type script now, no one will be able to forge new tokens. Isn&amp;rsquo;t that wonderful?&lt;/p&gt;
+
+&lt;p&gt;But there&amp;rsquo;s one quirk: when we say &lt;code&gt;no one&lt;/code&gt; will be able to forge new tokens, we really mean &lt;code&gt;no one&lt;/code&gt;, including the token issuer! This is no good, we need to add an exception so the token issuer can create the tokens first, but no one will be able to do that after. Is there a way to do that?&lt;/p&gt;
+
+&lt;p&gt;Yes there is! But the answer reads like a riddle, so please read this paragraph carefully if I lost you the first time: a type script consist of 2 parts: a code hash denoting the actual code, and args used by the type script. 2 type scripts with different args will be treated 2 different type scripts. The trick here, is to allow the token issuer to create a cell with a new type script, that no one will be able to create again, so if we put something in the args part that is not be able to included again, the problem will be solved.&lt;/p&gt;
+
+&lt;p&gt;Now think about this problem: what cannot be included in a blockchain twice? An OutPoint in a transaction input! The first time we include an OutPoint as a transaction input, the referenced cell will be consumed, if someone later include it again, it will create a double-spending error, which is exactly what we use blockchain for.&lt;/p&gt;
+
+&lt;p&gt;And we have the answer now! The full validation flow of a minimal UDT type script in CKB, is as follows:&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;First gather the sum of all UDTs in the input cells and the sum of all UDTs in the output cells, if they are equaled, the type script exits with a success status.&lt;/li&gt;
+&lt;li&gt;Check if the first argument of the type script matches the first OutPoint in current transaction, if they match, exit with a success status.&lt;/li&gt;
+&lt;li&gt;Otherwise exit with a failure status&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;If you are still with me here, you will see that step 1 corresponds to a normal UDT transfer, while step 2 corresponds to the initial token creation process.&lt;/p&gt;
+
+&lt;p&gt;This is what we mean by CKB&amp;rsquo;s unique design pattern: by using an input OutPoint as a script argument, we can create a unique script that cannot be forged again:&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;If an attacker tries to use the same argument, the script will validate that the first input OutPoint in the transaction does not match the argument, hence invalidates the transaction;&lt;/li&gt;
+&lt;li&gt;If the attacker tries to use the same argument and fill in the argument as the first input OutPoint, it will create a double-spent error, also invalidates the transaction;&lt;/li&gt;
+&lt;li&gt;If the attacker tries to use a different argument, CKB will recognize that the different argument leads to a different type script, hence generating a different UDT.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;This simple yet powerful pattern thus ensures the UDTs stay safe while enjoying the benefits that they can be transferred freely among many different cells. To the best of our knowledge, this pattern is not possible yet in many other blockchains which claim to be &lt;code&gt;flexible&lt;/code&gt; or &lt;code&gt;programmable&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;Now we can finally complete the UDT script:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;diff --git a/contract.js b/contract.js
+deleted file mode 100644
+index e69de29..0000000
+diff --git a/udt.js b/udt.js
+index e02b993..cd443bf 100644
+--- a/udt.js
++++ b/udt.js
+@@ -1,3 +1,7 @@
++if (CKB.ARGV.length !== 1) {
++  throw &amp;quot;Requires only one argument!&amp;quot;;
++}
++
+ var input_index = 0;
+ var input_coins = 0;
+ var buffer = new ArrayBuffer(4);
+@@ -33,5 +37,17 @@ while (true) {
+ }
+ 
+ if (input_coins !== output_coins) {
+-  throw &amp;quot;Input coins do not equal output coins!&amp;quot;;
++  if (!((input_index === 0) &amp;amp;&amp;amp; (output_index === 1))) {
++    throw &amp;quot;Invalid token issuing mode!&amp;quot;;
++  }
++  var first_input = CKB.load_input(0, 0, CKB.SOURCE.INPUT);
++  if (typeof first_input === &amp;quot;number&amp;quot;) {
++    throw &amp;quot;Cannot fetch the first input&amp;quot;;
++  }
++  var hex_input = Array.prototype.map.call(
++    new Uint8Array(first_input),
++    function(x) { return (&#39;00&#39; + x.toString(16)).slice(-2); }).join(&#39;&#39;);
++  if (CKB.ARGV[0] != hex_input) {
++    throw &amp;quot;Invalid creation argument!&amp;quot;;
++  }
+ }
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;And that&amp;rsquo;s it, with 53 lines of code or 1372 bytes, we&amp;rsquo;ve completed a minimal UDT type script in CKB. Notice I don&amp;rsquo;t even use a minimizer here, with any decent JS minimizer, we should be able to get a much more compact type script. Of course this is a production ready script, but it suffices to show a simple script is enough to handle important tasks in CKB.&lt;/p&gt;
+
+&lt;h1 id=&#34;deploying-to-ckb&#34;&gt;Deploying to CKB&lt;/h1&gt;
+
+&lt;p&gt;I&amp;rsquo;m not like &lt;a href=&#34;https://hacks.mozilla.org/2019/09/debugging-webassembly-outside-of-the-browser/&#34;&gt;some other organizations&lt;/a&gt; who prefer to only show you a video and a provocative post which hide how they did it and the accompanying problems. I believe no post is fun without actual code and steps to play with it. And here&amp;rsquo;s how you can use the above UDT script on CKB:&lt;/p&gt;
+
+&lt;p&gt;In case you might need it, here&amp;rsquo;s the full UDT script without diff format:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ cat udt.js
+if (CKB.ARGV.length !== 1) {
+  throw &amp;quot;Requires only one argument!&amp;quot;;
+}
+
+var input_index = 0;
+var input_coins = 0;
+var buffer = new ArrayBuffer(4);
+var ret = CKB.CODE.INDEX_OUT_OF_BOUND;
+
+while (true) {
+  ret = CKB.raw_load_cell_data(buffer, 0, input_index, CKB.SOURCE.GROUP_INPUT);
+  if (ret === CKB.CODE.INDEX_OUT_OF_BOUND) {
+    break;
+  }
+  if (ret !== 4) {
+    throw &amp;quot;Invalid input cell!&amp;quot;;
+  }
+  var view = new DataView(buffer);
+  input_coins += view.getUint32(0, true);
+  input_index += 1;
+}
+
+var output_index = 0;
+var output_coins = 0;
+
+while (true) {
+  ret = CKB.raw_load_cell_data(buffer, 0, output_index, CKB.SOURCE.GROUP_OUTPUT);
+  if (ret === CKB.CODE.INDEX_OUT_OF_BOUND) {
+    break;
+  }
+  if (ret !== 4) {
+    throw &amp;quot;Invalid output cell!&amp;quot;;
+  }
+  var view = new DataView(buffer);
+  output_coins += view.getUint32(0, true);
+  output_index += 1;
+}
+
+if (input_coins !== output_coins) {
+  if (!((input_index === 0) &amp;amp;&amp;amp; (output_index === 1))) {
+    throw &amp;quot;Invalid token issuing mode!&amp;quot;;
+  }
+  var first_input = CKB.load_input(0, 0, CKB.SOURCE.INPUT);
+  if (typeof first_input === &amp;quot;number&amp;quot;) {
+    throw &amp;quot;Cannot fetch the first input&amp;quot;;
+  }
+  var hex_input = Array.prototype.map.call(
+    new Uint8Array(first_input),
+    function(x) { return (&#39;00&#39; + x.toString(16)).slice(-2); }).join(&#39;&#39;);
+  if (CKB.ARGV[0] != hex_input) {
+    throw &amp;quot;Invalid creation argument!&amp;quot;;
+  }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;In order to run JavaScript, let&amp;rsquo;s first deploy duktape on CKB:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;pry(main)&amp;gt; data = File.read(&amp;quot;../ckb-duktape/build/duktape&amp;quot;)
+pry(main)&amp;gt; duktape_tx_hash = wallet.send_capacity(wallet.address, CKB::Utils.byte_to_shannon(300000), CKB::Utils.bin_to_hex(duktape_data))
+pry(main)&amp;gt; duktape_data_hash = CKB::Blake2b.hexdigest(duktape_data)
+pry(main)&amp;gt; duktape_out_point = CKB::Types::CellDep.new(out_point: CKB::Types::OutPoint.new(tx_hash: duktape_tx_hash, index: 0))
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;First, let&amp;rsquo;s create a UDT with 1000000 tokens&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;pry(main)&amp;gt; tx = wallet.generate_tx(wallet.address, CKB::Utils.byte_to_shannon(20000))
+pry(main)&amp;gt; tx.cell_deps.push(duktape_out_point.dup)
+pry(main)&amp;gt; arg = CKB::Utils.bin_to_hex(CKB::Serializers::InputSerializer.new(tx.inputs[0]).serialize)
+pry(main)&amp;gt; duktape_udt_script = CKB::Types::Script.new(code_hash: duktape_data_hash, args: [CKB::Utils.bin_to_hex(File.read(&amp;quot;udt.js&amp;quot;)), arg])
+pry(main)&amp;gt; tx.outputs[0].type = duktape_udt_script
+pry(main)&amp;gt; tx.outputs_data[0] = CKB::Utils.bin_to_hex([1000000].pack(&amp;quot;L&amp;lt;&amp;quot;))
+pry(main)&amp;gt; tx.witnesses[0].data.clear
+pry(main)&amp;gt; signed_tx = tx.sign(wallet.key, api.compute_transaction_hash(tx))
+pry(main)&amp;gt; root_udt_tx_hash = api.send_transaction(signed_tx)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;If we tried to submit the same transaction again, double-spent error will prevent us from forging the same token:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;pry(main)&amp;gt; api.send_transaction(signed_tx)
+CKB::RPCError: jsonrpc error: {:code=&amp;gt;-3, :message=&amp;gt;&amp;quot;UnresolvableTransaction(Dead(OutPoint(0x0b607e9599f23a8140d428bd24880e5079de1f0ee931618b2f84decf2600383601000000)))&amp;quot;}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;And no matter how we tried, we cannot create another cell which forges the same UDT token.&lt;/p&gt;
+
+&lt;p&gt;Now we can try transfering UDTs to another account. First let&amp;rsquo;s try creating one with has more output UDTs than input UDTs&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;pry(main)&amp;gt; udt_out_point = CKB::Types::OutPoint.new(tx_hash: root_udt_tx_hash, index: 0)
+pry(main)&amp;gt; tx = wallet.generate_tx(wallet2.address, CKB::Utils.byte_to_shannon(20000))
+pry(main)&amp;gt; tx.cell_deps.push(duktape_out_point.dup)
+pry(main)&amp;gt; tx.witnesses[0].data.clear
+pry(main)&amp;gt; tx.witnesses.push(CKB::Types::Witness.new(data: []))
+pry(main)&amp;gt; tx.outputs[0].type = duktape_udt_script
+pry(main)&amp;gt; tx.outputs_data[0] = CKB::Utils.bin_to_hex([1000000].pack(&amp;quot;L&amp;lt;&amp;quot;))
+pry(main)&amp;gt; tx.inputs.push(CKB::Types::Input.new(previous_output: udt_out_point, since: &amp;quot;0&amp;quot;))
+pry(main)&amp;gt; tx.outputs.push(tx.outputs[1].dup)
+pry(main)&amp;gt; tx.outputs[2].capacity = CKB::Utils::byte_to_shannon(20000)
+pry(main)&amp;gt; tx.outputs[2].type = duktape_udt_script
+pry(main)&amp;gt; tx.outputs_data.push(CKB::Utils.bin_to_hex([1000000].pack(&amp;quot;L&amp;lt;&amp;quot;)))
+pry(main)&amp;gt; signed_tx = tx.sign(wallet.key, api.compute_transaction_hash(tx))
+pry(main)&amp;gt; api.send_transaction(signed_tx)
+CKB::RPCError: jsonrpc error: {:code=&amp;gt;-3, :message=&amp;gt;&amp;quot;InvalidTx(ScriptFailure(ValidationFailure(-2)))&amp;quot;}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Here we tried to send another user 1000000 UDTs while also keeping 1000000 UDTs for the sender itself, of course this should trigger an error since we are trying to forge more tokens. But with slight modification, we can show that a UDT transferring transaction works if you respect the sum verification rule:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;pry(main)&amp;gt; tx.outputs_data[0] = CKB::Utils.bin_to_hex([900000].pack(&amp;quot;L&amp;lt;&amp;quot;))
+pry(main)&amp;gt; tx.outputs_data[2] = CKB::Utils.bin_to_hex([100000].pack(&amp;quot;L&amp;lt;&amp;quot;))
+pry(main)&amp;gt; signed_tx = tx.sign(wallet.key, api.compute_transaction_hash(tx))
+pry(main)&amp;gt; api.send_transaction(signed_tx)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h1 id=&#34;flexible-rules&#34;&gt;Flexible Rules&lt;/h1&gt;
+
+&lt;p&gt;The UDT script shown here serves just as an example, in reality, dapps might be more complicated and requires more functions. You are also free to include more features for your UDT scripts depending on your needs, some examples include:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Here we strictly ensure that the sum of output UDTs equals the sum of input UDTs, but in some cases, it might be enough just to ensure the sum of output UDTs does not exceed the sum of input UDTs. In order words, when not needed, a user can choose to burn the UDTs for the capacities.&lt;/li&gt;
+&lt;li&gt;The above UDT script doesn&amp;rsquo;t allow issuing more tokens after the initial creation process, but there might be another type of UDT that allows more issurance from the token issuer. This is also possible on CKB, the actual way to solve this task, is left as an exercise here :)&lt;/li&gt;
+&lt;li&gt;Here we limit the script to only create one cell in the initial token creation process, it&amp;rsquo;s also possible to create multiple cells to spread the usage in the initial token creation process.&lt;/li&gt;
+&lt;li&gt;While we only cover ERC20 here, ERC721 should also be totally possible.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Notice those are just some examples, the actual ways of using CKB script are limitless here. We are more than happy to see cases where CKB dapp developers amaze us with interesting usage of CKB scripts.&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>Introduction to CKB Script Programming 2: Script Basics</title>
@@ -155,7 +482,7 @@ pry(main)&amp;gt; tx2.witnesses[0].data.clear
 pry(main)&amp;gt; tx2 = tx2.sign(wallet.key, api.compute_transaction_hash(tx2))
 pry(main)&amp;gt; api.send_transaction(tx2)
 CKB::&lt;span style=&#34;font-style:italic&#34;&gt;RPCError&lt;/span&gt;: jsonrpc &lt;span style=&#34;font-style:italic&#34;&gt;error&lt;/span&gt;: {&lt;span style=&#34;font-style:italic&#34;&gt;:code&lt;/span&gt;=&amp;gt;-3, &lt;span style=&#34;font-style:italic&#34;&gt;:message&lt;/span&gt;=&amp;gt;&lt;span style=&#34;font-style:italic&#34;&gt;&amp;#34;InvalidTx(ScriptFailure(ValidationFailure(-1)))&amp;#34;&lt;/span&gt;}
-from &lt;span style=&#34;font-style:italic&#34;&gt;/home/u&lt;/span&gt;buntu&lt;span style=&#34;font-style:italic&#34;&gt;/code/&lt;/span&gt;ckb-sdk-ruby&lt;span style=&#34;font-style:italic&#34;&gt;/lib/&lt;/span&gt;ckb&lt;span style=&#34;font-style:italic&#34;&gt;/rpc.rb:164:in `rpc_request&amp;#39;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+from &lt;span style=&#34;font-style:italic&#34;&gt;/home/u&lt;/span&gt;buntu/code/ckb-sdk-ruby/lib/ckb/rpc.rb:164&lt;span style=&#34;font-style:italic&#34;&gt;:in&lt;/span&gt; &lt;span style=&#34;font-style:italic&#34;&gt;`rpc_request&amp;#39;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;We can see our carrot script rejects a transaction that generates a cell with carrot. Now I can use this script to make sure all my cells are free from carrots!&lt;/p&gt;
 
 &lt;p&gt;So to recap, to deploy and run a script as type script, what we need to do is:&lt;/p&gt;
@@ -224,24 +551,26 @@ ret = ckb_load_tx_hash(tx_hash, &amp;amp;len, 0);
 
 &lt;ul&gt;
 &lt;li&gt;If we just want to know if a cell exists and don&amp;rsquo;t need any of the data, we can just pass in &lt;code&gt;NULL&lt;/code&gt; as the data buffer, and a &lt;code&gt;len&lt;/code&gt; variable with value 0. This way the syscall would skip data filling and just provided available data length and correct return code for processing.&lt;/li&gt;
-&lt;li&gt;In the carrot example, we are looping through all inputs in the transaction, but here we just care about input cells of the same lock script. CKB named cells with the same lock(or type) script as cells with the same &lt;code&gt;group&lt;/code&gt;. And here, we can use &lt;code&gt;CKB_SOURCE_GROUP_INPUT&lt;/code&gt; instead of &lt;code&gt;CKB_SOURCE_INPUT&lt;/code&gt; denoting the syscalls to only count cells in the same group, i.e., cells who have the same lock script as the current cell.&lt;/li&gt;
-&lt;/ul&gt;
+
+&lt;li&gt;&lt;p&gt;In the carrot example, we are looping through all inputs in the transaction, but here we just care about input cells of the same lock script. CKB named cells with the same lock(or type) script as cells with the same &lt;code&gt;group&lt;/code&gt;. And here, we can use &lt;code&gt;CKB_SOURCE_GROUP_INPUT&lt;/code&gt; instead of &lt;code&gt;CKB_SOURCE_INPUT&lt;/code&gt; denoting the syscalls to only count cells in the same group, i.e., cells who have the same lock script as the current cell.&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;len = WITNESS_SIZE;
 ret = ckb_load_witness(witness, &amp;amp;len, 0, index, CKB_SOURCE_GROUP_INPUT);
 &lt;span style=&#34;font-weight:bold&#34;&gt;if&lt;/span&gt; (ret != CKB_SUCCESS) {
-  &lt;span style=&#34;font-weight:bold&#34;&gt;return&lt;/span&gt; ERROR_SYSCALL;
+&lt;span style=&#34;font-weight:bold&#34;&gt;return&lt;/span&gt; ERROR_SYSCALL;
 }
 &lt;span style=&#34;font-weight:bold&#34;&gt;if&lt;/span&gt; (len &amp;gt; WITNESS_SIZE) {
-  &lt;span style=&#34;font-weight:bold&#34;&gt;return&lt;/span&gt; ERROR_WITNESS_TOO_LONG;
+&lt;span style=&#34;font-weight:bold&#34;&gt;return&lt;/span&gt; ERROR_WITNESS_TOO_LONG;
 }
 
 &lt;span style=&#34;font-weight:bold&#34;&gt;if&lt;/span&gt; (!(witness_table = ns(Witness_as_root(witness)))) {
-  &lt;span style=&#34;font-weight:bold&#34;&gt;return&lt;/span&gt; ERROR_ENCODING;
+&lt;span style=&#34;font-weight:bold&#34;&gt;return&lt;/span&gt; ERROR_ENCODING;
 }
 args = ns(Witness_data(witness_table));
 &lt;span style=&#34;font-weight:bold&#34;&gt;if&lt;/span&gt; (ns(Bytes_vec_len(args)) &amp;lt; 1) {
-  &lt;span style=&#34;font-weight:bold&#34;&gt;return&lt;/span&gt; ERROR_WRONG_NUMBER_OF_ARGUMENTS;
-}&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;span style=&#34;font-weight:bold&#34;&gt;return&lt;/span&gt; ERROR_WRONG_NUMBER_OF_ARGUMENTS;
+}&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
 &lt;p&gt;Continue down the path, we are loading the witness for current input. Corresponding witnesses and inputs have the same index. Right now CKB uses flatbuffer as the serialization format in syscalls, so if this feels weird to you, &lt;a href=&#34;https://github.com/dvidelabs/flatcc&#34;&gt;flatcc&amp;rsquo;s documentation&lt;/a&gt; is your best friend.&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span style=&#34;font-style:italic&#34;&gt;/* Load signature */&lt;/span&gt;
 len = TEMP_SIZE;
