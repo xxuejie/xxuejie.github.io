@@ -412,7 +412,7 @@
 
   
     <div id=sub-header>
-      October 2019 · 12 minute read
+      October 2019 · 13 minute read
     </div>
   
 
@@ -631,6 +631,14 @@ $ cat secp.wat | grep &quot;(import&quot;
 <p>Those are actually binding environment functions needed in the Rust <a href="https://github.com/rustwasm/wasm-bindgen">wasm-bindgen</a>. We will continue to work to provide the bindings compatible with CKB environment. But let&rsquo;s take a step back and think about this now: the environment functions needed here, are not part of WebAssembly standard. What&rsquo;s required in the standard, is that when an import entry cannot be found, the WebAssembly VM is expected to halt execution with an errors. To achieve different features, different WebAssembly based blockchains might inject different imports here, making it hard to write a WebAssembly program that&rsquo;s compatible across different blockchains.</p>
 
 <p>In the CKB environment, however, we can attach any environment functions as we like, hence supporting all WebAssembly programs which are targeting different blockchains. What&rsquo;s more, we can use <code>imports</code> as we like to introduce new features to an existing WebAssembly programs, since the import functions are shipped together with the WebAssembly program, CKB itself doesn&rsquo;t have to do anything to support this, all the magic happens right within a single CKB script. For a WebAssembly powered blockchain, those environment functions are most likely to be fixed and part of the consensus rules, you cannot introduce new ones as you wish. Similarly, this tranformation based workflow on CKB will make it far easier to support new WebAssembly features, such as garbage collection, or threading, it really is just a matter of shipping the support features you need as part of your CKB script, there&rsquo;s no need to wait another 6 months for the next hardfork when a WebAssembly virtual machine gets updated, if it&rsquo;s updated.</p>
+
+<h1 id="it-s-about-ease-of-implementation">It&rsquo;s About Ease of Implementation</h1>
+
+<p>You might have one question: &ldquo;I get it, you have WebAssembly on RISC-V, but I could also have RISC-V on WebAssembly! WebAssembly is flexible!&rdquo;. In a sense, this is true, once a language or a VM surpasses a certain level of flexibility, it can be used to build many (even crazy) things. The first version of <a href="https://bellard.org/jslinux/tech.html">jslinux</a> which emulates full x86 was even written in pure JavaScript! But the other side of the problem, is ease of implementation. Building WebAssembly on RISC-V feels more natural, since WebAssembly abstracts at a higher level with many high level features, such as higher level contrl flows, garbage collection, etc. RISC-V, on the other hand, really emulates what a real CPU can do, it is a very thin layer on top of the actual CPU running inside of the computer. So while both directions are possible indeed, certain features are easier to implement in the WebAssembly on RISC-V direction, while roadblocks might sit in front of you in the RISC-V on WebAssembly direction.</p>
+
+<p>One alternative example is EVM, EVM has been advocating turing complete for years, but the sad truth is that it&rsquo;s close to impossible to build arbitrary complicated algorithsm on EVM: either the coding part is too difficult or gas consumption will be unreasonable. People have to come up with all kinds of hacks so as to introduce latest algorithms on EVM, we can only have reasonable blake2b algorithms in EVM when Istanbul hardfork lands. What about many other algorithms?</p>
+
+<p>All of those reflect our rationale behind the RISC-V choice: we want to find the minimal layer on top of this generation&rsquo;s CPU architecture, and RISC-V is the most transparent model we can expose to the blockchain world while ensuring security and performance. Any different models, such as WebAssembly, EVM, etc., should be one layer on top of the RISC-V model, and can be naturally implemented via the RISC-V model. The other direction, however, might not feel so smooth at all.</p>
 
 <h1 id="recap">Recap</h1>
 
