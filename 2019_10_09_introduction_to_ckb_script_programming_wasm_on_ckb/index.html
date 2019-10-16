@@ -425,7 +425,7 @@
 
 <p>While WebAssembly is already a huge advancement over higher level programming langauges as well as the first generation blockchain virtual machines, RISC-V works at a much lower level than WebAssembly, making it a more suitable choice for public blockchains which are designed to run for decades to come.</p>
 
-<p>But that still leaves one question unanswered: a significant portion of the blockchain industry is betting on WebAssembly, contributing an (arguably) better ecosystem building on WebAssembly powered dapps. How can CKB compete with that? Turns out the answer here, is that we don&rsquo;t. As mentioned above, RISC-V is actually a lower level of abstraction than WebAssembly, we can port existing WebAssembly programs, and run them on CKB VM directly. This way, we can enjoy the flexibility and stability provided by RISC-V, while also embracing the WebAssembly ecosystem.</p>
+<p>But that still leaves one question unanswered: a significant portion of the blockchain industry is betting on WebAssembly, contributing an (arguably) better ecosystem building on WebAssembly powered dapps. How can CKB compete with that? As mentioned above, RISC-V is actually a lower level of abstraction than WebAssembly, we can port existing WebAssembly programs, and run them on CKB VM directly. This way, we can enjoy the flexibility and stability provided by RISC-V, while also embracing the WebAssembly ecosystem.</p>
 
 <p>In this article, we will show how you can run WebAssembly programs in CKB VM, we will also show that it actually has more benefits running this way than directly using a WebAssembly VM.</p>
 
@@ -435,7 +435,7 @@
 
 <h1 id="assemblyscript">AssemblyScript</h1>
 
-<p>I believe no words speaker better than a demo you can play with. So let&rsquo;s try the official AssemblyScript and run the compiled program on CKB. We will just use the official example in AssemblyScript&rsquo;s <a href="https://github.com/forest-lang/forest-compiler">introduction page</a>:</p>
+<p>I believe no words speak better than a demo you can play with. So let&rsquo;s try the official AssemblyScript and run the compiled program on CKB. We will just use the official example in AssemblyScript&rsquo;s <a href="https://github.com/forest-lang/forest-compiler">introduction page</a>:</p>
 
 <pre><code>$ cat fib.ts
 export function fib(n: i32): i32 {
