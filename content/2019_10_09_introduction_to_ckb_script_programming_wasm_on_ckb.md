@@ -9,7 +9,7 @@ There're many reasons behind this choice, making it a perfect choice for another
 
 While WebAssembly is already a huge advancement over higher level programming langauges as well as the first generation blockchain virtual machines, RISC-V works at a much lower level than WebAssembly, making it a more suitable choice for public blockchains which are designed to run for decades to come.
 
-But that still leaves one question unanswered: a significant portion of the blockchain industry is betting on WebAssembly, contributing an (arguably) better ecosystem building on WebAssembly powered dapps. How can CKB compete with that? Turns out the answer here, is that we don't. As mentioned above, RISC-V is actually a lower level of abstraction than WebAssembly, we can port existing WebAssembly programs, and run them on CKB VM directly. This way, we can enjoy the flexibility and stability provided by RISC-V, while also embracing the WebAssembly ecosystem.
+But that still leaves one question unanswered: a significant portion of the blockchain industry is betting on WebAssembly, contributing an (arguably) better ecosystem building on WebAssembly powered dapps. How can CKB compete with that? As mentioned above, RISC-V is actually a lower level of abstraction than WebAssembly, we can port existing WebAssembly programs, and run them on CKB VM directly. This way, we can enjoy the flexibility and stability provided by RISC-V, while also embracing the WebAssembly ecosystem.
 
 In this article, we will show how you can run WebAssembly programs in CKB VM, we will also show that it actually has more benefits running this way than directly using a WebAssembly VM.
 
@@ -19,7 +19,7 @@ But enough for the rant, let's just assume for now, WebAssembly does have a bloc
 
 # AssemblyScript
 
-I believe no words speaker better than a demo you can play with. So let's try the official AssemblyScript and run the compiled program on CKB. We will just use the official example in AssemblyScript's [introduction page](https://github.com/forest-lang/forest-compiler):
+I believe no words speak better than a demo you can play with. So let's try the official AssemblyScript and run the compiled program on CKB. We will just use the official example in AssemblyScript's [introduction page](https://github.com/forest-lang/forest-compiler):
 
 ```
 $ cat fib.ts
