@@ -8,7 +8,7 @@ Due to the fact that CKB script works at a much lower level than other smart con
 This post works on the soon-to-be-released CKB v0.23.0. Specifically, I'm using the following commit in each project:
 
 * [ckb](https://github.com/nervosnetwork/ckb): 7e2ad2d9ed6718360587f3762163229eccd2cf10
-* [ckb-sdk-ruby](https://github.com/nervosnetwork/ckb-sdk-ruby): 7e2ad2d9ed6718360587f3762163229eccd2cf10
+* [ckb-sdk-ruby](https://github.com/nervosnetwork/ckb-sdk-ruby): 18a89d8c69e173ad59ce3e3b3bf79b5d11c5f8f8
 * [ckb-duktape](https://github.com/nervosnetwork/ckb-duktape): 347bf730c08eb0aab7e56e0357945a4d6cee109a
 * [ckb-standalone-debugger](https://github.com/nervosnetwork/ckb-standalone-debugger): 2379e89ae285e4e639b961756c22d8e4fde4d6ab
 
