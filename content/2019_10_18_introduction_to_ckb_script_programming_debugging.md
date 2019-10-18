@@ -74,7 +74,7 @@ Now let's deploy the script to CKB. Have your CKB node running, and fire up to R
 
 ```ruby
 pry(main)> api = CKB::API.new
-pry(main)> wallet = CKB::Wallet.from_hex(api, "<your wallet address>")
+pry(main)> wallet = CKB::Wallet.from_hex(api, "<your wallet private key>")
 pry(main)> wallet2 = CKB::Wallet.from_hex(api, CKB::Key.random_private_key)
 pry(main)> carrot_data = File.read("carrot")
 pry(main)> carrot_data.bytesize
@@ -213,7 +213,7 @@ You will need the `build/repl` binary generated here. Similar to the carrot exam
 
 ```ruby
 pry(main)> api = CKB::API.new
-pry(main)> wallet = CKB::Wallet.from_hex(api, "<your wallet address>")
+pry(main)> wallet = CKB::Wallet.from_hex(api, "<your wallet private key>")
 pry(main)> wallet2 = CKB::Wallet.from_hex(api, CKB::Key.random_private_key)
 pry(main)> duktape_repl_data = File.read("build/repl")
 pry(main)> duktape_repl_data.bytesize
