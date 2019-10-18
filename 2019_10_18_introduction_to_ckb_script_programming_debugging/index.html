@@ -484,7 +484,7 @@ root@3efa454be9af:/code# exit</code></pre></div>
 
 <p>Now let&rsquo;s deploy the script to CKB. Have your CKB node running, and fire up to Ruby SDK:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby">pry(main)&gt; api = CKB::API.new
-pry(main)&gt; wallet = CKB::Wallet.from_hex(api, <span style="font-style:italic">&#34;&lt;your wallet address&gt;&#34;</span>)
+pry(main)&gt; wallet = CKB::Wallet.from_hex(api, <span style="font-style:italic">&#34;&lt;your private key&gt;&#34;</span>)
 pry(main)&gt; wallet2 = CKB::Wallet.from_hex(api, CKB::Key.random_private_key)
 pry(main)&gt; carrot_data = File.read(<span style="font-style:italic">&#34;carrot&#34;</span>)
 pry(main)&gt; carrot_data.bytesize
@@ -597,7 +597,7 @@ riscv64-unknown-elf-gcc build/repl.o build/duktape.o -o build/repl -lm -Wl,-stat
 root@982d1e906b76:/code# exit</code></pre></div>
 <p>You will need the <code>build/repl</code> binary generated here. Similar to the carrot example, let&rsquo;s first deploy duktape REPL binary on CKB:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby">pry(main)&gt; api = CKB::API.new
-pry(main)&gt; wallet = CKB::Wallet.from_hex(api, <span style="font-style:italic">&#34;&lt;your wallet address&gt;&#34;</span>)
+pry(main)&gt; wallet = CKB::Wallet.from_hex(api, <span style="font-style:italic">&#34;&lt;your private key&gt;&#34;</span>)
 pry(main)&gt; wallet2 = CKB::Wallet.from_hex(api, CKB::Key.random_private_key)
 pry(main)&gt; duktape_repl_data = File.read(<span style="font-style:italic">&#34;build/repl&#34;</span>)
 pry(main)&gt; duktape_repl_data.bytesize

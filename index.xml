@@ -83,7 +83,7 @@ root@3efa454be9af:/code# exit&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;Now let&amp;rsquo;s deploy the script to CKB. Have your CKB node running, and fire up to Ruby SDK:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-ruby&#34; data-lang=&#34;ruby&#34;&gt;pry(main)&amp;gt; api = CKB::API.new
-pry(main)&amp;gt; wallet = CKB::Wallet.from_hex(api, &lt;span style=&#34;font-style:italic&#34;&gt;&amp;#34;&amp;lt;your wallet address&amp;gt;&amp;#34;&lt;/span&gt;)
+pry(main)&amp;gt; wallet = CKB::Wallet.from_hex(api, &lt;span style=&#34;font-style:italic&#34;&gt;&amp;#34;&amp;lt;your private key&amp;gt;&amp;#34;&lt;/span&gt;)
 pry(main)&amp;gt; wallet2 = CKB::Wallet.from_hex(api, CKB::Key.random_private_key)
 pry(main)&amp;gt; carrot_data = File.read(&lt;span style=&#34;font-style:italic&#34;&gt;&amp;#34;carrot&amp;#34;&lt;/span&gt;)
 pry(main)&amp;gt; carrot_data.bytesize
@@ -196,7 +196,7 @@ riscv64-unknown-elf-gcc build/repl.o build/duktape.o -o build/repl -lm -Wl,-stat
 root@982d1e906b76:/code# exit&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;You will need the &lt;code&gt;build/repl&lt;/code&gt; binary generated here. Similar to the carrot example, let&amp;rsquo;s first deploy duktape REPL binary on CKB:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-ruby&#34; data-lang=&#34;ruby&#34;&gt;pry(main)&amp;gt; api = CKB::API.new
-pry(main)&amp;gt; wallet = CKB::Wallet.from_hex(api, &lt;span style=&#34;font-style:italic&#34;&gt;&amp;#34;&amp;lt;your wallet address&amp;gt;&amp;#34;&lt;/span&gt;)
+pry(main)&amp;gt; wallet = CKB::Wallet.from_hex(api, &lt;span style=&#34;font-style:italic&#34;&gt;&amp;#34;&amp;lt;your private key&amp;gt;&amp;#34;&lt;/span&gt;)
 pry(main)&amp;gt; wallet2 = CKB::Wallet.from_hex(api, CKB::Key.random_private_key)
 pry(main)&amp;gt; duktape_repl_data = File.read(&lt;span style=&#34;font-style:italic&#34;&gt;&amp;#34;build/repl&amp;#34;&lt;/span&gt;)
 pry(main)&amp;gt; duktape_repl_data.bytesize
