@@ -5,10 +5,252 @@
     <description>Recent content on Less is more</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Wed, 09 Oct 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Fri, 18 Oct 2019 00:00:00 +0000</lastBuildDate>
     
         <atom:link href="https://xuejie.space/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Introduction to CKB Script Programming 5: Debugging</title>
+      <link>https://xuejie.space/2019_10_18_introduction_to_ckb_script_programming_debugging/</link>
+      <pubDate>Fri, 18 Oct 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://xuejie.space/2019_10_18_introduction_to_ckb_script_programming_debugging/</guid>
+      <description>
+
+&lt;p&gt;Due to the fact that CKB script works at a much lower level than other smart contracts, the debugging story for CKB, has been quite a mysterious one. In this post, we will show how one can debug CKB scripts. As you will find out, debugging a CKB script is not so different from debugging your everyday program.&lt;/p&gt;
+
+&lt;p&gt;This post works on the soon-to-be-released CKB v0.23.0. Specifically, I&amp;rsquo;m using the following commit in each project:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/nervosnetwork/ckb&#34;&gt;ckb&lt;/a&gt;: 7e2ad2d9ed6718360587f3762163229eccd2cf10&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/nervosnetwork/ckb-sdk-ruby&#34;&gt;ckb-sdk-ruby&lt;/a&gt;: 7e2ad2d9ed6718360587f3762163229eccd2cf10&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/nervosnetwork/ckb-duktape&#34;&gt;ckb-duktape&lt;/a&gt;: 347bf730c08eb0aab7e56e0357945a4d6cee109a&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/nervosnetwork/ckb-standalone-debugger&#34;&gt;ckb-standalone-debugger&lt;/a&gt;: 2379e89ae285e4e639b961756c22d8e4fde4d6ab&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1 id=&#34;debugging-c-programs-with-gdb&#34;&gt;Debugging C programs with GDB&lt;/h1&gt;
+
+&lt;p&gt;The first solution to CKB script debugging, works with compiled languages such as C, Rust, etc. Perhaps you are used to writing C programs, and GDB is your best friend. You are wondering if debugging C programs with GDB is possible, and the answer, of course, is: yes, you can definitely debug your CKB script written in C via GDB! Let me show you how.&lt;/p&gt;
+
+&lt;p&gt;First we have the same carrot example from my old posts:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span style=&#34;&#34;&gt;#include&lt;/span&gt; &lt;span style=&#34;&#34;&gt;&amp;lt;memory.h&amp;gt;&lt;/span&gt;&lt;span style=&#34;&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;&#34;&gt;#include&lt;/span&gt; &lt;span style=&#34;&#34;&gt;&amp;#34;ckb_syscalls.h&amp;#34;&lt;/span&gt;&lt;span style=&#34;&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;&#34;&gt;&lt;/span&gt;
+&lt;span style=&#34;&#34;&gt;int&lt;/span&gt; main(&lt;span style=&#34;&#34;&gt;int&lt;/span&gt; argc, &lt;span style=&#34;&#34;&gt;char&lt;/span&gt;* argv[]) {
+  &lt;span style=&#34;&#34;&gt;int&lt;/span&gt; ret;
+  size_t index = 0;
+  uint64_t len = 0;
+  &lt;span style=&#34;&#34;&gt;unsigned&lt;/span&gt; &lt;span style=&#34;&#34;&gt;char&lt;/span&gt; buffer[6];
+
+  &lt;span style=&#34;font-weight:bold&#34;&gt;while&lt;/span&gt; (1) {
+    len = 6;
+    memset(buffer, 0, 6);
+    ret = ckb_load_cell_data(buffer, &amp;amp;len, 0, index, CKB_SOURCE_OUTPUT);
+    &lt;span style=&#34;font-weight:bold&#34;&gt;if&lt;/span&gt; (ret == CKB_INDEX_OUT_OF_BOUND) {
+      &lt;span style=&#34;font-weight:bold&#34;&gt;break&lt;/span&gt;;
+    }
+
+    &lt;span style=&#34;&#34;&gt;int&lt;/span&gt; cmp = memcmp(buffer, &lt;span style=&#34;font-style:italic&#34;&gt;&amp;#34;carrot&amp;#34;&lt;/span&gt;, 6);
+    &lt;span style=&#34;font-weight:bold&#34;&gt;if&lt;/span&gt; (cmp) {
+      &lt;span style=&#34;font-weight:bold&#34;&gt;return&lt;/span&gt; -1;
+    }
+
+    index++;
+  }
+
+  &lt;span style=&#34;font-weight:bold&#34;&gt;return&lt;/span&gt; 0;
+}&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;I&amp;rsquo;ve made 2 changes to it:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;I&amp;rsquo;ve updated the script to make it compatible with CKB v0.23.0. In this version, we should be using &lt;code&gt;ckb_load_cell_data&lt;/code&gt; to fetch cell data.&lt;/li&gt;
+&lt;li&gt;I&amp;rsquo;ve also introduced a slight bug to the code, so we can later try the debugging workflow. You might noticed it if you are familiar with C, but no need to worry if you missed it, I will explain it later.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;As usual, let&amp;rsquo;s use our official toolchain to compile it to RISC-V code:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ ls
+carrot.c
+$ git clone https://github.com/nervosnetwork/ckb-system-scripts
+$ cp ckb-system-scripts/c/ckb_*.h ./
+$ ls
+carrot.c  ckb_consts.h  ckb_syscalls.h  ckb-system-scripts/
+$ sudo docker run --rm -it -v &lt;span style=&#34;font-style:italic&#34;&gt;`&lt;/span&gt;pwd&lt;span style=&#34;font-style:italic&#34;&gt;`&lt;/span&gt;:/code nervos/ckb-riscv-gnu-toolchain:bionic-20191012 bash
+root@3efa454be9af:/# cd /code
+root@3efa454be9af:/code# riscv64-unknown-elf-gcc carrot.c -g -o carrot
+root@3efa454be9af:/code# exit&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;Notice when I compile the script, I added &lt;code&gt;-g&lt;/code&gt; so as to generate debugging information which is quite useful in GDB. For a production script, you would almost always want to strip them out to save previous on-chain space.&lt;/p&gt;
+
+&lt;p&gt;Now let&amp;rsquo;s deploy the script to CKB. Have your CKB node running, and fire up to Ruby SDK:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-ruby&#34; data-lang=&#34;ruby&#34;&gt;pry(main)&amp;gt; api = CKB::API.new
+pry(main)&amp;gt; wallet = CKB::Wallet.from_hex(api, &lt;span style=&#34;font-style:italic&#34;&gt;&amp;#34;&amp;lt;your wallet address&amp;gt;&amp;#34;&lt;/span&gt;)
+pry(main)&amp;gt; wallet2 = CKB::Wallet.from_hex(api, CKB::Key.random_private_key)
+pry(main)&amp;gt; carrot_data = File.read(&lt;span style=&#34;font-style:italic&#34;&gt;&amp;#34;carrot&amp;#34;&lt;/span&gt;)
+pry(main)&amp;gt; carrot_data.bytesize
+=&amp;gt; 19296
+pry(main)&amp;gt; carrot_tx_hash = wallet.send_capacity(wallet2.address, CKB::Utils.byte_to_shannon(20000), CKB::Utils.bin_to_hex(carrot_data), &lt;span style=&#34;font-style:italic&#34;&gt;fee&lt;/span&gt;: 21000)
+pry(main)&amp;gt; carrot_data_hash = CKB::Blake2b.hexdigest(carrot_data)
+pry(main)&amp;gt; carrot_type_script = CKB::Types::Script.new(&lt;span style=&#34;font-style:italic&#34;&gt;code_hash&lt;/span&gt;: carrot_data_hash, &lt;span style=&#34;font-style:italic&#34;&gt;args&lt;/span&gt;: &lt;span style=&#34;font-style:italic&#34;&gt;&amp;#34;0x&amp;#34;&lt;/span&gt;)
+pry(main)&amp;gt; carrot_cell_dep = CKB::Types::CellDep.new(&lt;span style=&#34;font-style:italic&#34;&gt;out_point&lt;/span&gt;: CKB::Types::OutPoint.new(&lt;span style=&#34;font-style:italic&#34;&gt;tx_hash&lt;/span&gt;: carrot_tx_hash, &lt;span style=&#34;font-style:italic&#34;&gt;index&lt;/span&gt;: 0))&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;With carrot script on blockchain, we can create a transaction to test the carrot script:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-ruby&#34; data-lang=&#34;ruby&#34;&gt;pry(main)&amp;gt; tx = wallet.generate_tx(wallet2.address, CKB::Utils.byte_to_shannon(100), &lt;span style=&#34;font-style:italic&#34;&gt;use_dep_group&lt;/span&gt;: &lt;span style=&#34;&#34;&gt;false&lt;/span&gt;, &lt;span style=&#34;font-style:italic&#34;&gt;fee&lt;/span&gt;: 5000)
+pry(main)&amp;gt; tx.outputs[0].type = carrot_type_script
+pry(main)&amp;gt; tx.cell_deps &amp;lt;&amp;lt; carrot_cell_dep
+pry(main)&amp;gt; tx.witnesses[0] = &lt;span style=&#34;font-style:italic&#34;&gt;&amp;#34;0x&amp;#34;&lt;/span&gt;
+pry(main)&amp;gt; tx = tx.sign(wallet.key, api.compute_transaction_hash(tx))
+pry(main)&amp;gt; api.send_transaction(tx)
+CKB::&lt;span style=&#34;font-style:italic&#34;&gt;RPCError&lt;/span&gt;: jsonrpc &lt;span style=&#34;font-style:italic&#34;&gt;error&lt;/span&gt;: {&lt;span style=&#34;font-style:italic&#34;&gt;:code&lt;/span&gt;=&amp;gt;-3, &lt;span style=&#34;font-style:italic&#34;&gt;:message&lt;/span&gt;=&amp;gt;&lt;span style=&#34;font-style:italic&#34;&gt;&amp;#34;Script(ValidationFailure(-1))&amp;#34;&lt;/span&gt;}&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;If you checked the transaction carefully, you will noticed that none of the output cells has data starting with &lt;code&gt;carrot&lt;/code&gt;. However we still run into validation faliure, it means our script must have a bug. Previously, you would run out of options here, you might go back to check the code, hoping you can see where it goes wrong. But that is not necessary now, you can just dump the transaction here, and feed it into a standalone CKB debugger to debug it!&lt;/p&gt;
+
+&lt;p&gt;First, let&amp;rsquo;s dump the transaction together with its surrounding environment, into a local file:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-ruby&#34; data-lang=&#34;ruby&#34;&gt;pry(main)&amp;gt; CKB::MockTransactionDumper.new(api, tx).write(&lt;span style=&#34;font-style:italic&#34;&gt;&amp;#34;carrot.json&amp;#34;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;What you also need here, is to keep track of the carrot type script hash:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-ruby&#34; data-lang=&#34;ruby&#34;&gt;pry(main)&amp;gt; carrot_type_script.compute_hash
+=&amp;gt; &lt;span style=&#34;font-style:italic&#34;&gt;&amp;#34;0x039c2fba64f389575cdecff8173882b97be5f8d3bdb2bb0770d8a7e265b91933&amp;#34;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;Notice depending on your environment you might get a different hash from what I have here.&lt;/p&gt;
+
+&lt;p&gt;Now let&amp;rsquo;s try &lt;a href=&#34;https://github.com/nervosnetwork/ckb-standalone-debugger&#34;&gt;ckb-standalone-debugger&lt;/a&gt;:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ git clone https://github.com/nervosnetwork/ckb-standalone-debugger
+$ cd ckb-standalone-debugger/bins
+$ cargo build --release
+$ ./target/release/ckb-debugger -l 0.0.0.0:2000 -g type -h 0x039c2fba64f389575cdecff8173882b97be5f8d3bdb2bb0770d8a7e265b91933 -t carrot.json&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;Keep in mind you might need to tweak the carrot type script hash, or the path to &lt;code&gt;carrot.json&lt;/code&gt; depending on your environment. Now we can try connecting to the debugger via GDB in a differnet terminal:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ sudo docker run --rm -it -v `pwd`:/code nervos/ckb-riscv-gnu-toolchain:bionic-20191012 bash
+root@66e3b39e0dfd:/# cd /code
+root@66e3b39e0dfd:/code# riscv64-unknown-elf-gdb carrot
+GNU gdb (GDB) 8.3.0.20190516-git
+Copyright (C) 2019 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later &amp;lt;http://gnu.org/licenses/gpl.html&amp;gt;
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+Type &amp;quot;show copying&amp;quot; and &amp;quot;show warranty&amp;quot; for details.
+This GDB was configured as &amp;quot;--host=x86_64-pc-linux-gnu --target=riscv64-unknown-elf&amp;quot;.
+Type &amp;quot;show configuration&amp;quot; for configuration details.
+For bug reporting instructions, please see:
+&amp;lt;http://www.gnu.org/software/gdb/bugs/&amp;gt;.
+Find the GDB manual and other documentation resources online at:
+    &amp;lt;http://www.gnu.org/software/gdb/documentation/&amp;gt;.
+
+For help, type &amp;quot;help&amp;quot;.
+Type &amp;quot;apropos word&amp;quot; to search for commands related to &amp;quot;word&amp;quot;...
+Reading symbols from carrot...
+(gdb) target remote 192.168.1.230:2000
+Remote debugging using 192.168.1.230:2000
+0x00000000000100c6 in _start ()
+(gdb)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Notice &lt;code&gt;192.168.1.230&lt;/code&gt;, is the IP address of my workstation in my local network. It&amp;rsquo;s very likely you need to adjust that, since your computer might have a different IP address. Now we can try a normal GDB debugging session:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;(gdb) b main
+Breakpoint 1 at 0x106b0: file carrot.c, line 6.
+(gdb) c
+Continuing.
+
+Breakpoint 1, main (argc=0, argv=0x400000) at carrot.c:6
+6         size_t index = 0;
+(gdb) n
+7         uint64_t len = 0;
+(gdb) n
+11          len = 6;
+(gdb) n
+12          memset(buffer, 0, 6);
+(gdb) n
+13          ret = ckb_load_cell_data(buffer, &amp;amp;len, 0, index, CKB_SOURCE_OUTPUT);
+(gdb) n
+14          if (ret == CKB_INDEX_OUT_OF_BOUND) {
+(gdb) n
+18          int cmp = memcmp(buffer, &amp;quot;carrot&amp;quot;, 6);
+(gdb) n
+19          if (cmp) {
+(gdb) p cmp
+$1 = -99
+(gdb) p buffer[0]
+$2 = 0 &#39;\000&#39;
+(gdb) n
+20            return -1;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Here we can see where it goes wrong: the first byte in &lt;code&gt;buffer&lt;/code&gt; has value &lt;code&gt;0&lt;/code&gt;, which is different from &lt;code&gt;c&lt;/code&gt;, hence our buffer is different from &lt;code&gt;carrot&lt;/code&gt;. But instead of jumping to next iteration, the condition &lt;code&gt;if (cmp) {&lt;/code&gt; jumps to the true case, where &lt;code&gt;-1&lt;/code&gt; is returned, indicating a match to &lt;code&gt;carrot&lt;/code&gt;! And the reason to this, is that &lt;code&gt;memcmp&lt;/code&gt; would return &lt;code&gt;0&lt;/code&gt; when the 2 buffers are equal, and non-zero value when they are not. But instead of testing the return value of &lt;code&gt;memcmp&lt;/code&gt; is 0, we directly use it in the &lt;code&gt;if&lt;/code&gt; condition, since C would treat any non-zero value as true, &lt;code&gt;-99&lt;/code&gt; in this case would be treated as true. This is a typical C mistake for beginners, I hope you will never run into it :)&lt;/p&gt;
+
+&lt;p&gt;Now we know the reason, it will be a trivial task to fix the bug in the carrot script, but what you just see here, is that we manage to dump the runtime state of an errored transaction from CKB, then debug it via GDB, which is a common tool in the industry! And your existing workflows and tools on top of GDB can also work here, isn&amp;rsquo;t that beautiful?&lt;/p&gt;
+
+&lt;h1 id=&#34;repl-based-development-debugging&#34;&gt;REPL based Development/Debugging&lt;/h1&gt;
+
+&lt;p&gt;However, GDB is only one part of the story in modern software development. Dynamic languages have largely taken the landscape, and many programmers are used to REPL baesd development/debugging workflow. This is totally different from GDB in a compiled languages, basically what you get is a running environment, and you can type in any code you want to interact with the environment, getting different results. As we will show here, CKB also has support for this type of development/debugging workflow :P&lt;/p&gt;
+
+&lt;p&gt;Here we will use the &lt;a href=&#34;https://github.com/nervosnetwork/ckb-duktape&#34;&gt;ckb-duktape&lt;/a&gt; showcasing a REPL in JavaScript. But keep in mind this is merely a demo showing the workflow, there&amp;rsquo;s nothing preventing you from porting your favorite dynamic languages(whether it&amp;rsquo;s Ruby, Python, Lisp, etc.) to CKB, and start a REPL for that language.&lt;/p&gt;
+
+&lt;p&gt;First let&amp;rsquo;s try compiling duktape:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ git clone https://github.com/nervosnetwork/ckb-duktape
+$ cd ckb-duktape
+$ sudo docker run --rm -it -v &lt;span style=&#34;font-style:italic&#34;&gt;`&lt;/span&gt;pwd&lt;span style=&#34;font-style:italic&#34;&gt;`&lt;/span&gt;:/code nervos/ckb-riscv-gnu-toolchain:bionic-20191012 bash
+root@982d1e906b76:/# cd /code
+root@982d1e906b76:/code# make
+riscv64-unknown-elf-gcc -Os -DCKB_NO_MMU -D__riscv_soft_float -D__riscv_float_abi_soft -Iduktape -Ic -Wall -Werror c/entry.c -c -o build/entry.o
+riscv64-unknown-elf-gcc -Os -DCKB_NO_MMU -D__riscv_soft_float -D__riscv_float_abi_soft -Iduktape -Ic -Wall -Werror duktape/duktape.c -c -o build/duktape.o
+riscv64-unknown-elf-gcc build/entry.o build/duktape.o -o build/duktape -lm -Wl,-static -fdata-sections -ffunction-sections -Wl,--gc-sections -Wl,-s
+riscv64-unknown-elf-gcc -Os -DCKB_NO_MMU -D__riscv_soft_float -D__riscv_float_abi_soft -Iduktape -Ic -Wall -Werror c/repl.c -c -o build/repl.o
+riscv64-unknown-elf-gcc build/repl.o build/duktape.o -o build/repl -lm -Wl,-static -fdata-sections -ffunction-sections -Wl,--gc-sections -Wl,-s
+root@982d1e906b76:/code# exit&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;You will need the &lt;code&gt;build/repl&lt;/code&gt; binary generated here. Similar to the carrot example, let&amp;rsquo;s first deploy duktape REPL binary on CKB:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-ruby&#34; data-lang=&#34;ruby&#34;&gt;pry(main)&amp;gt; api = CKB::API.new
+pry(main)&amp;gt; wallet = CKB::Wallet.from_hex(api, &lt;span style=&#34;font-style:italic&#34;&gt;&amp;#34;&amp;lt;your wallet address&amp;gt;&amp;#34;&lt;/span&gt;)
+pry(main)&amp;gt; wallet2 = CKB::Wallet.from_hex(api, CKB::Key.random_private_key)
+pry(main)&amp;gt; duktape_repl_data = File.read(&lt;span style=&#34;font-style:italic&#34;&gt;&amp;#34;build/repl&amp;#34;&lt;/span&gt;)
+pry(main)&amp;gt; duktape_repl_data.bytesize
+=&amp;gt; 283048
+pry(main)&amp;gt; duktape_repl_tx_hash = wallet.send_capacity(wallet2.address, CKB::Utils.byte_to_shannon(300000), CKB::Utils.bin_to_hex(duktape_repl_data), &lt;span style=&#34;font-style:italic&#34;&gt;fee&lt;/span&gt;: 310000)
+pry(main)&amp;gt; duktape_repl_data_hash = CKB::Blake2b.hexdigest(duktape_repl_data)
+pry(main)&amp;gt; duktape_repl_type_script = CKB::Types::Script.new(&lt;span style=&#34;font-style:italic&#34;&gt;code_hash&lt;/span&gt;: duktape_repl_data_hash, &lt;span style=&#34;font-style:italic&#34;&gt;args&lt;/span&gt;: &lt;span style=&#34;font-style:italic&#34;&gt;&amp;#34;0x&amp;#34;&lt;/span&gt;)
+pry(main)&amp;gt; duktape_repl_cell_dep = CKB::Types::CellDep.new(&lt;span style=&#34;font-style:italic&#34;&gt;out_point&lt;/span&gt;: CKB::Types::OutPoint.new(&lt;span style=&#34;font-style:italic&#34;&gt;tx_hash&lt;/span&gt;: duktape_repl_tx_hash, &lt;span style=&#34;font-style:italic&#34;&gt;index&lt;/span&gt;: 0))&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;We will also need to create a transaction containing the duktape script, I&amp;rsquo;m building a simpler one, but you are free to include more data so you can play with CKB:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-ruby&#34; data-lang=&#34;ruby&#34;&gt;pry(main)&amp;gt; tx = wallet.generate_tx(wallet2.address, CKB::Utils.byte_to_shannon(100), &lt;span style=&#34;font-style:italic&#34;&gt;use_dep_group&lt;/span&gt;: &lt;span style=&#34;&#34;&gt;false&lt;/span&gt;, &lt;span style=&#34;font-style:italic&#34;&gt;fee&lt;/span&gt;: 5000)
+pry(main)&amp;gt; tx.outputs[0].type = duktape_repl_type_script
+pry(main)&amp;gt; tx.cell_deps &amp;lt;&amp;lt; duktape_repl_cell_dep
+pry(main)&amp;gt; tx.witnesses[0] = &lt;span style=&#34;font-style:italic&#34;&gt;&amp;#34;0x&amp;#34;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;Let&amp;rsquo;s also dump it to file, and check out duktape type script hash:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-ruby&#34; data-lang=&#34;ruby&#34;&gt;pry(main)&amp;gt; CKB::MockTransactionDumper.new(api, tx).write(&lt;span style=&#34;font-style:italic&#34;&gt;&amp;#34;duktape.json&amp;#34;&lt;/span&gt;)
+=&amp;gt; 2765824
+pry(main)&amp;gt; duktape_repl_type_script.compute_hash
+=&amp;gt; &lt;span style=&#34;font-style:italic&#34;&gt;&amp;#34;0xa8b79392c857e29cb283e452f2cd48a8e06c51af64be175e0fe0e2902c482837&amp;#34;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;Different from last time, we don&amp;rsquo;t need to start GDB, we can start the program directly:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ ./target/release/ckb-debugger -g type -h 0xa8b79392c857e29cb283e452f2cd48a8e06c51af64be175e0fe0e2902c482837 -t duktape.json
+duk&amp;gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;You will see a &lt;code&gt;duk&amp;gt;&lt;/code&gt; prompt for you to enter JS code! Again if you run into errors, check if you need to change to a different type script hash, or use the correct path to &lt;code&gt;duktape.json&lt;/code&gt;. We can see normal JS code works here:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;duk&amp;gt; print(1 + 2)
+3
+= undefined
+duk&amp;gt; &lt;span style=&#34;font-weight:bold&#34;&gt;function&lt;/span&gt; foo(a) { &lt;span style=&#34;font-weight:bold&#34;&gt;return&lt;/span&gt; a + 1; }
+= undefined
+duk&amp;gt; foo(123)
+= 124&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;There&amp;rsquo;re also CKB related functions you can use:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;duk&amp;gt; var hash = CKB.load_script_hash()
+= undefined
+duk&amp;gt; &lt;span style=&#34;font-weight:bold&#34;&gt;function&lt;/span&gt; buf2hex(buffer) { &lt;span style=&#34;font-weight:bold&#34;&gt;return&lt;/span&gt; Array.prototype.map.call(new Uint8Array(buffer), &lt;span style=&#34;font-weight:bold&#34;&gt;function&lt;/span&gt;(x) { &lt;span style=&#34;font-weight:bold&#34;&gt;return&lt;/span&gt; (&lt;span style=&#34;font-style:italic&#34;&gt;&amp;#39;00&amp;#39;&lt;/span&gt; + x.toString(16)).slice(-2); }).join(&lt;span style=&#34;font-style:italic&#34;&gt;&amp;#39;&amp;#39;&lt;/span&gt;); }
+= undefined
+duk&amp;gt; buf2hex(hash)
+= a8b79392c857e29cb283e452f2cd48a8e06c51af64be175e0fe0e2902c482837&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;Notice the script hash we get here is exactly the current executing type script hash! This verifies CKB syscalls do work here, we can also try more interesting stuff&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;duk&amp;gt; print(CKB.SOURCE.OUTPUT)
+2
+= undefined
+duk&amp;gt; print(CKB.CELL.CAPACITY)
+0
+= undefined
+duk&amp;gt; capacity_field = CKB.load_cell_by_field(0, 0, CKB.SOURCE.OUTPUT, CKB.CELL.CAPACITY)
+= [object ArrayBuffer]
+duk&amp;gt; buf2hex(capacity_field)
+= 00e40b5402000000&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;This &lt;code&gt;00e40b5402000000&lt;/code&gt; might looks slightly mysterious to you at first, but notice that RISC-V uses little endian, so if we reverse the byte order here, we would get &lt;code&gt;00000002540be400&lt;/code&gt;, which is exactly &lt;code&gt;10000000000&lt;/code&gt; in decimal. Also keep in mind that in CKB capacity is stored in shannons, so &lt;code&gt;10000000000&lt;/code&gt; is exactly &lt;code&gt;100&lt;/code&gt; bytes, which is the same amount of coins we want to transfer when we generate the transaction above! Now you can see how you can play with CKB in this duktape environment :)&lt;/p&gt;
+
+&lt;h1 id=&#34;conclusion&#34;&gt;Conclusion&lt;/h1&gt;
+
+&lt;p&gt;Now we&amp;rsquo;ve introduced 2 types of debugging experience in CKB, feel free to play with either one you like(or actually both of them). I can&amp;rsquo;t wait to see all the amazing applications you can build with CKB :)&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>Introduction to CKB Script Programming 4: WebAssembly on CKB</title>
