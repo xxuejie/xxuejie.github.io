@@ -3,12 +3,17 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
-    <loc>https://xuejie.space/2019_10_18_introduction_to_ckb_script_programming_debugging/</loc>
-    <lastmod>2019-10-18T00:00:00+00:00</lastmod>
+    <loc>https://xuejie.space/</loc>
+    <lastmod>2019-10-21T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://xuejie.space/</loc>
+    <loc>https://xuejie.space/2019_10_21_lets_build_a_minimal_blockchain_dawn/</loc>
+    <lastmod>2019-10-21T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://xuejie.space/2019_10_18_introduction_to_ckb_script_programming_debugging/</loc>
     <lastmod>2019-10-18T00:00:00+00:00</lastmod>
   </url>
   

@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="MobileOptimized" content="320">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
+    
+
+    
+      <link href='https://fonts.googleapis.com/css?family=Open+Sans:400|Old+Standard+TT:400&display=swap' rel='stylesheet' type='text/css'>
+    
+
+    <link rel="icon" type="image/png" href="https://xuejie.space/favicon_16x16.png" sizes="16x16">
+    <link rel="icon" type="image/png" href="https://xuejie.space/favicon_32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="https://xuejie.space/favicon_128x128.png" sizes="128x128">
+
+    <title>
+      
+      
+         Let&#39;s Build a Minimal Blockchain: Dawn 
+      
+    </title>
+    <link rel="canonical" href="https://xuejie.space/2019_10_21_lets_build_a_minimal_blockchain_dawn/">
+
+    <style>
+  * {
+    border:0;
+    font:inherit;
+    font-size:100%;
+    vertical-align:baseline;
+    margin:0;
+    padding:0;
+    color: black;
+    text-decoration-skip: ink;
+  }
+
+  body {
+    font-family:'Open Sans', 'Myriad Pro', Myriad, sans-serif;
+    font-size:17px;
+    line-height:160%;
+    color:#1d1313;
+    max-width:700px;
+    margin:auto;
+  }
+
+  p {
+    margin: 20px 0;
+  }
+
+  a img {
+    border:none;
+  }
+
+  img {
+    margin: 10px auto 10px auto;
+    max-width: 100%;
+    display: block;
+  }
+
+  .left-justify {
+    float: left;
+  }
+
+  .right-justify {
+    float:right;
+  }
+
+  pre, code {
+    font: 12px Consolas, "Liberation Mono", Menlo, Courier, monospace;
+    background-color: #f7f7f7;
+  }
+
+  code {
+    font-size: 12px;
+    padding: 4px;
+  }
+
+  pre {
+    margin-top: 0;
+    margin-bottom: 16px;
+    word-wrap: normal;
+    padding: 16px;
+    overflow: auto;
+    font-size: 85%;
+    line-height: 1.45;
+  }
+
+  pre>code {
+    padding: 0;
+    margin: 0;
+    font-size: 100%;
+    word-break: normal;
+    white-space: pre;
+    background: transparent;
+    border: 0;
+  }
+
+  pre code {
+    display: inline;
+    max-width: auto;
+    padding: 0;
+    margin: 0;
+    overflow: visible;
+    line-height: inherit;
+    word-wrap: normal;
+    background-color: transparent;
+    border: 0;
+  }
+
+  pre code::before,
+  pre code::after {
+    content: normal;
+  }
+
+  em,q,em,dfn {
+    font-style:italic;
+  }
+
+  .sans,html .gist .gist-file .gist-meta {
+    font-family:"Open Sans","Myriad Pro",Myriad,sans-serif;
+  }
+
+  .mono,pre,code,tt,p code,li code {
+    font-family:Menlo,Monaco,"Andale Mono","lucida console","Courier New",monospace;
+  }
+
+  .heading,.serif,h1,h2,h3 {
+    font-family:"Old Standard TT",serif;
+  }
+
+  strong {
+    font-weight:600;
+  }
+
+  q:before {
+    content:"\201C";
+  }
+
+  q:after {
+    content:"\201D";
+  }
+
+  del,s {
+    text-decoration:line-through;
+  }
+
+  blockquote {
+    font-family:"Old Standard TT",serif;
+    text-align:center;
+    padding:50px;
+  }
+
+  blockquote p {
+    display:inline-block;
+    font-style:italic;
+  }
+
+  blockquote:before,blockquote:after {
+    font-family:"Old Standard TT",serif;
+    content:'\201C';
+    font-size:35px;
+    color:#403c3b;
+  }
+
+  blockquote:after {
+    content:'\201D';
+  }
+
+  hr {
+    width:40%;
+    height: 1px;
+    background:#403c3b;
+    margin: 25px auto;
+  }
+
+  h1 {
+    font-size:35px;
+  }
+
+  h2 {
+    font-size:28px;
+  }
+
+  h3 {
+    font-size:22px;
+    margin-top:18px;
+  }
+
+  h1 a,h2 a,h3 a {
+    text-decoration:none;
+  }
+
+  h1,h2 {
+    margin-top:28px;
+  }
+
+  #sub-header, time {
+    color:#403c3b;
+    font-size:13px;
+  }
+
+  #sub-header {
+    margin: 0 4px;
+  }
+
+  #nav h1 a {
+    font-size:35px;
+    color:#1d1313;
+    line-height:120%;
+  }
+
+  .posts_listing a,#nav a {
+    text-decoration: none;
+  }
+
+  li {
+    margin-left: 20px;
+  }
+
+  ul li {
+    margin-left: 5px;
+  }
+
+  ul li {
+    list-style-type: none;
+  }
+  ul li:before {
+    content:"\00BB \0020";
+  }
+
+  #nav ul li:before, .posts_listing li:before {
+    content:'';
+    margin-right:0;
+  }
+
+  #content {
+    text-align:left;
+    width:100%;
+    font-size:15px;
+    padding:60px 0 80px;
+  }
+
+  #content h1,#content h2 {
+    margin-bottom:5px;
+  }
+
+  #content h2 {
+    font-size:25px;
+  }
+
+  #content .entry-content {
+    margin-top:15px;
+  }
+
+  #content time {
+    margin-left:3px;
+  }
+
+  #content h1 {
+    font-size:30px;
+  }
+
+  .highlight {
+    margin: 10px 0;
+  }
+
+  .posts_listing {
+    margin:0 0 50px;
+  }
+
+  .posts_listing li {
+    margin:0 0 25px 15px;
+  }
+
+  .posts_listing li a:hover,#nav a:hover {
+    text-decoration: underline;
+  }
+
+  #nav {
+    text-align:center;
+    position:static;
+    margin-top:60px;
+  }
+
+  #nav ul {
+    display: table;
+    margin: 8px auto 0 auto;
+  }
+
+  #nav li {
+    list-style-type:none;
+    display:table-cell;
+    font-size:15px;
+    padding: 0 20px;
+  }
+
+  #links {
+    margin: 50px 0 0 0;
+  }
+
+  #links :nth-child(2) {
+    float:right;
+  }
+
+  #not-found {
+    text-align: center;
+  }
+
+  #not-found a {
+    font-family:"Old Standard TT",serif;
+    font-size: 200px;
+    text-decoration: none;
+    display: inline-block;
+    padding-top: 225px;
+  }
+
+  @media (max-width: 750px) {
+    body {
+      padding-left:20px;
+      padding-right:20px;
+    }
+
+    #nav h1 a {
+      font-size:28px;
+    }
+
+    #nav li {
+      font-size:13px;
+      padding: 0 15px;
+    }
+
+    #content {
+      margin-top:0;
+      padding-top:50px;
+      font-size:14px;
+    }
+
+    #content h1 {
+      font-size:25px;
+    }
+
+    #content h2 {
+      font-size:22px;
+    }
+
+    .posts_listing li div {
+      font-size:12px;
+    }
+  }
+
+  @media (max-width: 400px) {
+    body {
+      padding-left:20px;
+      padding-right:20px;
+    }
+
+    #nav h1 a {
+      font-size:22px;
+    }
+
+    #nav li {
+      font-size:12px;
+      padding: 0 10px;
+    }
+
+    #content {
+      margin-top:0;
+      padding-top:20px;
+      font-size:12px;
+    }
+
+    #content h1 {
+      font-size:20px;
+    }
+
+    #content h2 {
+      font-size:18px;
+    }
+
+    .posts_listing li div{
+      font-size:12px;
+    }
+  }
+</style>
+
+
+    
+  </head>
+
+  <body>
+    <section id=nav>
+      <h1><a href="https://xuejie.space/">Less is More</a></h1>
+      <ul>
+        
+          <li><a href="https://xuejie.space/about">About</a></li>
+        
+          <li><a href="https://github.com/xxuejie">GitHub</a></li>
+        
+          <li><a href="https://xuejie.space/index.xml">RSS</a></li>
+        
+          <li><a href="https://twitter.com/xxuejie">Twitter</a></li>
+        
+      </ul>
+    </section>
+
+
+<section id=content>
+  <h1> Let&#39;s Build a Minimal Blockchain: Dawn </h1>
+
+  
+    <div id=sub-header>
+      October 2019 · 6 minute read
+    </div>
+  
+
+  <div class="entry-content">
+    <p>This will be a different series from <code>Introduction to CKB Script Programming</code>, so if you are more keen on CKB scripting, feel free to skip this one. But if you are interested in blockchain in general, this could also be an interesting one :)</p>
+
+<p>So it all started from an inception: if we look at current generation of blockchains, they are all rather complicated. Bitcoin is quite complex, Ethereum is even more so. And while CKB is (arguably) simpler than Ethereum, it&rsquo;s still way more complicated than Bitcoin(but in a good way!). Coming from a <a href="https://www.youtube.com/watch?v=tXVr2E1vfmk">different background</a>, I couldn&rsquo;t help but wonder: is this level of complexity necessary? Is blockchain just so different, or are we deep down the mud of <a href="https://www.youtube.com/watch?v=rI8tNMsozo0">accidental complexity</a>? Regardless, I&rsquo;d like to find out the answers.</p>
+
+<p>While simplicity is a debatable question, there&rsquo;re other parts of modern blockchain space that more likely need work. One particular problem, is monolithic. It&rsquo;s very rare that a blockchain let&rsquo;s you swap one part of it for a different implementation. For example, while <a href="https://www.mail-archive.com/bitcoin-development@lists.sourceforge.net/msg03189.html">alternative networks</a> might be possible, they are still in the minority, some already abandoned. Most other blockchains do not even have a second syncing protocol. While one could argue syncing protocol could more or less related to the security nature of one blockchain(which I still have my doubts), let&rsquo;s look at one other component: why do I need to run a full transaction pool on my node? I&rsquo;m neither an exchange or mining nodes on my own, can&rsquo;t I just have a node that runs only necessary components, and rely on external services when I do need to send a transaction? Even when I have a transaction pool, it merely just relays transactions to other nodes, the transactions need to reach a mining pool before it can be mined, so why bother wasting resources on one&rsquo;s own machine?</p>
+
+<p>Looking further, there&rsquo;s additional problems that don&rsquo;t get good answers: blockchains will be updated, whether you call it soft-forks or hard-forks, the inevitable result is that you have software that behaves differently based on the exact blocks you are processing. And slowly, your same codebase will be scattered with logics that behave differently across time, and it will be a pain maintaining such a codebase and all the knowledge in your head. Can modern software engineering <a href="https://vimeo.com/108441214">help</a> with this?</p>
+
+<p>That brings us to this series: if we start freshly from a different angle, refine our scope carefully, what a minimal viable blockchain is gonna be like?</p>
+
+<p>I did some thinking on this problem, and to answer the above question, let&rsquo;s back off a bit and think about this simpler question: what&rsquo;s the crucial part in a blockchain?</p>
+
+<p>Personally, I believe the answer is merely the block verification logic. Literally everything else is just optional, you absolutely do not need a transaction pool, the syncing protocol could also be omitted as long as there&rsquo;s a way to gather blocks. Miner, RPC, etc. can be someone else&rsquo;s problem. Really at fundamental level, a blockchain only needs the block verification logic so as to function.</p>
+
+<p>Starting from there, we can build a blockchain core that verifies blocks. All it does, is accepting blocks, then signaling either new block updates, or fork switching. From there, we can build the surrounding tools all as plugins, such as syncing clients, transaction pools, miners, etc. There&rsquo;s no need to have a single solution for each tool, as long as something works for its designed use case, it will be useful in this rich ecosystem. For example, mining pools might want to have priority syncing for blocks, while exchanges would want to optimize bandwidths for transactions.</p>
+
+<p>But that only answers one part of the problem, what about building maintainable blockchains? The root conflict here, is what we want our software to evolve, different logics are grown to handle blocks from different time. If we look carefully, there&rsquo;s actual one construct in modern blockchains designed to cope of the evolution of time: virtual machines are used to enable new behaviors for tomorrow&rsquo;s applications, but right now, virtual machines are mostly limited to transactions. What if we expand virtual machines to process the whole block? Will that bring any difference?</p>
+
+<p>And before you ask, yes of course, part of my inspiration comes from <a href="https://substrate.dev/">substrate</a> and <a href="https://solri.org/">solri</a>, but as the author of <a href="https://github.com/nervosnetwork/ckb-vm">CKB VM</a>. Both substrate, and its choice of WASM feels needlessly complicated. While solri is a huge improvement over substrate, it&rsquo;s still an on-going experiment, and part of me feel that we can aim at a more flexible runtime than solri. Hence I&rsquo;ve come up with the initial scope of the still unnamed minimal blockchain:</p>
+
+<ul>
+<li>A block is just a series of bytes, the blockchain itself knows nothing about the block, not even its block hash.</li>
+<li>A program running in CKB VM is in charge of validating and accepting a new block.</li>
+<li>A transactional key-value interface will be provided to the program running in CKB VM for persisting data.</li>
+<li>The core shall only need to provide a pub/sub interface for new block updates as well as fork switching.</li>
+</ul>
+
+<p>The beauty of this scheme, is that any handling of soft/hard forks, will just be simply swapping the program used the validate the blockchain. And your new program could be perfectly containing only logics for handling new code. There&rsquo;s no need to persist old code forever in your codebase. Just like the first time you are reading <a href="https://mitpress.mit.edu/sites/default/files/sicp/full-text/book/book-Z-H-5.html#%_chap_Temp_2">SICP</a>: pyramids are magnificant but static for thousands of years, but what you want is organisms which is chaos in a way but evolable for billions of years to come.</p>
+
+<p>One stretch goal I want, is an <a href="https://arrow.apache.org/">Arrow</a>-style interface where zero copy streaming protocols can be encouraged. Serving blocks to other clients should never be consuming much resource from the sending end. Hopefully this can contribute to better network performance, cuz quite often block syncing is the slow part in modern blockchains.</p>
+
+<p>Notice I never mentioned whether this is a PoW or PoS blockchain, cuz that question really doesn&rsquo;t make sense: first, while the title says <code>Build a Minimal Blockchain</code>, this really is not about building a blockchain, it&rsquo;s about building a set of tools that can make blockchains built with it simpler, more flexible and easily maintainable; second, since a program running in virtual machine handles blockchain verification, you are not limited to one side of the world! This could easily support an alternative implementation of permissionless PoW blockchains such as Bitcoin, Ethereum, or CKB; this could also be adapted to a layer 2 PoS blockchains running together with Nervos CKB. It really is up to the programs to say what the current blockchain is.</p>
+
+<p>So that&rsquo;s it for the introductory post, I really don&rsquo;t know how this idea will go, I could be wrong and this could total fail, but one thing I could be sure, is that this surely will be an interesting voyage, I just hope this won&rsquo;t take that long as the <a href="https://voyager.jpl.nasa.gov/mission/status/">voyager</a> :P</p>
+
+  </div>
+
+  <div id=links>
+    
+      <a class="basic-alignment left" href="https://xuejie.space/2019_10_18_introduction_to_ckb_script_programming_debugging/">&laquo; Introduction to CKB Script Programming 5: Debugging</a>
+    
+    
+  </div>
+</section>
+
+  
+</body>
+</html>
+
+
+

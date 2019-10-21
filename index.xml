@@ -5,10 +5,53 @@
     <description>Recent content on Less is more</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Fri, 18 Oct 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Mon, 21 Oct 2019 00:00:00 +0000</lastBuildDate>
     
         <atom:link href="https://xuejie.space/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Let&#39;s Build a Minimal Blockchain: Dawn</title>
+      <link>https://xuejie.space/2019_10_21_lets_build_a_minimal_blockchain_dawn/</link>
+      <pubDate>Mon, 21 Oct 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://xuejie.space/2019_10_21_lets_build_a_minimal_blockchain_dawn/</guid>
+      <description>&lt;p&gt;This will be a different series from &lt;code&gt;Introduction to CKB Script Programming&lt;/code&gt;, so if you are more keen on CKB scripting, feel free to skip this one. But if you are interested in blockchain in general, this could also be an interesting one :)&lt;/p&gt;
+
+&lt;p&gt;So it all started from an inception: if we look at current generation of blockchains, they are all rather complicated. Bitcoin is quite complex, Ethereum is even more so. And while CKB is (arguably) simpler than Ethereum, it&amp;rsquo;s still way more complicated than Bitcoin(but in a good way!). Coming from a &lt;a href=&#34;https://www.youtube.com/watch?v=tXVr2E1vfmk&#34;&gt;different background&lt;/a&gt;, I couldn&amp;rsquo;t help but wonder: is this level of complexity necessary? Is blockchain just so different, or are we deep down the mud of &lt;a href=&#34;https://www.youtube.com/watch?v=rI8tNMsozo0&#34;&gt;accidental complexity&lt;/a&gt;? Regardless, I&amp;rsquo;d like to find out the answers.&lt;/p&gt;
+
+&lt;p&gt;While simplicity is a debatable question, there&amp;rsquo;re other parts of modern blockchain space that more likely need work. One particular problem, is monolithic. It&amp;rsquo;s very rare that a blockchain let&amp;rsquo;s you swap one part of it for a different implementation. For example, while &lt;a href=&#34;https://www.mail-archive.com/bitcoin-development@lists.sourceforge.net/msg03189.html&#34;&gt;alternative networks&lt;/a&gt; might be possible, they are still in the minority, some already abandoned. Most other blockchains do not even have a second syncing protocol. While one could argue syncing protocol could more or less related to the security nature of one blockchain(which I still have my doubts), let&amp;rsquo;s look at one other component: why do I need to run a full transaction pool on my node? I&amp;rsquo;m neither an exchange or mining nodes on my own, can&amp;rsquo;t I just have a node that runs only necessary components, and rely on external services when I do need to send a transaction? Even when I have a transaction pool, it merely just relays transactions to other nodes, the transactions need to reach a mining pool before it can be mined, so why bother wasting resources on one&amp;rsquo;s own machine?&lt;/p&gt;
+
+&lt;p&gt;Looking further, there&amp;rsquo;s additional problems that don&amp;rsquo;t get good answers: blockchains will be updated, whether you call it soft-forks or hard-forks, the inevitable result is that you have software that behaves differently based on the exact blocks you are processing. And slowly, your same codebase will be scattered with logics that behave differently across time, and it will be a pain maintaining such a codebase and all the knowledge in your head. Can modern software engineering &lt;a href=&#34;https://vimeo.com/108441214&#34;&gt;help&lt;/a&gt; with this?&lt;/p&gt;
+
+&lt;p&gt;That brings us to this series: if we start freshly from a different angle, refine our scope carefully, what a minimal viable blockchain is gonna be like?&lt;/p&gt;
+
+&lt;p&gt;I did some thinking on this problem, and to answer the above question, let&amp;rsquo;s back off a bit and think about this simpler question: what&amp;rsquo;s the crucial part in a blockchain?&lt;/p&gt;
+
+&lt;p&gt;Personally, I believe the answer is merely the block verification logic. Literally everything else is just optional, you absolutely do not need a transaction pool, the syncing protocol could also be omitted as long as there&amp;rsquo;s a way to gather blocks. Miner, RPC, etc. can be someone else&amp;rsquo;s problem. Really at fundamental level, a blockchain only needs the block verification logic so as to function.&lt;/p&gt;
+
+&lt;p&gt;Starting from there, we can build a blockchain core that verifies blocks. All it does, is accepting blocks, then signaling either new block updates, or fork switching. From there, we can build the surrounding tools all as plugins, such as syncing clients, transaction pools, miners, etc. There&amp;rsquo;s no need to have a single solution for each tool, as long as something works for its designed use case, it will be useful in this rich ecosystem. For example, mining pools might want to have priority syncing for blocks, while exchanges would want to optimize bandwidths for transactions.&lt;/p&gt;
+
+&lt;p&gt;But that only answers one part of the problem, what about building maintainable blockchains? The root conflict here, is what we want our software to evolve, different logics are grown to handle blocks from different time. If we look carefully, there&amp;rsquo;s actual one construct in modern blockchains designed to cope of the evolution of time: virtual machines are used to enable new behaviors for tomorrow&amp;rsquo;s applications, but right now, virtual machines are mostly limited to transactions. What if we expand virtual machines to process the whole block? Will that bring any difference?&lt;/p&gt;
+
+&lt;p&gt;And before you ask, yes of course, part of my inspiration comes from &lt;a href=&#34;https://substrate.dev/&#34;&gt;substrate&lt;/a&gt; and &lt;a href=&#34;https://solri.org/&#34;&gt;solri&lt;/a&gt;, but as the author of &lt;a href=&#34;https://github.com/nervosnetwork/ckb-vm&#34;&gt;CKB VM&lt;/a&gt;. Both substrate, and its choice of WASM feels needlessly complicated. While solri is a huge improvement over substrate, it&amp;rsquo;s still an on-going experiment, and part of me feel that we can aim at a more flexible runtime than solri. Hence I&amp;rsquo;ve come up with the initial scope of the still unnamed minimal blockchain:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;A block is just a series of bytes, the blockchain itself knows nothing about the block, not even its block hash.&lt;/li&gt;
+&lt;li&gt;A program running in CKB VM is in charge of validating and accepting a new block.&lt;/li&gt;
+&lt;li&gt;A transactional key-value interface will be provided to the program running in CKB VM for persisting data.&lt;/li&gt;
+&lt;li&gt;The core shall only need to provide a pub/sub interface for new block updates as well as fork switching.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;The beauty of this scheme, is that any handling of soft/hard forks, will just be simply swapping the program used the validate the blockchain. And your new program could be perfectly containing only logics for handling new code. There&amp;rsquo;s no need to persist old code forever in your codebase. Just like the first time you are reading &lt;a href=&#34;https://mitpress.mit.edu/sites/default/files/sicp/full-text/book/book-Z-H-5.html#%_chap_Temp_2&#34;&gt;SICP&lt;/a&gt;: pyramids are magnificant but static for thousands of years, but what you want is organisms which is chaos in a way but evolable for billions of years to come.&lt;/p&gt;
+
+&lt;p&gt;One stretch goal I want, is an &lt;a href=&#34;https://arrow.apache.org/&#34;&gt;Arrow&lt;/a&gt;-style interface where zero copy streaming protocols can be encouraged. Serving blocks to other clients should never be consuming much resource from the sending end. Hopefully this can contribute to better network performance, cuz quite often block syncing is the slow part in modern blockchains.&lt;/p&gt;
+
+&lt;p&gt;Notice I never mentioned whether this is a PoW or PoS blockchain, cuz that question really doesn&amp;rsquo;t make sense: first, while the title says &lt;code&gt;Build a Minimal Blockchain&lt;/code&gt;, this really is not about building a blockchain, it&amp;rsquo;s about building a set of tools that can make blockchains built with it simpler, more flexible and easily maintainable; second, since a program running in virtual machine handles blockchain verification, you are not limited to one side of the world! This could easily support an alternative implementation of permissionless PoW blockchains such as Bitcoin, Ethereum, or CKB; this could also be adapted to a layer 2 PoS blockchains running together with Nervos CKB. It really is up to the programs to say what the current blockchain is.&lt;/p&gt;
+
+&lt;p&gt;So that&amp;rsquo;s it for the introductory post, I really don&amp;rsquo;t know how this idea will go, I could be wrong and this could total fail, but one thing I could be sure, is that this surely will be an interesting voyage, I just hope this won&amp;rsquo;t take that long as the &lt;a href=&#34;https://voyager.jpl.nasa.gov/mission/status/&#34;&gt;voyager&lt;/a&gt; :P&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>Introduction to CKB Script Programming 5: Debugging</title>
