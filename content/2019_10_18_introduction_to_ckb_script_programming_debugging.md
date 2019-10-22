@@ -97,7 +97,7 @@ pry(main)> api.send_transaction(tx)
 CKB::RPCError: jsonrpc error: {:code=>-3, :message=>"Script(ValidationFailure(-1))"}
 ```
 
-If you checked the transaction carefully, you will noticed that none of the output cells has data starting with `carrot`. However we still run into validation faliure, it means our script must have a bug. Previously, you would run out of options here, you might go back to check the code, hoping you can see where it goes wrong. But that is not necessary now, you can just dump the transaction here, and feed it into a standalone CKB debugger to debug it!
+If you checked the transaction carefully, you will noticed that none of the output cells has data starting with `carrot`. However we still run into validation failure, it means our script must have a bug. Previously, you would run out of options here, you might go back to check the code, hoping you can see where it goes wrong. But that is not necessary now, you can just dump the transaction here, and feed it into a standalone CKB debugger to debug it!
 
 First, let's dump the transaction together with its surrounding environment, into a local file:
 
