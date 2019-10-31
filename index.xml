@@ -319,7 +319,7 @@ duk&amp;gt; buf2hex(capacity_field)
 
 &lt;h1 id=&#34;assemblyscript&#34;&gt;AssemblyScript&lt;/h1&gt;
 
-&lt;p&gt;I believe no words speak better than a demo you can play with. So let&amp;rsquo;s try the official AssemblyScript and run the compiled program on CKB. We will just use the official example in AssemblyScript&amp;rsquo;s &lt;a href=&#34;https://github.com/forest-lang/forest-compiler&#34;&gt;introduction page&lt;/a&gt;:&lt;/p&gt;
+&lt;p&gt;I believe no words speak better than a demo you can play with. So let&amp;rsquo;s try the official AssemblyScript and run the compiled program on CKB. We will just use the official example in AssemblyScript&amp;rsquo;s &lt;a href=&#34;https://docs.assemblyscript.org/&#34;&gt;introduction page&lt;/a&gt;:&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;$ cat fib.ts
 export function fib(n: i32): i32 {
