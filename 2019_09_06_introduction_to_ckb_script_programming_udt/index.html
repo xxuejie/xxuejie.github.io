@@ -421,13 +421,7 @@
 
 <p>CKB&rsquo;s cell model and VM enables many new use cases. However that doesn&rsquo;t mean we need to ditch existing ones. One common use in existing blockchains, is to issue new tokens with special purpose/meaning from the token issuer. In Ethereum, we call those ERC20 tokens, let&rsquo;s see how we can build a similar concept in CKB. To distinguish from ERC20, we call the tokens issued in CKB <code>user defined token</code>, or UDT for short.</p>
 
-<p>This post uses CKB v0.20.0 in the examples. Specifically, I&rsquo;m using the following commit in each project:</p>
-
-<ul>
-<li><a href="https://github.com/nervosnetwork/ckb">ckb</a>: 472252ac5333b2b19ea3ec50d54e68b627bf6ac5</li>
-<li><a href="https://github.com/nervosnetwork/ckb-duktape">ckb-duktape</a>: 55849c20b43a212120e0df7ad5d64b2c70ea51ac</li>
-<li><a href="https://github.com/nervosnetwork/ckb-sdk-ruby">ckb-sdk-ruby</a>: 1c2a3c3f925e47e421f9e3c07164ececf3b6b9f6</li>
-</ul>
+<p>This post is written based on current CKB Lina mainnet version now.</p>
 
 <h1 id="data-model">Data Model</h1>
 
@@ -683,7 +677,7 @@ pry(main)&gt; arg = CKB::Utils.bin_to_hex(CKB::Serializers::InputSerializer.new(
 pry(main)&gt; duktape_udt_script = CKB::Types::Script.new(code_hash: duktape_data_hash, args: [CKB::Utils.bin_to_hex(File.read(&quot;udt.js&quot;)), arg])
 pry(main)&gt; tx.outputs[0].type = duktape_udt_script
 pry(main)&gt; tx.outputs_data[0] = CKB::Utils.bin_to_hex([1000000].pack(&quot;L&lt;&quot;))
-pry(main)&gt; tx.witnesses[0].data.clear
+pry(main)&gt; tx.witnesses[0] = &quot;0x&quot;
 pry(main)&gt; signed_tx = tx.sign(wallet.key, api.compute_transaction_hash(tx))
 pry(main)&gt; root_udt_tx_hash = api.send_transaction(signed_tx)
 </code></pre>
@@ -701,7 +695,7 @@ CKB::RPCError: jsonrpc error: {:code=&gt;-3, :message=&gt;&quot;UnresolvableTran
 <pre><code>pry(main)&gt; udt_out_point = CKB::Types::OutPoint.new(tx_hash: root_udt_tx_hash, index: 0)
 pry(main)&gt; tx = wallet.generate_tx(wallet2.address, CKB::Utils.byte_to_shannon(20000))
 pry(main)&gt; tx.cell_deps.push(duktape_out_point.dup)
-pry(main)&gt; tx.witnesses[0].data.clear
+pry(main)&gt; tx.witnesses[0] = &quot;0x&quot;
 pry(main)&gt; tx.witnesses.push(CKB::Types::Witness.new(data: []))
 pry(main)&gt; tx.outputs[0].type = duktape_udt_script
 pry(main)&gt; tx.outputs_data[0] = CKB::Utils.bin_to_hex([1000000].pack(&quot;L&lt;&quot;))

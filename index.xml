@@ -63,14 +63,7 @@
 
 &lt;p&gt;Due to the fact that CKB script works at a much lower level than other smart contracts, the debugging story for CKB, has been quite a mysterious one. In this post, we will show how one can debug CKB scripts. As you will find out, debugging a CKB script is not so different from debugging your everyday program.&lt;/p&gt;
 
-&lt;p&gt;This post works on the soon-to-be-released CKB v0.23.0. Specifically, I&amp;rsquo;m using the following commit in each project:&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/nervosnetwork/ckb&#34;&gt;ckb&lt;/a&gt;: 7e2ad2d9ed6718360587f3762163229eccd2cf10&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/nervosnetwork/ckb-sdk-ruby&#34;&gt;ckb-sdk-ruby&lt;/a&gt;: 18a89d8c69e173ad59ce3e3b3bf79b5d11c5f8f8&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/nervosnetwork/ckb-duktape&#34;&gt;ckb-duktape&lt;/a&gt;: 347bf730c08eb0aab7e56e0357945a4d6cee109a&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/nervosnetwork/ckb-standalone-debugger&#34;&gt;ckb-standalone-debugger&lt;/a&gt;: 2379e89ae285e4e639b961756c22d8e4fde4d6ab&lt;/li&gt;
-&lt;/ul&gt;
+&lt;p&gt;This post is written based on current CKB Lina mainnet version now.&lt;/p&gt;
 
 &lt;h1 id=&#34;debugging-c-programs-with-gdb&#34;&gt;Debugging C programs with GDB&lt;/h1&gt;
 
@@ -551,13 +544,7 @@ $ cat secp.wat | grep &amp;quot;(import&amp;quot;
 
 &lt;p&gt;CKB&amp;rsquo;s cell model and VM enables many new use cases. However that doesn&amp;rsquo;t mean we need to ditch existing ones. One common use in existing blockchains, is to issue new tokens with special purpose/meaning from the token issuer. In Ethereum, we call those ERC20 tokens, let&amp;rsquo;s see how we can build a similar concept in CKB. To distinguish from ERC20, we call the tokens issued in CKB &lt;code&gt;user defined token&lt;/code&gt;, or UDT for short.&lt;/p&gt;
 
-&lt;p&gt;This post uses CKB v0.20.0 in the examples. Specifically, I&amp;rsquo;m using the following commit in each project:&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/nervosnetwork/ckb&#34;&gt;ckb&lt;/a&gt;: 472252ac5333b2b19ea3ec50d54e68b627bf6ac5&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/nervosnetwork/ckb-duktape&#34;&gt;ckb-duktape&lt;/a&gt;: 55849c20b43a212120e0df7ad5d64b2c70ea51ac&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/nervosnetwork/ckb-sdk-ruby&#34;&gt;ckb-sdk-ruby&lt;/a&gt;: 1c2a3c3f925e47e421f9e3c07164ececf3b6b9f6&lt;/li&gt;
-&lt;/ul&gt;
+&lt;p&gt;This post is written based on current CKB Lina mainnet version now.&lt;/p&gt;
 
 &lt;h1 id=&#34;data-model&#34;&gt;Data Model&lt;/h1&gt;
 
@@ -813,7 +800,7 @@ pry(main)&amp;gt; arg = CKB::Utils.bin_to_hex(CKB::Serializers::InputSerializer.
 pry(main)&amp;gt; duktape_udt_script = CKB::Types::Script.new(code_hash: duktape_data_hash, args: [CKB::Utils.bin_to_hex(File.read(&amp;quot;udt.js&amp;quot;)), arg])
 pry(main)&amp;gt; tx.outputs[0].type = duktape_udt_script
 pry(main)&amp;gt; tx.outputs_data[0] = CKB::Utils.bin_to_hex([1000000].pack(&amp;quot;L&amp;lt;&amp;quot;))
-pry(main)&amp;gt; tx.witnesses[0].data.clear
+pry(main)&amp;gt; tx.witnesses[0] = &amp;quot;0x&amp;quot;
 pry(main)&amp;gt; signed_tx = tx.sign(wallet.key, api.compute_transaction_hash(tx))
 pry(main)&amp;gt; root_udt_tx_hash = api.send_transaction(signed_tx)
 &lt;/code&gt;&lt;/pre&gt;
@@ -831,7 +818,7 @@ CKB::RPCError: jsonrpc error: {:code=&amp;gt;-3, :message=&amp;gt;&amp;quot;Unre
 &lt;pre&gt;&lt;code&gt;pry(main)&amp;gt; udt_out_point = CKB::Types::OutPoint.new(tx_hash: root_udt_tx_hash, index: 0)
 pry(main)&amp;gt; tx = wallet.generate_tx(wallet2.address, CKB::Utils.byte_to_shannon(20000))
 pry(main)&amp;gt; tx.cell_deps.push(duktape_out_point.dup)
-pry(main)&amp;gt; tx.witnesses[0].data.clear
+pry(main)&amp;gt; tx.witnesses[0] = &amp;quot;0x&amp;quot;
 pry(main)&amp;gt; tx.witnesses.push(CKB::Types::Witness.new(data: []))
 pry(main)&amp;gt; tx.outputs[0].type = duktape_udt_script
 pry(main)&amp;gt; tx.outputs_data[0] = CKB::Utils.bin_to_hex([1000000].pack(&amp;quot;L&amp;lt;&amp;quot;))
@@ -878,7 +865,7 @@ pry(main)&amp;gt; api.send_transaction(signed_tx)
 
 &lt;p&gt;Last post introduced current CKB&amp;rsquo;s validation model. This post will get more fun, since we will show how to deploy script codes to CKB for real. I&amp;rsquo;m hoping after this post, you should be able to explore the CKB world and work on new script codes as you wish.&lt;/p&gt;
 
-&lt;p&gt;Note even though I believe CKB&amp;rsquo;s programming model is quite stable now, development is still happening so there might be changes. I will try my best to make sure this post is updated but if anything confuses you, this post is describing CKB as of &lt;a href=&#34;https://github.com/nervosnetwork/ckb/commit/80b51a9851b5d535625c5d144e1accd38c32876b&#34;&gt;this commit&lt;/a&gt; now.&lt;/p&gt;
+&lt;p&gt;This post is written based on current CKB Lina mainnet version now.&lt;/p&gt;
 
 &lt;p&gt;A warning here: this will be a long post, since I want to fill in enough for the more interesting topic next week. So you don&amp;rsquo;t have to finish it at once if you don&amp;rsquo;t have enough time. I&amp;rsquo;ve tried to split it into individual sections, so you can try each one at a time.&lt;/p&gt;
 
@@ -888,9 +875,9 @@ pry(main)&amp;gt; api.send_transaction(signed_tx)
 
 &lt;p&gt;In this post and hopefully the whole series, we will distinguish between script, and script code. Script code actually refers to the program you write and compile to use on CKB. Script, on the other hand, actually refers to the script data structure used in CKB, which is a little more than just the script code:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-rust&#34; data-lang=&#34;rust&#34;&gt;&lt;span style=&#34;font-weight:bold&#34;&gt;pub&lt;/span&gt; &lt;span style=&#34;font-weight:bold&#34;&gt;struct&lt;/span&gt; &lt;span style=&#34;font-weight:bold&#34;&gt;Script&lt;/span&gt; {
-    &lt;span style=&#34;font-weight:bold&#34;&gt;pub&lt;/span&gt; args: Vec&amp;lt;Bytes&amp;gt;,
     &lt;span style=&#34;font-weight:bold&#34;&gt;pub&lt;/span&gt; code_hash: &lt;span style=&#34;font-weight:bold&#34;&gt;H256&lt;/span&gt;,
     &lt;span style=&#34;font-weight:bold&#34;&gt;pub&lt;/span&gt; hash_type: &lt;span style=&#34;font-weight:bold&#34;&gt;ScriptHashType&lt;/span&gt;,
+    &lt;span style=&#34;font-weight:bold&#34;&gt;pub&lt;/span&gt; args: &lt;span style=&#34;font-weight:bold&#34;&gt;JsonBytes&lt;/span&gt;,
 }
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;We can ignore &lt;code&gt;hash_type&lt;/code&gt; for now, a future post will explain what it is and it&amp;rsquo;s interesting usage. Later in this post, we will show that &lt;code&gt;code_hash&lt;/code&gt; actually just identifies a script code, so for now we can just think of it as script code. What script also includes, is the &lt;code&gt;args&lt;/code&gt; part, which distinguishes script from script code. &lt;code&gt;args&lt;/code&gt; can be used here to provide additional arguments for a CKB script, for example, while people might all be using the same default lock script code, each of them might have their own pubkey hash, &lt;code&gt;args&lt;/code&gt; is exact the place to hold pubkey hash. This way each user of CKB can have different lock script, while sharing the same lock script code.&lt;/p&gt;
@@ -925,14 +912,13 @@ pry(main)&amp;gt; api.send_transaction(signed_tx)
 &lt;span style=&#34;&#34;&gt;int&lt;/span&gt; main(&lt;span style=&#34;&#34;&gt;int&lt;/span&gt; argc, &lt;span style=&#34;&#34;&gt;char&lt;/span&gt;* argv[]) {
   &lt;span style=&#34;&#34;&gt;int&lt;/span&gt; ret;
   size_t index = 0;
-  &lt;span style=&#34;font-weight:bold&#34;&gt;volatile&lt;/span&gt; uint64_t len = 0; &lt;span style=&#34;font-style:italic&#34;&gt;/* (1) */&lt;/span&gt;
+  uint64_t len = 0; &lt;span style=&#34;font-style:italic&#34;&gt;/* (1) */&lt;/span&gt;
   &lt;span style=&#34;&#34;&gt;unsigned&lt;/span&gt; &lt;span style=&#34;&#34;&gt;char&lt;/span&gt; buffer[6];
 
   &lt;span style=&#34;font-weight:bold&#34;&gt;while&lt;/span&gt; (1) {
     len = 6;
     memset(buffer, 0, 6);
-    ret = ckb_load_cell_by_field(buffer, &amp;amp;len, 0, index, CKB_SOURCE_OUTPUT,
-                                 CKB_CELL_FIELD_DATA); &lt;span style=&#34;font-style:italic&#34;&gt;/* (2) */&lt;/span&gt;
+    ret = ckb_load_cell_data(buffer, &amp;amp;len, 0, index, CKB_SOURCE_OUTPUT); &lt;span style=&#34;font-style:italic&#34;&gt;/* (2) */&lt;/span&gt;
     &lt;span style=&#34;font-weight:bold&#34;&gt;if&lt;/span&gt; (ret == CKB_INDEX_OUT_OF_BOUND) {               &lt;span style=&#34;font-style:italic&#34;&gt;/* (3) */&lt;/span&gt;
       &lt;span style=&#34;font-weight:bold&#34;&gt;break&lt;/span&gt;;
     }
@@ -949,7 +935,7 @@ pry(main)&amp;gt; api.send_transaction(signed_tx)
 &lt;p&gt;Several points worth explaining here:&lt;/p&gt;
 
 &lt;ol&gt;
-&lt;li&gt;Due to C quirks, the &lt;code&gt;len&lt;/code&gt; field needs to be marked as &lt;code&gt;volatile&lt;/code&gt;. We will use it both as an input and output parameter, and CKB VM only can set the output when it lives in memory. &lt;code&gt;volatile&lt;/code&gt; ensures a C compiler keeps it as a RISC-V memory based variable.&lt;/li&gt;
+&lt;li&gt;We will use &lt;code&gt;len&lt;/code&gt; field both as an input and output parameter, hence it is passed as a pointer here.&lt;/li&gt;
 &lt;li&gt;When making a syscall, we need to provide the following: a buffer to hold the data provided by the syscall; a &lt;code&gt;len&lt;/code&gt; field denoting both the buffer length, and available data length returned by the syscall; an offset into the input data buffer, and several parameters denoting the exact field we are fetching in the transaction. For more details, please refer to our &lt;a href=&#34;https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0009-vm-syscalls/0009-vm-syscalls.md&#34;&gt;RFC&lt;/a&gt;.&lt;/li&gt;
 &lt;li&gt;For maximum flexibility, CKB uses the return value of the syscall to represent data fetching status: 0(or &lt;code&gt;CKB_SUCCESS&lt;/code&gt;) means success, 1(or &lt;code&gt;CKB_INDEX_OUT_OF_BOUND&lt;/code&gt;) means you have finished fetching all indices in a kind, 2(or &lt;code&gt;CKB_ITEM_MISSING&lt;/code&gt;) means an entity is not present, such as fetching a type script from a cell that doesn&amp;rsquo;t have one.&lt;/li&gt;
 &lt;/ol&gt;
@@ -981,35 +967,35 @@ pry(main)&amp;gt; data.bytesize
 pry(main)&amp;gt; carrot_tx_hash = wallet.send_capacity(wallet.address, CKB::Utils.byte_to_shannon(8000), CKB::Utils.bin_to_hex(data))&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;Here I simply create a new cell with enough capacity by sending tokens to myself. Now we can create the type script containing the carrot script code:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-ruby&#34; data-lang=&#34;ruby&#34;&gt;pry(main)&amp;gt; carrot_data_hash = CKB::Blake2b.hexdigest(data)
-pry(main)&amp;gt; carrot_type_script = CKB::Types::Script.new(&lt;span style=&#34;font-style:italic&#34;&gt;code_hash&lt;/span&gt;: carrot_data_hash, &lt;span style=&#34;font-style:italic&#34;&gt;args&lt;/span&gt;: [])&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+pry(main)&amp;gt; carrot_type_script = CKB::Types::Script.new(&lt;span style=&#34;font-style:italic&#34;&gt;code_hash&lt;/span&gt;: carrot_data_hash, &lt;span style=&#34;font-style:italic&#34;&gt;args&lt;/span&gt;: &lt;span style=&#34;font-style:italic&#34;&gt;&amp;#34;0x&amp;#34;&lt;/span&gt;)&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;Recall the Script data structure:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-rust&#34; data-lang=&#34;rust&#34;&gt;&lt;span style=&#34;font-weight:bold&#34;&gt;pub&lt;/span&gt; &lt;span style=&#34;font-weight:bold&#34;&gt;struct&lt;/span&gt; &lt;span style=&#34;font-weight:bold&#34;&gt;Script&lt;/span&gt; {
-    &lt;span style=&#34;font-weight:bold&#34;&gt;pub&lt;/span&gt; args: Vec&amp;lt;Bytes&amp;gt;,
     &lt;span style=&#34;font-weight:bold&#34;&gt;pub&lt;/span&gt; code_hash: &lt;span style=&#34;font-weight:bold&#34;&gt;H256&lt;/span&gt;,
     &lt;span style=&#34;font-weight:bold&#34;&gt;pub&lt;/span&gt; hash_type: &lt;span style=&#34;font-weight:bold&#34;&gt;ScriptHashType&lt;/span&gt;,
+    &lt;span style=&#34;font-weight:bold&#34;&gt;pub&lt;/span&gt; args: &lt;span style=&#34;font-weight:bold&#34;&gt;JsonBytes&lt;/span&gt;,
 }
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-&lt;p&gt;We can see that instead of embedding the script code directly in the script data structure, we are only including the code hash, which is a Blake2b hash of the actual script binary code. Since carrot script doesn&amp;rsquo;t use an argument, we can use empty array for &lt;code&gt;args&lt;/code&gt; part.&lt;/p&gt;
+&lt;p&gt;We can see that instead of embedding the script code directly in the script data structure, we are only including the code hash, which is a Blake2b hash of the actual script binary code. Since carrot script doesn&amp;rsquo;t use an argument, we can use empty bytes for &lt;code&gt;args&lt;/code&gt; part.&lt;/p&gt;
 
 &lt;p&gt;Note I&amp;rsquo;m still ignoring &lt;code&gt;hash_type&lt;/code&gt; here, we will leave to a future post to see a different way of specifying code hash. For now, let&amp;rsquo;s keep it simple here.&lt;/p&gt;
 
 &lt;p&gt;To run the carrot script, we need to create a new transaction, and set carrot type script as the type script of one of the output cells:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-ruby&#34; data-lang=&#34;ruby&#34;&gt;pry(main)&amp;gt; tx = wallet.generate_tx(wallet2.address, CKB::Utils.byte_to_shannon(200))
-pry(main)&amp;gt; tx.outputs[0].instance_variable_set(&lt;span style=&#34;font-style:italic&#34;&gt;:@type&lt;/span&gt;, carrot_type_script.dup)&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-ruby&#34; data-lang=&#34;ruby&#34;&gt;pry(main)&amp;gt; tx = wallet.generate_tx(wallet2.address, CKB::Utils.byte_to_shannon(100), &lt;span style=&#34;font-style:italic&#34;&gt;fee&lt;/span&gt;: 5000)
+pry(main)&amp;gt; tx.outputs[0].type = carrot_type_script.dup&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;There&amp;rsquo;s one more step needed: in order for CKB to locate the carrot script, we need to reference the cell containing carrot script in one of transaction deps:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-ruby&#34; data-lang=&#34;ruby&#34;&gt;pry(main)&amp;gt; carrot_out_point = CKB::Types::OutPoint.new(&lt;span style=&#34;font-style:italic&#34;&gt;cell&lt;/span&gt;: CKB::Types::CellOutPoint.new(&lt;span style=&#34;font-style:italic&#34;&gt;tx_hash&lt;/span&gt;: carrot_tx_hash, &lt;span style=&#34;font-style:italic&#34;&gt;index&lt;/span&gt;: 0))
-pry(main)&amp;gt; tx.deps.push(carrot_out_point.dup)&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-ruby&#34; data-lang=&#34;ruby&#34;&gt;pry(main)&amp;gt; carrot_cell_dep = CKB::Types::CellDep.new(&lt;span style=&#34;font-style:italic&#34;&gt;out_point&lt;/span&gt;: CKB::Types::OutPoint.new(&lt;span style=&#34;font-style:italic&#34;&gt;tx_hash&lt;/span&gt;: carrot_tx_hash, &lt;span style=&#34;font-style:italic&#34;&gt;index&lt;/span&gt;: 0))
+pry(main)&amp;gt; tx.cell_deps &amp;lt;&amp;lt; carrot_cell_dep.dup&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;Now we are ready to sign and send the transaction:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-ruby&#34; data-lang=&#34;ruby&#34;&gt;[44] pry(main)&amp;gt; tx.witnesses[0].data.clear
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-ruby&#34; data-lang=&#34;ruby&#34;&gt;[44] pry(main)&amp;gt; tx.witnesses[0] = &lt;span style=&#34;font-style:italic&#34;&gt;&amp;#34;0x&amp;#34;&lt;/span&gt;
 [46] pry(main)&amp;gt; tx = tx.sign(wallet.key, api.compute_transaction_hash(tx))
 [19] pry(main)&amp;gt; api.send_transaction(tx)
 =&amp;gt; &lt;span style=&#34;font-style:italic&#34;&gt;&amp;#34;0xd7b0fea7c1527cde27cc4e7a2e055e494690a384db14cc35cd2e51ec6f078163&amp;#34;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;Since this transaction does not have any cell containing &lt;code&gt;carrot&lt;/code&gt; in the cell data, the type script validates successfully. Now let&amp;rsquo;s try a different transaction that does have a cell that begins with &lt;code&gt;carrot&lt;/code&gt;:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-ruby&#34; data-lang=&#34;ruby&#34;&gt;pry(main)&amp;gt; tx2 = wallet.generate_tx(wallet2.address, CKB::Utils.byte_to_shannon(200))
-pry(main)&amp;gt; tx2.deps.push(carrot_out_point.dup)
-pry(main)&amp;gt; tx2.outputs[0].instance_variable_set(&lt;span style=&#34;font-style:italic&#34;&gt;:@type&lt;/span&gt;, carrot_type_script.dup)
-pry(main)&amp;gt; tx2.outputs[0].instance_variable_set(&lt;span style=&#34;font-style:italic&#34;&gt;:@data&lt;/span&gt;, CKB::Utils.bin_to_hex(&lt;span style=&#34;font-style:italic&#34;&gt;&amp;#34;carrot123&amp;#34;&lt;/span&gt;))
-pry(main)&amp;gt; tx2.witnesses[0].data.clear
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-ruby&#34; data-lang=&#34;ruby&#34;&gt;pry(main)&amp;gt; tx2 = wallet.generate_tx(wallet2.address, CKB::Utils.byte_to_shannon(100), &lt;span style=&#34;font-style:italic&#34;&gt;fee&lt;/span&gt;: 5000)
+pry(main)&amp;gt; tx2.deps.push(carrot_cell_dep.dup)
+pry(main)&amp;gt; tx2.outputs[0].type = carrot_type_script.dup
+pry(main)&amp;gt; tx2.outputs_data[0] = CKB::Utils.bin_to_hex(&lt;span style=&#34;font-style:italic&#34;&gt;&amp;#34;carrot123&amp;#34;&lt;/span&gt;)
+pry(main)&amp;gt; tx2.witnesses[0] = &lt;span style=&#34;font-style:italic&#34;&gt;&amp;#34;0x&amp;#34;&lt;/span&gt;
 pry(main)&amp;gt; tx2 = tx2.sign(wallet.key, api.compute_transaction_hash(tx2))
 pry(main)&amp;gt; api.send_transaction(tx2)
 CKB::&lt;span style=&#34;font-style:italic&#34;&gt;RPCError&lt;/span&gt;: jsonrpc &lt;span style=&#34;font-style:italic&#34;&gt;error&lt;/span&gt;: {&lt;span style=&#34;font-style:italic&#34;&gt;:code&lt;/span&gt;=&amp;gt;-3, &lt;span style=&#34;font-style:italic&#34;&gt;:message&lt;/span&gt;=&amp;gt;&lt;span style=&#34;font-style:italic&#34;&gt;&amp;#34;InvalidTx(ScriptFailure(ValidationFailure(-1)))&amp;#34;&lt;/span&gt;}
@@ -1037,122 +1023,6 @@ from &lt;span style=&#34;font-style:italic&#34;&gt;/home/u&lt;/span&gt;buntu/cod
 
 &lt;p&gt;One tip we can provide here, is always test your script as a type script attached to an output cell in your transaction, this way when error happens, you will know immediately, your tokens can stay safe.&lt;/p&gt;
 
-&lt;h1 id=&#34;dissecting-the-default-lock-script-code&#34;&gt;Dissecting the Default Lock Script Code&lt;/h1&gt;
-
-&lt;p&gt;With the knowledge we have, let&amp;rsquo;s look at the default lock script code included in CKB. To avoid confusion, we are looking at the lock script code as of &lt;a href=&#34;https://github.com/nervosnetwork/ckb-system-scripts/blob/66e2b3fc4fa3e80235e4b4f94a16e81352a812f7/c/secp256k1_blake160_sighash_all.c&#34;&gt;this commit&lt;/a&gt;.&lt;/p&gt;
-
-&lt;p&gt;The default lock script code would loop through all input cells that have the same lock script as itself, and perform the following steps:&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;It grabs the current transaction hash via a provided syscall.&lt;/li&gt;
-&lt;li&gt;It grabs the corresponding witness data for current input.&lt;/li&gt;
-&lt;li&gt;For the default lock script, it is assumed that the first argument in witness contains the recoverable signature signed by cell owner, and the rest arguments are optional user provided arguments.&lt;/li&gt;
-&lt;li&gt;Default lock script code runs a blake2b hash on the concatenated binary data of the transaction hash, and all the user provided arguments(if exists).&lt;/li&gt;
-&lt;li&gt;The blake2b hash result is then used as the message part for the secp256k1 signature verification. Note the actual signature is provided in the first argument in witness data structure.&lt;/li&gt;
-&lt;li&gt;If the signature verification fails, the script exits with a failure return code. Otherwise it continues with the next iteration.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;Note we talked about the difference between script and script code earlier. Each different pubkey hash would result in different lock script, hence if a transaction has input cells with the same default lock script code but different pubkey hash(hence different lock script), multiple instances of the default lock script code will be executed, each with its own set of cells sharing the same lock script.&lt;/p&gt;
-
-&lt;p&gt;Now we can walk through different segments of the default lock script code:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span style=&#34;font-weight:bold&#34;&gt;if&lt;/span&gt; (argc != 2) {
-  &lt;span style=&#34;font-weight:bold&#34;&gt;return&lt;/span&gt; ERROR_WRONG_NUMBER_OF_ARGUMENTS;
-}
-
-secp256k1_context context;
-&lt;span style=&#34;font-weight:bold&#34;&gt;if&lt;/span&gt; (secp256k1_context_initialize(&amp;amp;context, SECP256K1_CONTEXT_VERIFY) == 0) {
-  &lt;span style=&#34;font-weight:bold&#34;&gt;return&lt;/span&gt; ERROR_SECP_INITIALIZE;
-}
-
-len = BLAKE2B_BLOCK_SIZE;
-ret = ckb_load_tx_hash(tx_hash, &amp;amp;len, 0);
-&lt;span style=&#34;font-weight:bold&#34;&gt;if&lt;/span&gt; (ret != CKB_SUCCESS) {
-  &lt;span style=&#34;font-weight:bold&#34;&gt;return&lt;/span&gt; ERROR_SYSCALL;
-}&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-&lt;p&gt;When arguments are included in &lt;code&gt;args&lt;/code&gt; part of &lt;code&gt;Script&lt;/code&gt; data structure, they are presented to the actual running script program via the Unix conventional &lt;code&gt;arc&lt;/code&gt;/&lt;code&gt;argv&lt;/code&gt; way. To further preserve conventions, we insert a dummy argument at &lt;code&gt;argv[0]&lt;/code&gt;, so your first include argument starts at &lt;code&gt;argv[1]&lt;/code&gt;. In the case of default lock script code, it accepts one argument, which is the pubkey hash generated from the owner&amp;rsquo;s private key.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;ret = ckb_load_input_by_field(NULL, &amp;amp;len, 0, index, CKB_SOURCE_GROUP_INPUT,
-                             CKB_INPUT_FIELD_SINCE);
-&lt;span style=&#34;font-weight:bold&#34;&gt;if&lt;/span&gt; (ret == CKB_INDEX_OUT_OF_BOUND) {
-  &lt;span style=&#34;font-weight:bold&#34;&gt;return&lt;/span&gt; 0;
-}
-&lt;span style=&#34;font-weight:bold&#34;&gt;if&lt;/span&gt; (ret != CKB_SUCCESS) {
-  &lt;span style=&#34;font-weight:bold&#34;&gt;return&lt;/span&gt; ERROR_SYSCALL;
-}&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-&lt;p&gt;Using the same technique as shown in the carrot example, we check if there&amp;rsquo;s more input cells to test. There&amp;rsquo;re 2 differences from previous examples:&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;If we just want to know if a cell exists and don&amp;rsquo;t need any of the data, we can just pass in &lt;code&gt;NULL&lt;/code&gt; as the data buffer, and a &lt;code&gt;len&lt;/code&gt; variable with value 0. This way the syscall would skip data filling and just provided available data length and correct return code for processing.&lt;/li&gt;
-
-&lt;li&gt;&lt;p&gt;In the carrot example, we are looping through all inputs in the transaction, but here we just care about input cells of the same lock script. CKB named cells with the same lock(or type) script as cells with the same &lt;code&gt;group&lt;/code&gt;. And here, we can use &lt;code&gt;CKB_SOURCE_GROUP_INPUT&lt;/code&gt; instead of &lt;code&gt;CKB_SOURCE_INPUT&lt;/code&gt; denoting the syscalls to only count cells in the same group, i.e., cells who have the same lock script as the current cell.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;len = WITNESS_SIZE;
-ret = ckb_load_witness(witness, &amp;amp;len, 0, index, CKB_SOURCE_GROUP_INPUT);
-&lt;span style=&#34;font-weight:bold&#34;&gt;if&lt;/span&gt; (ret != CKB_SUCCESS) {
-&lt;span style=&#34;font-weight:bold&#34;&gt;return&lt;/span&gt; ERROR_SYSCALL;
-}
-&lt;span style=&#34;font-weight:bold&#34;&gt;if&lt;/span&gt; (len &amp;gt; WITNESS_SIZE) {
-&lt;span style=&#34;font-weight:bold&#34;&gt;return&lt;/span&gt; ERROR_WITNESS_TOO_LONG;
-}
-
-&lt;span style=&#34;font-weight:bold&#34;&gt;if&lt;/span&gt; (!(witness_table = ns(Witness_as_root(witness)))) {
-&lt;span style=&#34;font-weight:bold&#34;&gt;return&lt;/span&gt; ERROR_ENCODING;
-}
-args = ns(Witness_data(witness_table));
-&lt;span style=&#34;font-weight:bold&#34;&gt;if&lt;/span&gt; (ns(Bytes_vec_len(args)) &amp;lt; 1) {
-&lt;span style=&#34;font-weight:bold&#34;&gt;return&lt;/span&gt; ERROR_WRONG_NUMBER_OF_ARGUMENTS;
-}&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;Continue down the path, we are loading the witness for current input. Corresponding witnesses and inputs have the same index. Right now CKB uses flatbuffer as the serialization format in syscalls, so if this feels weird to you, &lt;a href=&#34;https://github.com/dvidelabs/flatcc&#34;&gt;flatcc&amp;rsquo;s documentation&lt;/a&gt; is your best friend.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span style=&#34;font-style:italic&#34;&gt;/* Load signature */&lt;/span&gt;
-len = TEMP_SIZE;
-ret = extract_bytes(ns(Bytes_vec_at(args, 0)), temp, &amp;amp;len);
-&lt;span style=&#34;font-weight:bold&#34;&gt;if&lt;/span&gt; (ret != CKB_SUCCESS) {
-  &lt;span style=&#34;font-weight:bold&#34;&gt;return&lt;/span&gt; ERROR_ENCODING;
-}
-
-&lt;span style=&#34;font-style:italic&#34;&gt;/* The 65th byte is recid according to contract spec.*/&lt;/span&gt;
-recid = temp[RECID_INDEX];
-&lt;span style=&#34;font-style:italic&#34;&gt;/* Recover pubkey */&lt;/span&gt;
-secp256k1_ecdsa_recoverable_signature signature;
-&lt;span style=&#34;font-weight:bold&#34;&gt;if&lt;/span&gt; (secp256k1_ecdsa_recoverable_signature_parse_compact(&amp;amp;context, &amp;amp;signature, temp, recid) == 0) {
-  &lt;span style=&#34;font-weight:bold&#34;&gt;return&lt;/span&gt; ERROR_SECP_PARSE_SIGNATURE;
-}
-blake2b_state blake2b_ctx;
-blake2b_init(&amp;amp;blake2b_ctx, BLAKE2B_BLOCK_SIZE);
-blake2b_update(&amp;amp;blake2b_ctx, tx_hash, BLAKE2B_BLOCK_SIZE);
-&lt;span style=&#34;font-weight:bold&#34;&gt;for&lt;/span&gt; (size_t i = 1; i &amp;lt; ns(Bytes_vec_len(args)); i++) {
-  len = TEMP_SIZE;
-  ret = extract_bytes(ns(Bytes_vec_at(args, i)), temp, &amp;amp;len);
-  &lt;span style=&#34;font-weight:bold&#34;&gt;if&lt;/span&gt; (ret != CKB_SUCCESS) {
-    &lt;span style=&#34;font-weight:bold&#34;&gt;return&lt;/span&gt; ERROR_ENCODING;
-  }
-  blake2b_update(&amp;amp;blake2b_ctx, temp, len);
-}
-blake2b_final(&amp;amp;blake2b_ctx, temp, BLAKE2B_BLOCK_SIZE);&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-&lt;p&gt;The first argument in witness is the signature to load, while the rest arguments, if presented, are appened to transaction hash for a blake2b operation.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;secp256k1_pubkey pubkey;
-
-&lt;span style=&#34;font-weight:bold&#34;&gt;if&lt;/span&gt; (secp256k1_ecdsa_recover(&amp;amp;context, &amp;amp;pubkey, &amp;amp;signature, temp) != 1) {
-  &lt;span style=&#34;font-weight:bold&#34;&gt;return&lt;/span&gt; ERROR_SECP_RECOVER_PUBKEY;
-}&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-&lt;p&gt;Using the hashed blake2b result as message, we then do secp256 signature verification.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;size_t pubkey_size = PUBKEY_SIZE;
-&lt;span style=&#34;font-weight:bold&#34;&gt;if&lt;/span&gt; (secp256k1_ec_pubkey_serialize(&amp;amp;context, temp, &amp;amp;pubkey_size, &amp;amp;pubkey, SECP256K1_EC_COMPRESSED) != 1 ) {
-  &lt;span style=&#34;font-weight:bold&#34;&gt;return&lt;/span&gt; ERROR_SECP_SERIALIZE_PUBKEY;
-}
-
-len = PUBKEY_SIZE;
-blake2b_init(&amp;amp;blake2b_ctx, BLAKE2B_BLOCK_SIZE);
-blake2b_update(&amp;amp;blake2b_ctx, temp, len);
-blake2b_final(&amp;amp;blake2b_ctx, temp, BLAKE2B_BLOCK_SIZE);
-
-&lt;span style=&#34;font-weight:bold&#34;&gt;if&lt;/span&gt; (memcmp(argv[1], temp, BLAKE160_SIZE) != 0) {
-  &lt;span style=&#34;font-weight:bold&#34;&gt;return&lt;/span&gt; ERROR_PUBKEY_BLAKE160_HASH;
-}&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-&lt;p&gt;Last but not least, we also need to check the pubkey contained from the recoverable signature is indeed the pubkey used to generated the pubkey hash included in the lock script arguments. Otherwise, someone might use a signature generated from a different pubkey to steal your token.&lt;/p&gt;
-
-&lt;p&gt;In short, the scheme used in the default lock script resembles a lot like the solution used in &lt;a href=&#34;https://bitcoin.org/en/transactions-guide#p2pkh-script-validation&#34;&gt;bitcoin now&lt;/a&gt;.&lt;/p&gt;
-
 &lt;h1 id=&#34;introducing-duktape&#34;&gt;Introducing Duktape&lt;/h1&gt;
 
 &lt;p&gt;I&amp;rsquo;m sure you feel the same way as I do now: it&amp;rsquo;s good we can write contracts in C, but C always feels a bit tedious and, let&amp;rsquo;s face it, dangerous. Is there a better way?&lt;/p&gt;
@@ -1166,7 +1036,7 @@ blake2b_final(&amp;amp;blake2b_ctx, temp, BLAKE2B_BLOCK_SIZE);
 &lt;p&gt;At this stage you might want to ask: yes this is possible, but won&amp;rsquo;t VM on top of VM be slow? I believe it really depends on your use case to say if this is gonna be slow. I&amp;rsquo;m a firm believer that benchmarks make no sense unless we put it in a real use case with standard hardware requirements. So wait to see if this is really gonna be an issue. In my opinion, higher languages are more likely to be used in type scripts to guard cell transformation, in this case, I doubt it&amp;rsquo;s gonna be slow. Besides, we are also working on this field to optimize both CKB VM and the VMs on top of CKB VM to make it faster and faster :P&lt;/p&gt;
 
 &lt;p&gt;To use duktape on CKB, first you need to compile duktape itself into a RISC-V executable binary:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ git clone https://github.com/nervosnetwork/ckb-duktape
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ git clone https://github.com/xxuejie/ckb-duktape
 $ cd ckb-duktape
 $ sudo docker run --rm -it -v &lt;span style=&#34;font-style:italic&#34;&gt;`&lt;/span&gt;pwd&lt;span style=&#34;font-style:italic&#34;&gt;`&lt;/span&gt;:/code nervos/ckb-riscv-gnu-toolchain:xenial bash
 root@0d31cad7a539:~# cd /code
@@ -1184,18 +1054,18 @@ pry(main)&amp;gt; duktape_data.bytesize
 =&amp;gt; 269064
 pry(main)&amp;gt; duktape_tx_hash = wallet.send_capacity(wallet.address, CKB::Utils.byte_to_shannon(280000), CKB::Utils.bin_to_hex(duktape_data))
 pry(main)&amp;gt; duktape_data_hash = CKB::Blake2b.hexdigest(duktape_data)
-pry(main)&amp;gt; duktape_out_point = CKB::Types::OutPoint.new(&lt;span style=&#34;font-style:italic&#34;&gt;cell&lt;/span&gt;: CKB::Types::CellOutPoint.new(&lt;span style=&#34;font-style:italic&#34;&gt;tx_hash&lt;/span&gt;: duktape_tx_hash, &lt;span style=&#34;font-style:italic&#34;&gt;index&lt;/span&gt;: 0))&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+pry(main)&amp;gt; duktape_cell_dep = CKB::Types::CellDep.new(&lt;span style=&#34;font-style:italic&#34;&gt;out_point&lt;/span&gt;: CKB::Types::OutPoint.new(&lt;span style=&#34;font-style:italic&#34;&gt;tx_hash&lt;/span&gt;: duktape_tx_hash, &lt;span style=&#34;font-style:italic&#34;&gt;index&lt;/span&gt;: 0))&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;Unlike the carrot example, duktape script code now requires one argument: the JavaScript source you want to execute:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-ruby&#34; data-lang=&#34;ruby&#34;&gt;pry(main)&amp;gt; duktape_hello_type_script = CKB::Types::Script.new(&lt;span style=&#34;font-style:italic&#34;&gt;code_hash&lt;/span&gt;: duktape_data_hash, &lt;span style=&#34;font-style:italic&#34;&gt;args&lt;/span&gt;: [CKB::Utils.bin_to_hex(&lt;span style=&#34;font-style:italic&#34;&gt;&amp;#34;CKB.debug(&lt;/span&gt;&lt;span style=&#34;font-weight:bold;font-style:italic&#34;&gt;\&amp;#34;&lt;/span&gt;&lt;span style=&#34;font-style:italic&#34;&gt;I&amp;#39;m running in JS!&lt;/span&gt;&lt;span style=&#34;font-weight:bold;font-style:italic&#34;&gt;\&amp;#34;&lt;/span&gt;&lt;span style=&#34;font-style:italic&#34;&gt;)&amp;#34;&lt;/span&gt;)])&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-ruby&#34; data-lang=&#34;ruby&#34;&gt;pry(main)&amp;gt; duktape_hello_type_script = CKB::Types::Script.new(&lt;span style=&#34;font-style:italic&#34;&gt;code_hash&lt;/span&gt;: duktape_data_hash, &lt;span style=&#34;font-style:italic&#34;&gt;args&lt;/span&gt;: CKB::Utils.bin_to_hex(&lt;span style=&#34;font-style:italic&#34;&gt;&amp;#34;CKB.debug(&lt;/span&gt;&lt;span style=&#34;font-weight:bold;font-style:italic&#34;&gt;\&amp;#34;&lt;/span&gt;&lt;span style=&#34;font-style:italic&#34;&gt;I&amp;#39;m running in JS!&lt;/span&gt;&lt;span style=&#34;font-weight:bold;font-style:italic&#34;&gt;\&amp;#34;&lt;/span&gt;&lt;span style=&#34;font-style:italic&#34;&gt;)&amp;#34;&lt;/span&gt;))&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;Notice that with a different argument, you can create a different duktape powered type script for different use case:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-ruby&#34; data-lang=&#34;ruby&#34;&gt;pry(main)&amp;gt; duktape_hello_type_script = CKB::Types::Script.new(&lt;span style=&#34;font-style:italic&#34;&gt;code_hash&lt;/span&gt;: duktape_data_hash, &lt;span style=&#34;font-style:italic&#34;&gt;args&lt;/span&gt;: [CKB::Utils.bin_to_hex(&lt;span style=&#34;font-style:italic&#34;&gt;&amp;#34;var a = 1;&lt;/span&gt;&lt;span style=&#34;font-weight:bold;font-style:italic&#34;&gt;\n&lt;/span&gt;&lt;span style=&#34;font-style:italic&#34;&gt;var b = a + 2;&amp;#34;&lt;/span&gt;)])&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-ruby&#34; data-lang=&#34;ruby&#34;&gt;pry(main)&amp;gt; duktape_hello_type_script = CKB::Types::Script.new(&lt;span style=&#34;font-style:italic&#34;&gt;code_hash&lt;/span&gt;: duktape_data_hash, &lt;span style=&#34;font-style:italic&#34;&gt;args&lt;/span&gt;: CKB::Utils.bin_to_hex(&lt;span style=&#34;font-style:italic&#34;&gt;&amp;#34;var a = 1;&lt;/span&gt;&lt;span style=&#34;font-weight:bold;font-style:italic&#34;&gt;\n&lt;/span&gt;&lt;span style=&#34;font-style:italic&#34;&gt;var b = a + 2;&amp;#34;&lt;/span&gt;))&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;This echos the differences mentioned above on script code vs script: here duktape serves as a script code providing a JavaScript engine, while different script leveraging duktape script code serves different functionalities on chain.&lt;/p&gt;
 
 &lt;p&gt;Now we can create a cell with the duktape type script attached:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-ruby&#34; data-lang=&#34;ruby&#34;&gt;pry(main)&amp;gt; tx = wallet.generate_tx(wallet2.address, CKB::Utils.byte_to_shannon(200))
-pry(main)&amp;gt; tx.deps.push(duktape_out_point.dup)
-pry(main)&amp;gt; tx.outputs[0].instance_variable_set(&lt;span style=&#34;font-style:italic&#34;&gt;:@type&lt;/span&gt;, duktape_hello_type_script.dup)
-pry(main)&amp;gt; tx.witnesses[0].data.clear
+pry(main)&amp;gt; tx.cell_deps.push(duktape_out_point.dup)
+pry(main)&amp;gt; tx.outputs.type = duktape_hello_type_script.dup
+pry(main)&amp;gt; tx.witnesses[0] = &lt;span style=&#34;font-style:italic&#34;&gt;&amp;#34;0x&amp;#34;&lt;/span&gt;
 pry(main)&amp;gt; tx = tx.sign(wallet.key, api.compute_transaction_hash(tx))
 pry(main)&amp;gt; api.send_transaction(tx)
 =&amp;gt; &lt;span style=&#34;font-style:italic&#34;&gt;&amp;#34;0x2e4d3aab4284bc52fc6f07df66e7c8fc0e236916b8a8b8417abb2a2c60824028&amp;#34;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
@@ -1229,7 +1099,7 @@ pry(main)&amp;gt; api.send_transaction(tx)
 
 &lt;p&gt;This first post here, is dedicated to the brand &lt;a href=&#34;https://github.com/nervosnetwork/ckb/pull/913&#34;&gt;new verification model&lt;/a&gt; introduced in CKB v0.14.0. It might sound boring but I promise you this is the last post without actual examples to play with :P&lt;/p&gt;
 
-&lt;p&gt;Note even though I believe CKB&amp;rsquo;s programming model is quite stable now, development is still happening so there might be changes. I will try my best to make sure this post is updated but if anything confuses you, this post is describing CKB as of &lt;a href=&#34;https://github.com/nervosnetwork/ckb/commit/a02c675c50c5969a588fa7f6356f08861d8f5f92&#34;&gt;this commit&lt;/a&gt; now.&lt;/p&gt;
+&lt;p&gt;Note even though I believe CKB&amp;rsquo;s programming model is quite stable now, development is still happening so there might be changes. I will try my best to make sure this post is updated but if anything confuses you, this post is describing CKB&amp;rsquo;s Lina mainnet version now.&lt;/p&gt;
 
 &lt;h1 id=&#34;overview&#34;&gt;Overview&lt;/h1&gt;
 
@@ -1240,7 +1110,6 @@ pry(main)&amp;gt; api.send_transaction(tx)
 &lt;p&gt;There are a lot of things going on in this graph, and we will come back to this graph again in later posts. Today, we will just focus on 2 entities in the cell data structure: &lt;code&gt;lock&lt;/code&gt; and &lt;code&gt;type&lt;/code&gt;.&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-rust&#34; data-lang=&#34;rust&#34;&gt;&lt;span style=&#34;font-weight:bold&#34;&gt;pub&lt;/span&gt; &lt;span style=&#34;font-weight:bold&#34;&gt;struct&lt;/span&gt; &lt;span style=&#34;font-weight:bold&#34;&gt;CellOutput&lt;/span&gt; {
     &lt;span style=&#34;font-weight:bold&#34;&gt;pub&lt;/span&gt; capacity: &lt;span style=&#34;font-weight:bold&#34;&gt;Capacity&lt;/span&gt;,
-    &lt;span style=&#34;font-weight:bold&#34;&gt;pub&lt;/span&gt; data: &lt;span style=&#34;font-weight:bold&#34;&gt;Bytes&lt;/span&gt;,
     &lt;span style=&#34;font-weight:bold&#34;&gt;pub&lt;/span&gt; lock: &lt;span style=&#34;font-weight:bold&#34;&gt;Script&lt;/span&gt;,
     &lt;span style=&#34;&#34;&gt;#[serde(rename = &lt;/span&gt;&lt;span style=&#34;font-style:italic&#34;&gt;&amp;#34;type&amp;#34;&lt;/span&gt;&lt;span style=&#34;&#34;&gt;)]&lt;/span&gt;
     &lt;span style=&#34;font-weight:bold&#34;&gt;pub&lt;/span&gt; type_: Option&amp;lt;Script&amp;gt;,

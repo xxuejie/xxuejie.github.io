@@ -425,7 +425,7 @@
 
 <p>This first post here, is dedicated to the brand <a href="https://github.com/nervosnetwork/ckb/pull/913">new verification model</a> introduced in CKB v0.14.0. It might sound boring but I promise you this is the last post without actual examples to play with :P</p>
 
-<p>Note even though I believe CKB&rsquo;s programming model is quite stable now, development is still happening so there might be changes. I will try my best to make sure this post is updated but if anything confuses you, this post is describing CKB as of <a href="https://github.com/nervosnetwork/ckb/commit/a02c675c50c5969a588fa7f6356f08861d8f5f92">this commit</a> now.</p>
+<p>Note even though I believe CKB&rsquo;s programming model is quite stable now, development is still happening so there might be changes. I will try my best to make sure this post is updated but if anything confuses you, this post is describing CKB&rsquo;s Lina mainnet version now.</p>
 
 <h1 id="overview">Overview</h1>
 
@@ -436,7 +436,6 @@
 <p>There are a lot of things going on in this graph, and we will come back to this graph again in later posts. Today, we will just focus on 2 entities in the cell data structure: <code>lock</code> and <code>type</code>.</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-rust" data-lang="rust"><span style="font-weight:bold">pub</span> <span style="font-weight:bold">struct</span> <span style="font-weight:bold">CellOutput</span> {
     <span style="font-weight:bold">pub</span> capacity: <span style="font-weight:bold">Capacity</span>,
-    <span style="font-weight:bold">pub</span> data: <span style="font-weight:bold">Bytes</span>,
     <span style="font-weight:bold">pub</span> lock: <span style="font-weight:bold">Script</span>,
     <span style="">#[serde(rename = </span><span style="font-style:italic">&#34;type&#34;</span><span style="">)]</span>
     <span style="font-weight:bold">pub</span> type_: Option&lt;Script&gt;,
