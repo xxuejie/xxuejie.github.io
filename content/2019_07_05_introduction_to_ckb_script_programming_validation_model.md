@@ -9,7 +9,7 @@ You might noticed that I call the code running on CKB as `script`, not `smart co
 
 This first post here, is dedicated to the brand [new verification model](https://github.com/nervosnetwork/ckb/pull/913) introduced in CKB v0.14.0. It might sound boring but I promise you this is the last post without actual examples to play with :P
 
-Note even though I believe CKB's programming model is quite stable now, development is still happening so there might be changes. I will try my best to make sure this post is updated but if anything confuses you, this post is describing CKB as of [this commit](https://github.com/nervosnetwork/ckb/commit/a02c675c50c5969a588fa7f6356f08861d8f5f92) now.
+Note even though I believe CKB's programming model is quite stable now, development is still happening so there might be changes. I will try my best to make sure this post is updated but if anything confuses you, this post is describing CKB's Lina mainnet version now.
 
 # Overview
 
@@ -22,7 +22,6 @@ There are a lot of things going on in this graph, and we will come back to this 
 ```rust
 pub struct CellOutput {
     pub capacity: Capacity,
-    pub data: Bytes,
     pub lock: Script,
     #[serde(rename = "type")]
     pub type_: Option<Script>,

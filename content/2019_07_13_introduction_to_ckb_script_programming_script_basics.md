@@ -5,7 +5,7 @@ date = "2019-07-13"
 
 Last post introduced current CKB's validation model. This post will get more fun, since we will show how to deploy script codes to CKB for real. I'm hoping after this post, you should be able to explore the CKB world and work on new script codes as you wish.
 
-Note even though I believe CKB's programming model is quite stable now, development is still happening so there might be changes. I will try my best to make sure this post is updated but if anything confuses you, this post is describing CKB as of [this commit](https://github.com/nervosnetwork/ckb/commit/80b51a9851b5d535625c5d144e1accd38c32876b) now.
+This post is written based on current CKB Lina mainnet version now.
 
 A warning here: this will be a long post, since I want to fill in enough for the more interesting topic next week. So you don't have to finish it at once if you don't have enough time. I've tried to split it into individual sections, so you can try each one at a time.
 
@@ -17,9 +17,9 @@ In this post and hopefully the whole series, we will distinguish between script,
 
 ```rust
 pub struct Script {
-    pub args: Vec<Bytes>,
     pub code_hash: H256,
     pub hash_type: ScriptHashType,
+    pub args: JsonBytes,
 }
 ```
 
@@ -61,14 +61,13 @@ Now with the syscalls at hand, we can start with our carrot-forbidden script:
 int main(int argc, char* argv[]) {
   int ret;
   size_t index = 0;
-  volatile uint64_t len = 0; /* (1) */
+  uint64_t len = 0; /* (1) */
   unsigned char buffer[6];
 
   while (1) {
     len = 6;
     memset(buffer, 0, 6);
-    ret = ckb_load_cell_by_field(buffer, &len, 0, index, CKB_SOURCE_OUTPUT,
-                                 CKB_CELL_FIELD_DATA); /* (2) */
+    ret = ckb_load_cell_data(buffer, &len, 0, index, CKB_SOURCE_OUTPUT); /* (2) */
     if (ret == CKB_INDEX_OUT_OF_BOUND) {               /* (3) */
       break;
     }
@@ -86,7 +85,7 @@ int main(int argc, char* argv[]) {
 
 Several points worth explaining here:
 
-1. Due to C quirks, the `len` field needs to be marked as `volatile`. We will use it both as an input and output parameter, and CKB VM only can set the output when it lives in memory. `volatile` ensures a C compiler keeps it as a RISC-V memory based variable.
+1. We will use `len` field both as an input and output parameter, hence it is passed as a pointer here.
 2. When making a syscall, we need to provide the following: a buffer to hold the data provided by the syscall; a `len` field denoting both the buffer length, and available data length returned by the syscall; an offset into the input data buffer, and several parameters denoting the exact field we are fetching in the transaction. For more details, please refer to our [RFC](https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0009-vm-syscalls/0009-vm-syscalls.md).
 3. For maximum flexibility, CKB uses the return value of the syscall to represent data fetching status: 0(or `CKB_SUCCESS`) means success, 1(or `CKB_INDEX_OUT_OF_BOUND`) means you have finished fetching all indices in a kind, 2(or `CKB_ITEM_MISSING`) means an entity is not present, such as fetching a type script from a cell that doesn't have one.
 
@@ -127,41 +126,41 @@ Here I simply create a new cell with enough capacity by sending tokens to myself
 
 ```ruby
 pry(main)> carrot_data_hash = CKB::Blake2b.hexdigest(data)
-pry(main)> carrot_type_script = CKB::Types::Script.new(code_hash: carrot_data_hash, args: [])
+pry(main)> carrot_type_script = CKB::Types::Script.new(code_hash: carrot_data_hash, args: "0x")
 ```
 
 Recall the Script data structure:
 
 ```rust
 pub struct Script {
-    pub args: Vec<Bytes>,
     pub code_hash: H256,
     pub hash_type: ScriptHashType,
+    pub args: JsonBytes,
 }
 ```
 
-We can see that instead of embedding the script code directly in the script data structure, we are only including the code hash, which is a Blake2b hash of the actual script binary code. Since carrot script doesn't use an argument, we can use empty array for `args` part.
+We can see that instead of embedding the script code directly in the script data structure, we are only including the code hash, which is a Blake2b hash of the actual script binary code. Since carrot script doesn't use an argument, we can use empty bytes for `args` part.
 
 Note I'm still ignoring `hash_type` here, we will leave to a future post to see a different way of specifying code hash. For now, let's keep it simple here.
 
 To run the carrot script, we need to create a new transaction, and set carrot type script as the type script of one of the output cells:
 
 ```ruby
-pry(main)> tx = wallet.generate_tx(wallet2.address, CKB::Utils.byte_to_shannon(200))
-pry(main)> tx.outputs[0].instance_variable_set(:@type, carrot_type_script.dup)
+pry(main)> tx = wallet.generate_tx(wallet2.address, CKB::Utils.byte_to_shannon(100), fee: 5000)
+pry(main)> tx.outputs[0].type = carrot_type_script.dup
 ```
 
 There's one more step needed: in order for CKB to locate the carrot script, we need to reference the cell containing carrot script in one of transaction deps:
 
 ```ruby
-pry(main)> carrot_out_point = CKB::Types::OutPoint.new(cell: CKB::Types::CellOutPoint.new(tx_hash: carrot_tx_hash, index: 0))
-pry(main)> tx.deps.push(carrot_out_point.dup)
+pry(main)> carrot_cell_dep = CKB::Types::CellDep.new(out_point: CKB::Types::OutPoint.new(tx_hash: carrot_tx_hash, index: 0))
+pry(main)> tx.cell_deps << carrot_cell_dep.dup
 ```
 
 Now we are ready to sign and send the transaction:
 
 ```ruby
-[44] pry(main)> tx.witnesses[0].data.clear
+[44] pry(main)> tx.witnesses[0] = "0x"
 [46] pry(main)> tx = tx.sign(wallet.key, api.compute_transaction_hash(tx))
 [19] pry(main)> api.send_transaction(tx)
 => "0xd7b0fea7c1527cde27cc4e7a2e055e494690a384db14cc35cd2e51ec6f078163"
@@ -170,11 +169,11 @@ Now we are ready to sign and send the transaction:
 Since this transaction does not have any cell containing `carrot` in the cell data, the type script validates successfully. Now let's try a different transaction that does have a cell that begins with `carrot`:
 
 ```ruby
-pry(main)> tx2 = wallet.generate_tx(wallet2.address, CKB::Utils.byte_to_shannon(200))
-pry(main)> tx2.deps.push(carrot_out_point.dup)
-pry(main)> tx2.outputs[0].instance_variable_set(:@type, carrot_type_script.dup)
-pry(main)> tx2.outputs[0].instance_variable_set(:@data, CKB::Utils.bin_to_hex("carrot123"))
-pry(main)> tx2.witnesses[0].data.clear
+pry(main)> tx2 = wallet.generate_tx(wallet2.address, CKB::Utils.byte_to_shannon(100), fee: 5000)
+pry(main)> tx2.deps.push(carrot_cell_dep.dup)
+pry(main)> tx2.outputs[0].type = carrot_type_script.dup
+pry(main)> tx2.outputs_data[0] = CKB::Utils.bin_to_hex("carrot123")
+pry(main)> tx2.witnesses[0] = "0x"
 pry(main)> tx2 = tx2.sign(wallet.key, api.compute_transaction_hash(tx2))
 pry(main)> api.send_transaction(tx2)
 CKB::RPCError: jsonrpc error: {:code=>-3, :message=>"InvalidTx(ScriptFailure(ValidationFailure(-1)))"}
@@ -200,140 +199,6 @@ Although we only talk about type scripts here, lock script works exactly the sam
 
 One tip we can provide here, is always test your script as a type script attached to an output cell in your transaction, this way when error happens, you will know immediately, your tokens can stay safe.
 
-# Dissecting the Default Lock Script Code
-
-With the knowledge we have, let's look at the default lock script code included in CKB. To avoid confusion, we are looking at the lock script code as of [this commit](https://github.com/nervosnetwork/ckb-system-scripts/blob/66e2b3fc4fa3e80235e4b4f94a16e81352a812f7/c/secp256k1_blake160_sighash_all.c).
-
-The default lock script code would loop through all input cells that have the same lock script as itself, and perform the following steps:
-
-* It grabs the current transaction hash via a provided syscall.
-* It grabs the corresponding witness data for current input.
-* For the default lock script, it is assumed that the first argument in witness contains the recoverable signature signed by cell owner, and the rest arguments are optional user provided arguments.
-* Default lock script code runs a blake2b hash on the concatenated binary data of the transaction hash, and all the user provided arguments(if exists).
-* The blake2b hash result is then used as the message part for the secp256k1 signature verification. Note the actual signature is provided in the first argument in witness data structure.
-* If the signature verification fails, the script exits with a failure return code. Otherwise it continues with the next iteration.
-
-Note we talked about the difference between script and script code earlier. Each different pubkey hash would result in different lock script, hence if a transaction has input cells with the same default lock script code but different pubkey hash(hence different lock script), multiple instances of the default lock script code will be executed, each with its own set of cells sharing the same lock script.
-
-Now we can walk through different segments of the default lock script code:
-
-```c
-if (argc != 2) {
-  return ERROR_WRONG_NUMBER_OF_ARGUMENTS;
-}
-
-secp256k1_context context;
-if (secp256k1_context_initialize(&context, SECP256K1_CONTEXT_VERIFY) == 0) {
-  return ERROR_SECP_INITIALIZE;
-}
-
-len = BLAKE2B_BLOCK_SIZE;
-ret = ckb_load_tx_hash(tx_hash, &len, 0);
-if (ret != CKB_SUCCESS) {
-  return ERROR_SYSCALL;
-}
-```
-
-When arguments are included in `args` part of `Script` data structure, they are presented to the actual running script program via the Unix conventional `arc`/`argv` way. To further preserve conventions, we insert a dummy argument at `argv[0]`, so your first include argument starts at `argv[1]`. In the case of default lock script code, it accepts one argument, which is the pubkey hash generated from the owner's private key.
-
-```c
-ret = ckb_load_input_by_field(NULL, &len, 0, index, CKB_SOURCE_GROUP_INPUT,
-                             CKB_INPUT_FIELD_SINCE);
-if (ret == CKB_INDEX_OUT_OF_BOUND) {
-  return 0;
-}
-if (ret != CKB_SUCCESS) {
-  return ERROR_SYSCALL;
-}
-```
-
-Using the same technique as shown in the carrot example, we check if there's more input cells to test. There're 2 differences from previous examples:
-
-* If we just want to know if a cell exists and don't need any of the data, we can just pass in `NULL` as the data buffer, and a `len` variable with value 0. This way the syscall would skip data filling and just provided available data length and correct return code for processing.
-* In the carrot example, we are looping through all inputs in the transaction, but here we just care about input cells of the same lock script. CKB named cells with the same lock(or type) script as cells with the same `group`. And here, we can use `CKB_SOURCE_GROUP_INPUT` instead of `CKB_SOURCE_INPUT` denoting the syscalls to only count cells in the same group, i.e., cells who have the same lock script as the current cell.
-
-```c
-len = WITNESS_SIZE;
-ret = ckb_load_witness(witness, &len, 0, index, CKB_SOURCE_GROUP_INPUT);
-if (ret != CKB_SUCCESS) {
-  return ERROR_SYSCALL;
-}
-if (len > WITNESS_SIZE) {
-  return ERROR_WITNESS_TOO_LONG;
-}
-
-if (!(witness_table = ns(Witness_as_root(witness)))) {
-  return ERROR_ENCODING;
-}
-args = ns(Witness_data(witness_table));
-if (ns(Bytes_vec_len(args)) < 1) {
-  return ERROR_WRONG_NUMBER_OF_ARGUMENTS;
-}
-```
-
-Continue down the path, we are loading the witness for current input. Corresponding witnesses and inputs have the same index. Right now CKB uses flatbuffer as the serialization format in syscalls, so if this feels weird to you, [flatcc's documentation](https://github.com/dvidelabs/flatcc) is your best friend.
-
-```c
-/* Load signature */
-len = TEMP_SIZE;
-ret = extract_bytes(ns(Bytes_vec_at(args, 0)), temp, &len);
-if (ret != CKB_SUCCESS) {
-  return ERROR_ENCODING;
-}
-
-/* The 65th byte is recid according to contract spec.*/
-recid = temp[RECID_INDEX];
-/* Recover pubkey */
-secp256k1_ecdsa_recoverable_signature signature;
-if (secp256k1_ecdsa_recoverable_signature_parse_compact(&context, &signature, temp, recid) == 0) {
-  return ERROR_SECP_PARSE_SIGNATURE;
-}
-blake2b_state blake2b_ctx;
-blake2b_init(&blake2b_ctx, BLAKE2B_BLOCK_SIZE);
-blake2b_update(&blake2b_ctx, tx_hash, BLAKE2B_BLOCK_SIZE);
-for (size_t i = 1; i < ns(Bytes_vec_len(args)); i++) {
-  len = TEMP_SIZE;
-  ret = extract_bytes(ns(Bytes_vec_at(args, i)), temp, &len);
-  if (ret != CKB_SUCCESS) {
-    return ERROR_ENCODING;
-  }
-  blake2b_update(&blake2b_ctx, temp, len);
-}
-blake2b_final(&blake2b_ctx, temp, BLAKE2B_BLOCK_SIZE);
-```
-
-The first argument in witness is the signature to load, while the rest arguments, if presented, are appened to transaction hash for a blake2b operation.
-
-```c
-secp256k1_pubkey pubkey;
-
-if (secp256k1_ecdsa_recover(&context, &pubkey, &signature, temp) != 1) {
-  return ERROR_SECP_RECOVER_PUBKEY;
-}
-```
-
-Using the hashed blake2b result as message, we then do secp256 signature verification.
-
-```c
-size_t pubkey_size = PUBKEY_SIZE;
-if (secp256k1_ec_pubkey_serialize(&context, temp, &pubkey_size, &pubkey, SECP256K1_EC_COMPRESSED) != 1 ) {
-  return ERROR_SECP_SERIALIZE_PUBKEY;
-}
-
-len = PUBKEY_SIZE;
-blake2b_init(&blake2b_ctx, BLAKE2B_BLOCK_SIZE);
-blake2b_update(&blake2b_ctx, temp, len);
-blake2b_final(&blake2b_ctx, temp, BLAKE2B_BLOCK_SIZE);
-
-if (memcmp(argv[1], temp, BLAKE160_SIZE) != 0) {
-  return ERROR_PUBKEY_BLAKE160_HASH;
-}
-```
-
-Last but not least, we also need to check the pubkey contained from the recoverable signature is indeed the pubkey used to generated the pubkey hash included in the lock script arguments. Otherwise, someone might use a signature generated from a different pubkey to steal your token.
-
-In short, the scheme used in the default lock script resembles a lot like the solution used in [bitcoin now](https://bitcoin.org/en/transactions-guide#p2pkh-script-validation).
-
 # Introducing Duktape
 
 I'm sure you feel the same way as I do now: it's good we can write contracts in C, but C always feels a bit tedious and, let's face it, dangerous. Is there a better way?
@@ -349,7 +214,7 @@ At this stage you might want to ask: yes this is possible, but won't VM on top o
 To use duktape on CKB, first you need to compile duktape itself into a RISC-V executable binary:
 
 ```bash
-$ git clone https://github.com/nervosnetwork/ckb-duktape
+$ git clone https://github.com/xxuejie/ckb-duktape
 $ cd ckb-duktape
 $ sudo docker run --rm -it -v `pwd`:/code nervos/ckb-riscv-gnu-toolchain:xenial bash
 root@0d31cad7a539:~# cd /code
@@ -371,19 +236,19 @@ pry(main)> duktape_data.bytesize
 => 269064
 pry(main)> duktape_tx_hash = wallet.send_capacity(wallet.address, CKB::Utils.byte_to_shannon(280000), CKB::Utils.bin_to_hex(duktape_data))
 pry(main)> duktape_data_hash = CKB::Blake2b.hexdigest(duktape_data)
-pry(main)> duktape_out_point = CKB::Types::OutPoint.new(cell: CKB::Types::CellOutPoint.new(tx_hash: duktape_tx_hash, index: 0))
+pry(main)> duktape_cell_dep = CKB::Types::CellDep.new(out_point: CKB::Types::OutPoint.new(tx_hash: duktape_tx_hash, index: 0))
 ```
 
 Unlike the carrot example, duktape script code now requires one argument: the JavaScript source you want to execute:
 
 ```ruby
-pry(main)> duktape_hello_type_script = CKB::Types::Script.new(code_hash: duktape_data_hash, args: [CKB::Utils.bin_to_hex("CKB.debug(\"I'm running in JS!\")")])
+pry(main)> duktape_hello_type_script = CKB::Types::Script.new(code_hash: duktape_data_hash, args: CKB::Utils.bin_to_hex("CKB.debug(\"I'm running in JS!\")"))
 ```
 
 Notice that with a different argument, you can create a different duktape powered type script for different use case:
 
 ```ruby
-pry(main)> duktape_hello_type_script = CKB::Types::Script.new(code_hash: duktape_data_hash, args: [CKB::Utils.bin_to_hex("var a = 1;\nvar b = a + 2;")])
+pry(main)> duktape_hello_type_script = CKB::Types::Script.new(code_hash: duktape_data_hash, args: CKB::Utils.bin_to_hex("var a = 1;\nvar b = a + 2;"))
 ```
 
 This echos the differences mentioned above on script code vs script: here duktape serves as a script code providing a JavaScript engine, while different script leveraging duktape script code serves different functionalities on chain.
@@ -392,9 +257,9 @@ Now we can create a cell with the duktape type script attached:
 
 ```ruby
 pry(main)> tx = wallet.generate_tx(wallet2.address, CKB::Utils.byte_to_shannon(200))
-pry(main)> tx.deps.push(duktape_out_point.dup)
-pry(main)> tx.outputs[0].instance_variable_set(:@type, duktape_hello_type_script.dup)
-pry(main)> tx.witnesses[0].data.clear
+pry(main)> tx.cell_deps.push(duktape_out_point.dup)
+pry(main)> tx.outputs.type = duktape_hello_type_script.dup
+pry(main)> tx.witnesses[0] = "0x"
 pry(main)> tx = tx.sign(wallet.key, api.compute_transaction_hash(tx))
 pry(main)> api.send_transaction(tx)
 => "0x2e4d3aab4284bc52fc6f07df66e7c8fc0e236916b8a8b8417abb2a2c60824028"
