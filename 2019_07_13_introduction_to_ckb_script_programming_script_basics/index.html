@@ -412,7 +412,7 @@
 
   
     <div id=sub-header>
-      July 2019 · 14 minute read
+      July 2019 · 15 minute read
     </div>
   
 
@@ -594,6 +594,8 @@ from <span style="font-style:italic">/home/u</span>buntu/code/ckb-sdk-ruby/lib/c
 <p>To use duktape on CKB, first you need to compile duktape itself into a RISC-V executable binary:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ git clone https://github.com/xxuejie/ckb-duktape
 $ cd ckb-duktape
+$ git submodule init
+$ git submodule update
 $ sudo docker run --rm -it -v <span style="font-style:italic">`</span>pwd<span style="font-style:italic">`</span>:/code nervos/ckb-riscv-gnu-toolchain:xenial bash
 root@0d31cad7a539:~# cd /code
 root@0d31cad7a539:/code# make

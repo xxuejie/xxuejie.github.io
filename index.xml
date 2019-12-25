@@ -1038,6 +1038,8 @@ from &lt;span style=&#34;font-style:italic&#34;&gt;/home/u&lt;/span&gt;buntu/cod
 &lt;p&gt;To use duktape on CKB, first you need to compile duktape itself into a RISC-V executable binary:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ git clone https://github.com/xxuejie/ckb-duktape
 $ cd ckb-duktape
+$ git submodule init
+$ git submodule update
 $ sudo docker run --rm -it -v &lt;span style=&#34;font-style:italic&#34;&gt;`&lt;/span&gt;pwd&lt;span style=&#34;font-style:italic&#34;&gt;`&lt;/span&gt;:/code nervos/ckb-riscv-gnu-toolchain:xenial bash
 root@0d31cad7a539:~# cd /code
 root@0d31cad7a539:/code# make
