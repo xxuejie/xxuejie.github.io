@@ -216,6 +216,8 @@ To use duktape on CKB, first you need to compile duktape itself into a RISC-V ex
 ```bash
 $ git clone https://github.com/xxuejie/ckb-duktape
 $ cd ckb-duktape
+$ git submodule init
+$ git submodule update
 $ sudo docker run --rm -it -v `pwd`:/code nervos/ckb-riscv-gnu-toolchain:xenial bash
 root@0d31cad7a539:~# cd /code
 root@0d31cad7a539:/code# make
