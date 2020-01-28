@@ -160,7 +160,6 @@ pry(main)> tx.cell_deps << carrot_cell_dep.dup
 Now we are ready to sign and send the transaction:
 
 ```ruby
-[44] pry(main)> tx.witnesses[0] = "0x"
 [46] pry(main)> tx = tx.sign(wallet.key, api.compute_transaction_hash(tx))
 [19] pry(main)> api.send_transaction(tx)
 => "0xd7b0fea7c1527cde27cc4e7a2e055e494690a384db14cc35cd2e51ec6f078163"
@@ -169,12 +168,11 @@ Now we are ready to sign and send the transaction:
 Since this transaction does not have any cell containing `carrot` in the cell data, the type script validates successfully. Now let's try a different transaction that does have a cell that begins with `carrot`:
 
 ```ruby
-pry(main)> tx2 = wallet.generate_tx(wallet2.address, CKB::Utils.byte_to_shannon(100), fee: 5000)
-pry(main)> tx2.deps.push(carrot_cell_dep.dup)
+pry(main)> tx2 = wallet.generate_tx(wallet2.address, CKB::Utils.byte_to_shannon(400), fee: 5000)
+pry(main)> tx2.cell_deps.push(carrot_cell_dep.dup)
 pry(main)> tx2.outputs[0].type = carrot_type_script.dup
 pry(main)> tx2.outputs_data[0] = CKB::Utils.bin_to_hex("carrot123")
-pry(main)> tx2.witnesses[0] = "0x"
-pry(main)> tx2 = tx2.sign(wallet.key, api.compute_transaction_hash(tx2))
+pry(main)> tx2 = tx2.sign(wallet.key)
 pry(main)> api.send_transaction(tx2)
 CKB::RPCError: jsonrpc error: {:code=>-3, :message=>"InvalidTx(ScriptFailure(ValidationFailure(-1)))"}
 from /home/ubuntu/code/ckb-sdk-ruby/lib/ckb/rpc.rb:164:in `rpc_request'
@@ -233,7 +231,7 @@ build/duktape*
 Like the carrot example, the first step here is to deploy duktape script code in a CKB cell:
 
 ```ruby
-pry(main)> data = File.read("../ckb-duktape/build/duktape")
+pry(main)> duktape_data = File.read("../ckb-duktape/build/duktape")
 pry(main)> duktape_data.bytesize
 => 269064
 pry(main)> duktape_tx_hash = wallet.send_capacity(wallet.address, CKB::Utils.byte_to_shannon(280000), CKB::Utils.bin_to_hex(duktape_data))
@@ -258,11 +256,10 @@ This echos the differences mentioned above on script code vs script: here duktap
 Now we can create a cell with the duktape type script attached:
 
 ```ruby
-pry(main)> tx = wallet.generate_tx(wallet2.address, CKB::Utils.byte_to_shannon(200))
-pry(main)> tx.cell_deps.push(duktape_out_point.dup)
-pry(main)> tx.outputs.type = duktape_hello_type_script.dup
-pry(main)> tx.witnesses[0] = "0x"
-pry(main)> tx = tx.sign(wallet.key, api.compute_transaction_hash(tx))
+pry(main)> tx = wallet.generate_tx(wallet2.address, CKB::Utils.byte_to_shannon(200), fee: 600)
+pry(main)> tx.cell_deps.push(duktape_cell_dep.dup)
+pry(main)> tx.outputs[0].type = duktape_hello_type_script.dup
+pry(main)> tx = tx.sign(wallet.key)
 pry(main)> api.send_transaction(tx)
 => "0x2e4d3aab4284bc52fc6f07df66e7c8fc0e236916b8a8b8417abb2a2c60824028"
 ```
