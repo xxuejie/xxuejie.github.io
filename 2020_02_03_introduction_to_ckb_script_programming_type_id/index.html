@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="MobileOptimized" content="320">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
+    
+
+    
+      <link href='https://fonts.googleapis.com/css?family=Open+Sans:400|Old+Standard+TT:400&display=swap' rel='stylesheet' type='text/css'>
+    
+
+    <link rel="icon" type="image/png" href="https://xuejie.space/favicon_16x16.png" sizes="16x16">
+    <link rel="icon" type="image/png" href="https://xuejie.space/favicon_32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="https://xuejie.space/favicon_128x128.png" sizes="128x128">
+
+    <title>
+      
+      
+         Introduction to CKB Script Programming 6: Type ID 
+      
+    </title>
+    <link rel="canonical" href="https://xuejie.space/2020_02_03_introduction_to_ckb_script_programming_type_id/">
+
+    <style>
+  * {
+    border:0;
+    font:inherit;
+    font-size:100%;
+    vertical-align:baseline;
+    margin:0;
+    padding:0;
+    color: black;
+    text-decoration-skip: ink;
+  }
+
+  body {
+    font-family:'Open Sans', 'Myriad Pro', Myriad, sans-serif;
+    font-size:17px;
+    line-height:160%;
+    color:#1d1313;
+    max-width:700px;
+    margin:auto;
+  }
+
+  p {
+    margin: 20px 0;
+  }
+
+  a img {
+    border:none;
+  }
+
+  img {
+    margin: 10px auto 10px auto;
+    max-width: 100%;
+    display: block;
+  }
+
+  .left-justify {
+    float: left;
+  }
+
+  .right-justify {
+    float:right;
+  }
+
+  pre, code {
+    font: 12px Consolas, "Liberation Mono", Menlo, Courier, monospace;
+    background-color: #f7f7f7;
+  }
+
+  code {
+    font-size: 12px;
+    padding: 4px;
+  }
+
+  pre {
+    margin-top: 0;
+    margin-bottom: 16px;
+    word-wrap: normal;
+    padding: 16px;
+    overflow: auto;
+    font-size: 85%;
+    line-height: 1.45;
+  }
+
+  pre>code {
+    padding: 0;
+    margin: 0;
+    font-size: 100%;
+    word-break: normal;
+    white-space: pre;
+    background: transparent;
+    border: 0;
+  }
+
+  pre code {
+    display: inline;
+    max-width: auto;
+    padding: 0;
+    margin: 0;
+    overflow: visible;
+    line-height: inherit;
+    word-wrap: normal;
+    background-color: transparent;
+    border: 0;
+  }
+
+  pre code::before,
+  pre code::after {
+    content: normal;
+  }
+
+  em,q,em,dfn {
+    font-style:italic;
+  }
+
+  .sans,html .gist .gist-file .gist-meta {
+    font-family:"Open Sans","Myriad Pro",Myriad,sans-serif;
+  }
+
+  .mono,pre,code,tt,p code,li code {
+    font-family:Menlo,Monaco,"Andale Mono","lucida console","Courier New",monospace;
+  }
+
+  .heading,.serif,h1,h2,h3 {
+    font-family:"Old Standard TT",serif;
+  }
+
+  strong {
+    font-weight:600;
+  }
+
+  q:before {
+    content:"\201C";
+  }
+
+  q:after {
+    content:"\201D";
+  }
+
+  del,s {
+    text-decoration:line-through;
+  }
+
+  blockquote {
+    font-family:"Old Standard TT",serif;
+    text-align:center;
+    padding:50px;
+  }
+
+  blockquote p {
+    display:inline-block;
+    font-style:italic;
+  }
+
+  blockquote:before,blockquote:after {
+    font-family:"Old Standard TT",serif;
+    content:'\201C';
+    font-size:35px;
+    color:#403c3b;
+  }
+
+  blockquote:after {
+    content:'\201D';
+  }
+
+  hr {
+    width:40%;
+    height: 1px;
+    background:#403c3b;
+    margin: 25px auto;
+  }
+
+  h1 {
+    font-size:35px;
+  }
+
+  h2 {
+    font-size:28px;
+  }
+
+  h3 {
+    font-size:22px;
+    margin-top:18px;
+  }
+
+  h1 a,h2 a,h3 a {
+    text-decoration:none;
+  }
+
+  h1,h2 {
+    margin-top:28px;
+  }
+
+  #sub-header, time {
+    color:#403c3b;
+    font-size:13px;
+  }
+
+  #sub-header {
+    margin: 0 4px;
+  }
+
+  #nav h1 a {
+    font-size:35px;
+    color:#1d1313;
+    line-height:120%;
+  }
+
+  .posts_listing a,#nav a {
+    text-decoration: none;
+  }
+
+  li {
+    margin-left: 20px;
+  }
+
+  ul li {
+    margin-left: 5px;
+  }
+
+  ul li {
+    list-style-type: none;
+  }
+  ul li:before {
+    content:"\00BB \0020";
+  }
+
+  #nav ul li:before, .posts_listing li:before {
+    content:'';
+    margin-right:0;
+  }
+
+  #content {
+    text-align:left;
+    width:100%;
+    font-size:15px;
+    padding:60px 0 80px;
+  }
+
+  #content h1,#content h2 {
+    margin-bottom:5px;
+  }
+
+  #content h2 {
+    font-size:25px;
+  }
+
+  #content .entry-content {
+    margin-top:15px;
+  }
+
+  #content time {
+    margin-left:3px;
+  }
+
+  #content h1 {
+    font-size:30px;
+  }
+
+  .highlight {
+    margin: 10px 0;
+  }
+
+  .posts_listing {
+    margin:0 0 50px;
+  }
+
+  .posts_listing li {
+    margin:0 0 25px 15px;
+  }
+
+  .posts_listing li a:hover,#nav a:hover {
+    text-decoration: underline;
+  }
+
+  #nav {
+    text-align:center;
+    position:static;
+    margin-top:60px;
+  }
+
+  #nav ul {
+    display: table;
+    margin: 8px auto 0 auto;
+  }
+
+  #nav li {
+    list-style-type:none;
+    display:table-cell;
+    font-size:15px;
+    padding: 0 20px;
+  }
+
+  #links {
+    margin: 50px 0 0 0;
+  }
+
+  #links :nth-child(2) {
+    float:right;
+  }
+
+  #not-found {
+    text-align: center;
+  }
+
+  #not-found a {
+    font-family:"Old Standard TT",serif;
+    font-size: 200px;
+    text-decoration: none;
+    display: inline-block;
+    padding-top: 225px;
+  }
+
+  @media (max-width: 750px) {
+    body {
+      padding-left:20px;
+      padding-right:20px;
+    }
+
+    #nav h1 a {
+      font-size:28px;
+    }
+
+    #nav li {
+      font-size:13px;
+      padding: 0 15px;
+    }
+
+    #content {
+      margin-top:0;
+      padding-top:50px;
+      font-size:14px;
+    }
+
+    #content h1 {
+      font-size:25px;
+    }
+
+    #content h2 {
+      font-size:22px;
+    }
+
+    .posts_listing li div {
+      font-size:12px;
+    }
+  }
+
+  @media (max-width: 400px) {
+    body {
+      padding-left:20px;
+      padding-right:20px;
+    }
+
+    #nav h1 a {
+      font-size:22px;
+    }
+
+    #nav li {
+      font-size:12px;
+      padding: 0 10px;
+    }
+
+    #content {
+      margin-top:0;
+      padding-top:20px;
+      font-size:12px;
+    }
+
+    #content h1 {
+      font-size:20px;
+    }
+
+    #content h2 {
+      font-size:18px;
+    }
+
+    .posts_listing li div{
+      font-size:12px;
+    }
+  }
+</style>
+
+
+    
+  </head>
+
+  <body>
+    <section id=nav>
+      <h1><a href="https://xuejie.space/">Less is More</a></h1>
+      <ul>
+        
+          <li><a href="https://xuejie.space/about">About</a></li>
+        
+          <li><a href="https://github.com/xxuejie">GitHub</a></li>
+        
+          <li><a href="https://xuejie.space/index.xml">RSS</a></li>
+        
+          <li><a href="https://twitter.com/xxuejie">Twitter</a></li>
+        
+      </ul>
+    </section>
+
+
+<section id=content>
+  <h1> Introduction to CKB Script Programming 6: Type ID </h1>
+
+  
+    <div id=sub-header>
+      February 2020 · 13 minute read
+    </div>
+  
+
+  <div class="entry-content">
+    
+
+<p>You might noticed there&rsquo;s a <code>hash_type</code> field in CKB&rsquo;s Script structure. For simplicity, we&rsquo;ve been ignoring that till now. This post will provide an introduction to the <code>hash_type</code> field, and the unique capability it can bring.</p>
+
+<h1 id="problem">Problem</h1>
+
+<p>In the blockchain space, there&rsquo;s a pair of issues that everyone has to pick sides:</p>
+
+<h3 id="upgradability">Upgradability</h3>
+
+<p>Can I upgrade a smart contract after it&rsquo;s deployed on the blockchain? Suppose a smart contract gets widely adopted, then all of a sudden, someone notices a bug in the smart contract(sadly this will always happen in our industry), can we upgrade the smart contract to a fixed version without affecting all the users?</p>
+
+<p>A different scenario: as technology advances, there might be new algorithms that could be leveraged to build smart contracts that run faster. Can we upgrade existing smart contracts to benefit more users?</p>
+
+<h3 id="determinism">Determinism</h3>
+
+<p>This one has 2 parts:</p>
+
+<ul>
+<li>Determinism A: if I pick a smart contract to guard my tokens, will my tokens stay safe(could be unlocked by me and only by me) in the future?</li>
+<li>Determinism B: if I sign a transaction now, and send it later, will my transaction still be accepted by the blockchain?</li>
+</ul>
+
+<p>Note that a secure blockchain has more deterministic requirements than those mentioned here. I&rsquo;m only including properties that relate to the discussed problem here.</p>
+
+<h3 id="conflicts">Conflicts</h3>
+
+<p>If we think about it, we could find that there&rsquo;re always conflicts between upgradability and determinism:</p>
+
+<ul>
+<li>If a smart contract could be upgraded, it might have different behaviors, hence enabling an attacker to unlock a cell, or disabling unlocking from the owner himself/herself.</li>
+<li>If a smart contract could be upgraded, an already signed transaction might run into different behaviors, resulting it be rejected by the blockchain.</li>
+</ul>
+
+<p>Historically, there is only one side you can pick, and most existing blockchains have picked the side of determinism. The &ldquo;code is law&rdquo; idea thus becomes very famous in the blockchain space. But we all know software design is all about tradeoffs. Given certain situation, it might make sense to sacrifice slight determinism, in exchange for the ease of upgradability. For example, a large organization might have special security team monitoring potential vulnerabilities in smart contracts use by them. By granting them the ability to upgrade smart contracts, they have their own control in fixing vulnerabilities instead of waiting on someone. In the meantime, determinism property A won&rsquo;t be an issue for them since they are in charge of their own cells and smart contracts.</p>
+
+<p>So now the question is: can we enable this new possibility in CKB? It turns out we can and this whole mechanism is already deployed in current mainnet CKB! But to understand the whole mechanism in CKB, we have to first take a look at some other ideas that support this mechanism.</p>
+
+<p>NOTE: I&rsquo;m sure you will ask: does this mean you will sacrifice determinism in CKB? Let me assure you this feature is totally optional in CKB, you can perfectly practice &ldquo;code is law&rdquo; principle in CKB like in other blockchains. We are just hoping this unique feature will provide new possibilities for people who really need it.</p>
+
+<h1 id="write-a-unique-type-script">Write A Unique Type Script</h1>
+
+<p>Let&rsquo;s first ask a question: how can we create a type script that ensures only one live cell in CKB can have that unique type script? By unique type script, we mean the whole type script structure, including code hash, hash type and args.</p>
+
+<p>Note that this question might seem irrelevant to script upgradability right now, but please bear with me, we will see how it will contribute to the final solution in CKB.</p>
+
+<p>Note if you have seen <a href="../2019_09_06_introduction_to_ckb_script_programming_udt/">my previous UDT article</a>, you might already realize there is a solution. But if you haven&rsquo;t, I do suggest to take a step back and think about how you can implement such a script on your own. It will be a really good learning experience.</p>
+
+<p>If you are ready, here&rsquo;s the basic workflow of the script:</p>
+
+<ol>
+<li>Count how many output cells use current type script, if there&rsquo;s more than one cell with current type script, returns a failure return code;</li>
+<li>Count how many input cells use current type script, if there&rsquo;s one input cell with current type script, returns a success return code;</li>
+<li>Use CKB syscall to read the first OutPoint in current transaction;</li>
+<li>If the OutPoint data read match the <code>args</code> part of current type script, returns a success return code;</li>
+<li>Returns a failure return code otherwise.</li>
+</ol>
+
+<p>Putting in simple C code, the script would look like following:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="">#include</span> <span style="">&#34;blockchain.h&#34;</span><span style="">
+</span><span style="">#include</span> <span style="">&#34;ckb_syscalls.h&#34;</span><span style="">
+</span><span style=""></span>
+<span style="">#define INPUT_SIZE 128
+</span><span style="">#define SCRIPT_SIZE 32768
+</span><span style=""></span>
+<span style="">int</span> main() {
+  uint64_t len = 0;
+  <span style="">int</span> ret = ckb_load_cell(NULL, &amp;len, 0, 1, CKB_SOURCE_GROUP_OUTPUT);
+  <span style="font-weight:bold">if</span> (ret != CKB_INDEX_OUT_OF_BOUND) {
+    <span style="font-weight:bold">return</span> -1;  <span style="font-style:italic">/* 1 */</span>
+  }
+
+  len = 0;
+  ret = ckb_load_cell(NULL, &amp;len, 0, 0, CKB_SOURCE_GROUP_INPUT);
+  <span style="font-weight:bold">if</span> (ret != CKB_INDEX_OUT_OF_BOUND) {
+    <span style="font-weight:bold">return</span> 0;  <span style="font-style:italic">/* 2 */</span>
+  }
+
+  <span style="font-style:italic">/* 3 */</span>
+  <span style="">unsigned</span> <span style="">char</span> input[INPUT_SIZE];
+  uint64_t input_len = INPUT_SIZE;
+  ret = ckb_load_input(input, &amp;input_len, 0, 0, CKB_SOURCE_INPUT);
+  <span style="font-weight:bold">if</span> (ret != CKB_SUCCESS) {
+    <span style="font-weight:bold">return</span> ret;
+  }
+  <span style="font-weight:bold">if</span> (input_len &gt; INPUT_SIZE) {
+    <span style="font-weight:bold">return</span> -100;
+  }
+
+  <span style="">unsigned</span> <span style="">char</span> script[SCRIPT_SIZE];
+  len = SCRIPT_SIZE;
+  ret = ckb_load_script(script, &amp;len, 0);
+  <span style="font-weight:bold">if</span> (ret != CKB_SUCCESS) {
+    <span style="font-weight:bold">return</span> ret;
+  }
+  <span style="font-weight:bold">if</span> (len &gt; SCRIPT_SIZE) {
+    <span style="font-weight:bold">return</span> -101;
+  }
+  mol_seg_t script_seg;
+  script_seg.ptr = (uint8_t *)script;
+  script_seg.size = len;
+
+  <span style="font-weight:bold">if</span> (MolReader_Script_verify(&amp;script_seg, false) != MOL_OK) {
+    <span style="font-weight:bold">return</span> -102;
+  }
+
+  mol_seg_t args_seg = MolReader_Script_get_args(&amp;script_seg);
+  mol_seg_t args_bytes_seg = MolReader_Bytes_raw_bytes(&amp;args_seg);
+
+  <span style="font-weight:bold">if</span> ((input_len == args_bytes_seg.size) &amp;&amp;
+      (memcmp(args_bytes_seg.ptr, input, input_len) == 0)) {
+    <span style="font-style:italic">/* 4 */</span>
+    <span style="font-weight:bold">return</span> 0;
+  }
+  <span style="font-weight:bold">return</span> -103;
+}</code></pre></div>
+<p>As explained in the UDT post, attackers will be prevented in several different directions:</p>
+
+<ol>
+<li>If an attacker tries to create a cell with the exactly same type script, there will be 2 cases:
+a. A valid transaction will have different OutPoint data in the first input from the type script args;
+b. If the user tries to duplicate type script args as the first transaction input, CKB will signal a double-spent error;</li>
+<li>If the attacker tries to use a different type script args, it will be a different type script by definition.</li>
+</ol>
+
+<p>This way, we can ensure a cell will have unique type script across all live cells in CKB. Considering each script has an associated hash, we will have a cell in CKB with its unique hash, or unique ID.</p>
+
+<h1 id="resolving-scripts-in-ckb-transaction">Resolving Scripts in CKB Transaction</h1>
+
+<p>Now let&rsquo;s look at how CKB resolves the script to run before the <code>hash type</code> change:</p>
+
+<ul>
+<li>CKB extracts <code>code hash</code> value from the script structure to run.</li>
+<li>It loops through all dep cells, computes the hash of each dep cell data. If any dep cell data hash matches the specified <code>code hash</code>, CKB uses the data in the found dep cell as the script to run.</li>
+<li>If no dep cell has data hash matching specified <code>code hash</code>, CKB results in a validation error.</li>
+</ul>
+
+<p>The upgradability problem, in fact lies in the way we test for dep cells. Right now we are testing against data hash, and when a script is upgraded, a different hash will be generated, the matching would fail. That brings a question: can we test for dep cells using a different solution? Is there something that can stay unchanged when the script is changed? Considering the actual script to run lives in a cell, we can rephrase the question in a different way:</p>
+
+<p>Is there something that can stay unchanged when a cell&rsquo;s data get updated?</p>
+
+<p>We can use a script structure! Since lock script is typically used for signature verification, we can use a type script for this problem. A type script can stay perfectly unchanged when a cell&rsquo;s data get changed. Hence we added <code>hash type</code> field to CKB&rsquo;s script structure, and modified the script resolving flow to the following:</p>
+
+<ul>
+<li>For each dep cell, we extract the <code>test hash</code> based on <code>hash type</code> value in the script structure:
+
+<ul>
+<li>If <code>hash type</code> is <code>data</code>, the dep cell&rsquo;s data hash is used as <code>test hash</code></li>
+<li>If <code>hash type</code> is <code>type</code>, the dep cell&rsquo;s type script hash is used as <code>test hash</code></li>
+</ul></li>
+<li>CKB extracts <code>code hash</code> and <code>hash type</code> values from the script structure to run</li>
+<li>If CKB finds a dep cell whose <code>test hash</code> matches specified <code>code hash</code>, CKB uses the data in the found dep cell as the scrip tot run.</li>
+<li>If no dep cell has test hash matching specified <code>code hash</code>, CKB results in a validation error.</li>
+</ul>
+
+<p>Notice the <code>hash type</code> used here, is the value belonging to the script to run, not the values of scripts in a dep cell. You could perfectly have 2 inputs in a transaction, one using <code>data</code> as <code>hash type</code>, the other using <code>type</code> as <code>hash type</code>. Either one of them will use its own correct way to locate the correct cell.</p>
+
+<p>This way we have totally conquered determinism property A above, but for property B there will be some subtle affects, we will discuss those in more details below.</p>
+
+<h1 id="putting-everything-together">Putting Everything Together</h1>
+
+<p>There&rsquo;s still one problem unsolved, there might still be an attack:</p>
+
+<ul>
+<li>A lock script L1 is stored in a cell C1 with type script T1</li>
+<li>Alice guards her cells via lock script L1 using <code>hash type</code> as <code>type</code>, by definition, she fills her script structure&rsquo;s <code>code hash</code> field with the hash of type script T1</li>
+<li>Bob creates a different cell C2 with a always success lock script L2, and also use the same type script T1</li>
+<li>Now Bob can use C2 as a dep cell to unlock Alice&rsquo;s cell. CKB won&rsquo;t be able to distinguish that Alice wants to use C1, while Bob provides C2. Both C1 and C2 use T1 as type script</li>
+</ul>
+
+<p>That teaches us a very important lesson: if you build a lock/type script and want people to leverage the upgradability property, you have to make sure to use a type script that is unique and unforgeable.</p>
+
+<p>Luckily, we just solved this problem! In the above we just developed a type script that can provide a unique type script hash in CKB. Combined together, this unique type script and <code>hash type</code> feature in CKB provide a way to upgrade already deployed smart contracts.</p>
+
+<h1 id="chicken-egg-problem">Chicken Egg Problem</h1>
+
+<p>You might have noticed that CKB already implements such a script, named a <a href="https://github.com/nervosnetwork/ckb/blob/2145e4e3adee46670b3c9411c4ac547fc76e3a23/script/src/type_id.rs">type ID</a> script. But unlike the other system scripts, this one is implemented purely in Rust outside of CKB VM. I&rsquo;m sure you will have this rant: you said CKB VM is flexible, don&rsquo;t you?</p>
+
+<p>I do have made that claim in many different occasions, and in fact I&rsquo;ve shown you above a way to implement the type ID logic in C code that could be compiled and run in CKB VM. But the problem here, is that we are at a chicken-egg situation: if we implement the type ID script, should we make it upgradable? If so, what should we put in as its type script? And if it&rsquo;s not upgradable, how can we make sure it&rsquo;s free from bugs and all the other vulnerabilities?</p>
+
+<p>We thought hard on this question, and it really seems the easiest and safest solution, is to implement the type ID script via pure Rust, so we can deal with any potential situations in a more mature and experienced way.</p>
+
+<p>But unlike some other chains which keep provide discounts for builtin smart contracts, we do set a very large cycle cost on the type ID script to discourage the use of the builtin script. At mainnet, it is now set as 1 million cycles. This is much much larger than the same logic implemented on CKB VM, we are hoping one day there will be fully vetted and secure type ID script that everyone will use instead of using this builtin type ID script.</p>
+
+<h1 id="trust-issue">Trust Issue</h1>
+
+<p>We do want to mention this new feature is not without its drawbacks. You should really understand how it works and the tradeoffs involved before using it. This section tries to discuss all those considerations, but I do want to warn you it might still miss something, and you should use your own judgments.</p>
+
+<h2 id="determinism-property-a">Determinism Property A</h2>
+
+<p>The type ID solution does provide a way to solve property A: when a bug is discovered, it&rsquo;s possible to fix the smart contracts without affecting existing cells using the same smart contracts. But it does require certain considerations:</p>
+
+<h3 id="ownership">Ownership</h3>
+
+<p>With a type ID solution, people might be able to steal your coin by hacking the cell containing smart contracts you use. Since typical cells are guarded by only one or more signatures, some human errors could cause major problems. Fundamentally, it&rsquo;s a tradeoff situation:</p>
+
+<p>1) For the truly paranoid ones, they might want to stick to the old way of referencing a script via its own hash, not the type script hash of the containing cell. The &ldquo;code is law&rdquo; principle is fully enforced here. You will know exactly what can be used to unlock your cell, and it won&rsquo;t change anytime in the future.
+2) For people willing to sacrifice a little bit, they can gain the ability to upgrade existing smart contracts for different benefits. But please do make sure to fully understand the lock script of the cell containing the script you use.</p>
+
+<p>For example, if you look at the deployed system scripts in CKB&rsquo;s mainnet, they all use type ID setup, but they all have their lock script&rsquo;s code hash set to all zeros, meaning no one gets to change the lock script easily via a signature. We want to make sure there&rsquo;s a need to change the default lock script, it will be via a fork agreed upon by the whole community, after all IMHO it really is the whole Nervos community that <em>owns</em> CKB :P</p>
+
+<p>There is some initial ideas that you can use to guard the script contained in a cell. For example, in addition to type ID logic, the type script can also contains other logics to validate the actual script contained in its cell. For example, formal analysis methods might be used, or certain test cases can be provided in which the type script run the actual script against. Only when the analysis or the test cases pass, will one be able to change script contained in a cell. Though I must say this is just some priliminary ideas, much research and development work needs to be done to make this a reality.</p>
+
+<h3 id="availability">Availability</h3>
+
+<p>A different issue with type ID, is availability of the script. When you have a cell using a script with <code>hash type</code> set as <code>data</code>, you are not worried someone might destroy the used script, you can always redeploy the script on-chain then unlock your cell.</p>
+
+<p>But with a type ID solution, if something bad happens, and the cell with matching type script hash is destroyed, your cell will be locked forever, since your might never be able to build a cell with the same type script hash. There are some methods you can use, such as restricting the ability to destroy a cell with a type ID script but they all just mitigate the problem, not completely solving the problem.</p>
+
+<h2 id="determinism-property-b">Determinism Property B</h2>
+
+<p>We do want to mention that type ID does not provide a solution to property B. When you have a signed transaction, the behavior for this transaction won&rsquo;t be changed with the upgrade of one smart contract.</p>
+
+<p>Though there is way that the type ID solution might affect an already signed transaction: if a transaction uses a script from cell, and the cell gets updated, the transaction will be render invalidated, since the cell referenced in the original OutPoint is already spent. But one could argue with the old referencing solution, this problem might also happen.</p>
+
+<h1 id="conclusion">Conclusion</h1>
+
+<p>So that all I know about type ID at the moment :) It certainly has its drawbacks, but we do believe it can be proved very useful for certain users. For other users, this will be completely optional, and you are perfectly ignoring this feature at all. It&rsquo;s my hope that this new feature rarely seen in other blockchains, can provide a starting point to boost more possibilities.</p>
+
+  </div>
+
+  <div id=links>
+    
+      <a class="basic-alignment left" href="https://xuejie.space/2019_10_21_lets_build_a_minimal_blockchain_dawn/">&laquo; Let&#39;s Build a Minimal Blockchain 1: Dawn</a>
+    
+    
+  </div>
+</section>
+
+  
+</body>
+</html>
+
+
+

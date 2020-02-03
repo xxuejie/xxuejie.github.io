@@ -5,10 +5,237 @@
     <description>Recent content on Less is more</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Mon, 21 Oct 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Mon, 03 Feb 2020 00:00:00 +0000</lastBuildDate>
     
         <atom:link href="https://xuejie.space/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Introduction to CKB Script Programming 6: Type ID</title>
+      <link>https://xuejie.space/2020_02_03_introduction_to_ckb_script_programming_type_id/</link>
+      <pubDate>Mon, 03 Feb 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://xuejie.space/2020_02_03_introduction_to_ckb_script_programming_type_id/</guid>
+      <description>
+
+&lt;p&gt;You might noticed there&amp;rsquo;s a &lt;code&gt;hash_type&lt;/code&gt; field in CKB&amp;rsquo;s Script structure. For simplicity, we&amp;rsquo;ve been ignoring that till now. This post will provide an introduction to the &lt;code&gt;hash_type&lt;/code&gt; field, and the unique capability it can bring.&lt;/p&gt;
+
+&lt;h1 id=&#34;problem&#34;&gt;Problem&lt;/h1&gt;
+
+&lt;p&gt;In the blockchain space, there&amp;rsquo;s a pair of issues that everyone has to pick sides:&lt;/p&gt;
+
+&lt;h3 id=&#34;upgradability&#34;&gt;Upgradability&lt;/h3&gt;
+
+&lt;p&gt;Can I upgrade a smart contract after it&amp;rsquo;s deployed on the blockchain? Suppose a smart contract gets widely adopted, then all of a sudden, someone notices a bug in the smart contract(sadly this will always happen in our industry), can we upgrade the smart contract to a fixed version without affecting all the users?&lt;/p&gt;
+
+&lt;p&gt;A different scenario: as technology advances, there might be new algorithms that could be leveraged to build smart contracts that run faster. Can we upgrade existing smart contracts to benefit more users?&lt;/p&gt;
+
+&lt;h3 id=&#34;determinism&#34;&gt;Determinism&lt;/h3&gt;
+
+&lt;p&gt;This one has 2 parts:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Determinism A: if I pick a smart contract to guard my tokens, will my tokens stay safe(could be unlocked by me and only by me) in the future?&lt;/li&gt;
+&lt;li&gt;Determinism B: if I sign a transaction now, and send it later, will my transaction still be accepted by the blockchain?&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Note that a secure blockchain has more deterministic requirements than those mentioned here. I&amp;rsquo;m only including properties that relate to the discussed problem here.&lt;/p&gt;
+
+&lt;h3 id=&#34;conflicts&#34;&gt;Conflicts&lt;/h3&gt;
+
+&lt;p&gt;If we think about it, we could find that there&amp;rsquo;re always conflicts between upgradability and determinism:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;If a smart contract could be upgraded, it might have different behaviors, hence enabling an attacker to unlock a cell, or disabling unlocking from the owner himself/herself.&lt;/li&gt;
+&lt;li&gt;If a smart contract could be upgraded, an already signed transaction might run into different behaviors, resulting it be rejected by the blockchain.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Historically, there is only one side you can pick, and most existing blockchains have picked the side of determinism. The &amp;ldquo;code is law&amp;rdquo; idea thus becomes very famous in the blockchain space. But we all know software design is all about tradeoffs. Given certain situation, it might make sense to sacrifice slight determinism, in exchange for the ease of upgradability. For example, a large organization might have special security team monitoring potential vulnerabilities in smart contracts use by them. By granting them the ability to upgrade smart contracts, they have their own control in fixing vulnerabilities instead of waiting on someone. In the meantime, determinism property A won&amp;rsquo;t be an issue for them since they are in charge of their own cells and smart contracts.&lt;/p&gt;
+
+&lt;p&gt;So now the question is: can we enable this new possibility in CKB? It turns out we can and this whole mechanism is already deployed in current mainnet CKB! But to understand the whole mechanism in CKB, we have to first take a look at some other ideas that support this mechanism.&lt;/p&gt;
+
+&lt;p&gt;NOTE: I&amp;rsquo;m sure you will ask: does this mean you will sacrifice determinism in CKB? Let me assure you this feature is totally optional in CKB, you can perfectly practice &amp;ldquo;code is law&amp;rdquo; principle in CKB like in other blockchains. We are just hoping this unique feature will provide new possibilities for people who really need it.&lt;/p&gt;
+
+&lt;h1 id=&#34;write-a-unique-type-script&#34;&gt;Write A Unique Type Script&lt;/h1&gt;
+
+&lt;p&gt;Let&amp;rsquo;s first ask a question: how can we create a type script that ensures only one live cell in CKB can have that unique type script? By unique type script, we mean the whole type script structure, including code hash, hash type and args.&lt;/p&gt;
+
+&lt;p&gt;Note that this question might seem irrelevant to script upgradability right now, but please bear with me, we will see how it will contribute to the final solution in CKB.&lt;/p&gt;
+
+&lt;p&gt;Note if you have seen &lt;a href=&#34;../2019_09_06_introduction_to_ckb_script_programming_udt/&#34;&gt;my previous UDT article&lt;/a&gt;, you might already realize there is a solution. But if you haven&amp;rsquo;t, I do suggest to take a step back and think about how you can implement such a script on your own. It will be a really good learning experience.&lt;/p&gt;
+
+&lt;p&gt;If you are ready, here&amp;rsquo;s the basic workflow of the script:&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;Count how many output cells use current type script, if there&amp;rsquo;s more than one cell with current type script, returns a failure return code;&lt;/li&gt;
+&lt;li&gt;Count how many input cells use current type script, if there&amp;rsquo;s one input cell with current type script, returns a success return code;&lt;/li&gt;
+&lt;li&gt;Use CKB syscall to read the first OutPoint in current transaction;&lt;/li&gt;
+&lt;li&gt;If the OutPoint data read match the &lt;code&gt;args&lt;/code&gt; part of current type script, returns a success return code;&lt;/li&gt;
+&lt;li&gt;Returns a failure return code otherwise.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;Putting in simple C code, the script would look like following:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span style=&#34;&#34;&gt;#include&lt;/span&gt; &lt;span style=&#34;&#34;&gt;&amp;#34;blockchain.h&amp;#34;&lt;/span&gt;&lt;span style=&#34;&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;&#34;&gt;#include&lt;/span&gt; &lt;span style=&#34;&#34;&gt;&amp;#34;ckb_syscalls.h&amp;#34;&lt;/span&gt;&lt;span style=&#34;&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;&#34;&gt;&lt;/span&gt;
+&lt;span style=&#34;&#34;&gt;#define INPUT_SIZE 128
+&lt;/span&gt;&lt;span style=&#34;&#34;&gt;#define SCRIPT_SIZE 32768
+&lt;/span&gt;&lt;span style=&#34;&#34;&gt;&lt;/span&gt;
+&lt;span style=&#34;&#34;&gt;int&lt;/span&gt; main() {
+  uint64_t len = 0;
+  &lt;span style=&#34;&#34;&gt;int&lt;/span&gt; ret = ckb_load_cell(NULL, &amp;amp;len, 0, 1, CKB_SOURCE_GROUP_OUTPUT);
+  &lt;span style=&#34;font-weight:bold&#34;&gt;if&lt;/span&gt; (ret != CKB_INDEX_OUT_OF_BOUND) {
+    &lt;span style=&#34;font-weight:bold&#34;&gt;return&lt;/span&gt; -1;  &lt;span style=&#34;font-style:italic&#34;&gt;/* 1 */&lt;/span&gt;
+  }
+
+  len = 0;
+  ret = ckb_load_cell(NULL, &amp;amp;len, 0, 0, CKB_SOURCE_GROUP_INPUT);
+  &lt;span style=&#34;font-weight:bold&#34;&gt;if&lt;/span&gt; (ret != CKB_INDEX_OUT_OF_BOUND) {
+    &lt;span style=&#34;font-weight:bold&#34;&gt;return&lt;/span&gt; 0;  &lt;span style=&#34;font-style:italic&#34;&gt;/* 2 */&lt;/span&gt;
+  }
+
+  &lt;span style=&#34;font-style:italic&#34;&gt;/* 3 */&lt;/span&gt;
+  &lt;span style=&#34;&#34;&gt;unsigned&lt;/span&gt; &lt;span style=&#34;&#34;&gt;char&lt;/span&gt; input[INPUT_SIZE];
+  uint64_t input_len = INPUT_SIZE;
+  ret = ckb_load_input(input, &amp;amp;input_len, 0, 0, CKB_SOURCE_INPUT);
+  &lt;span style=&#34;font-weight:bold&#34;&gt;if&lt;/span&gt; (ret != CKB_SUCCESS) {
+    &lt;span style=&#34;font-weight:bold&#34;&gt;return&lt;/span&gt; ret;
+  }
+  &lt;span style=&#34;font-weight:bold&#34;&gt;if&lt;/span&gt; (input_len &amp;gt; INPUT_SIZE) {
+    &lt;span style=&#34;font-weight:bold&#34;&gt;return&lt;/span&gt; -100;
+  }
+
+  &lt;span style=&#34;&#34;&gt;unsigned&lt;/span&gt; &lt;span style=&#34;&#34;&gt;char&lt;/span&gt; script[SCRIPT_SIZE];
+  len = SCRIPT_SIZE;
+  ret = ckb_load_script(script, &amp;amp;len, 0);
+  &lt;span style=&#34;font-weight:bold&#34;&gt;if&lt;/span&gt; (ret != CKB_SUCCESS) {
+    &lt;span style=&#34;font-weight:bold&#34;&gt;return&lt;/span&gt; ret;
+  }
+  &lt;span style=&#34;font-weight:bold&#34;&gt;if&lt;/span&gt; (len &amp;gt; SCRIPT_SIZE) {
+    &lt;span style=&#34;font-weight:bold&#34;&gt;return&lt;/span&gt; -101;
+  }
+  mol_seg_t script_seg;
+  script_seg.ptr = (uint8_t *)script;
+  script_seg.size = len;
+
+  &lt;span style=&#34;font-weight:bold&#34;&gt;if&lt;/span&gt; (MolReader_Script_verify(&amp;amp;script_seg, false) != MOL_OK) {
+    &lt;span style=&#34;font-weight:bold&#34;&gt;return&lt;/span&gt; -102;
+  }
+
+  mol_seg_t args_seg = MolReader_Script_get_args(&amp;amp;script_seg);
+  mol_seg_t args_bytes_seg = MolReader_Bytes_raw_bytes(&amp;amp;args_seg);
+
+  &lt;span style=&#34;font-weight:bold&#34;&gt;if&lt;/span&gt; ((input_len == args_bytes_seg.size) &amp;amp;&amp;amp;
+      (memcmp(args_bytes_seg.ptr, input, input_len) == 0)) {
+    &lt;span style=&#34;font-style:italic&#34;&gt;/* 4 */&lt;/span&gt;
+    &lt;span style=&#34;font-weight:bold&#34;&gt;return&lt;/span&gt; 0;
+  }
+  &lt;span style=&#34;font-weight:bold&#34;&gt;return&lt;/span&gt; -103;
+}&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;As explained in the UDT post, attackers will be prevented in several different directions:&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;If an attacker tries to create a cell with the exactly same type script, there will be 2 cases:
+a. A valid transaction will have different OutPoint data in the first input from the type script args;
+b. If the user tries to duplicate type script args as the first transaction input, CKB will signal a double-spent error;&lt;/li&gt;
+&lt;li&gt;If the attacker tries to use a different type script args, it will be a different type script by definition.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;This way, we can ensure a cell will have unique type script across all live cells in CKB. Considering each script has an associated hash, we will have a cell in CKB with its unique hash, or unique ID.&lt;/p&gt;
+
+&lt;h1 id=&#34;resolving-scripts-in-ckb-transaction&#34;&gt;Resolving Scripts in CKB Transaction&lt;/h1&gt;
+
+&lt;p&gt;Now let&amp;rsquo;s look at how CKB resolves the script to run before the &lt;code&gt;hash type&lt;/code&gt; change:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;CKB extracts &lt;code&gt;code hash&lt;/code&gt; value from the script structure to run.&lt;/li&gt;
+&lt;li&gt;It loops through all dep cells, computes the hash of each dep cell data. If any dep cell data hash matches the specified &lt;code&gt;code hash&lt;/code&gt;, CKB uses the data in the found dep cell as the script to run.&lt;/li&gt;
+&lt;li&gt;If no dep cell has data hash matching specified &lt;code&gt;code hash&lt;/code&gt;, CKB results in a validation error.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;The upgradability problem, in fact lies in the way we test for dep cells. Right now we are testing against data hash, and when a script is upgraded, a different hash will be generated, the matching would fail. That brings a question: can we test for dep cells using a different solution? Is there something that can stay unchanged when the script is changed? Considering the actual script to run lives in a cell, we can rephrase the question in a different way:&lt;/p&gt;
+
+&lt;p&gt;Is there something that can stay unchanged when a cell&amp;rsquo;s data get updated?&lt;/p&gt;
+
+&lt;p&gt;We can use a script structure! Since lock script is typically used for signature verification, we can use a type script for this problem. A type script can stay perfectly unchanged when a cell&amp;rsquo;s data get changed. Hence we added &lt;code&gt;hash type&lt;/code&gt; field to CKB&amp;rsquo;s script structure, and modified the script resolving flow to the following:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;For each dep cell, we extract the &lt;code&gt;test hash&lt;/code&gt; based on &lt;code&gt;hash type&lt;/code&gt; value in the script structure:
+
+&lt;ul&gt;
+&lt;li&gt;If &lt;code&gt;hash type&lt;/code&gt; is &lt;code&gt;data&lt;/code&gt;, the dep cell&amp;rsquo;s data hash is used as &lt;code&gt;test hash&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;If &lt;code&gt;hash type&lt;/code&gt; is &lt;code&gt;type&lt;/code&gt;, the dep cell&amp;rsquo;s type script hash is used as &lt;code&gt;test hash&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;CKB extracts &lt;code&gt;code hash&lt;/code&gt; and &lt;code&gt;hash type&lt;/code&gt; values from the script structure to run&lt;/li&gt;
+&lt;li&gt;If CKB finds a dep cell whose &lt;code&gt;test hash&lt;/code&gt; matches specified &lt;code&gt;code hash&lt;/code&gt;, CKB uses the data in the found dep cell as the scrip tot run.&lt;/li&gt;
+&lt;li&gt;If no dep cell has test hash matching specified &lt;code&gt;code hash&lt;/code&gt;, CKB results in a validation error.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Notice the &lt;code&gt;hash type&lt;/code&gt; used here, is the value belonging to the script to run, not the values of scripts in a dep cell. You could perfectly have 2 inputs in a transaction, one using &lt;code&gt;data&lt;/code&gt; as &lt;code&gt;hash type&lt;/code&gt;, the other using &lt;code&gt;type&lt;/code&gt; as &lt;code&gt;hash type&lt;/code&gt;. Either one of them will use its own correct way to locate the correct cell.&lt;/p&gt;
+
+&lt;p&gt;This way we have totally conquered determinism property A above, but for property B there will be some subtle affects, we will discuss those in more details below.&lt;/p&gt;
+
+&lt;h1 id=&#34;putting-everything-together&#34;&gt;Putting Everything Together&lt;/h1&gt;
+
+&lt;p&gt;There&amp;rsquo;s still one problem unsolved, there might still be an attack:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;A lock script L1 is stored in a cell C1 with type script T1&lt;/li&gt;
+&lt;li&gt;Alice guards her cells via lock script L1 using &lt;code&gt;hash type&lt;/code&gt; as &lt;code&gt;type&lt;/code&gt;, by definition, she fills her script structure&amp;rsquo;s &lt;code&gt;code hash&lt;/code&gt; field with the hash of type script T1&lt;/li&gt;
+&lt;li&gt;Bob creates a different cell C2 with a always success lock script L2, and also use the same type script T1&lt;/li&gt;
+&lt;li&gt;Now Bob can use C2 as a dep cell to unlock Alice&amp;rsquo;s cell. CKB won&amp;rsquo;t be able to distinguish that Alice wants to use C1, while Bob provides C2. Both C1 and C2 use T1 as type script&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;That teaches us a very important lesson: if you build a lock/type script and want people to leverage the upgradability property, you have to make sure to use a type script that is unique and unforgeable.&lt;/p&gt;
+
+&lt;p&gt;Luckily, we just solved this problem! In the above we just developed a type script that can provide a unique type script hash in CKB. Combined together, this unique type script and &lt;code&gt;hash type&lt;/code&gt; feature in CKB provide a way to upgrade already deployed smart contracts.&lt;/p&gt;
+
+&lt;h1 id=&#34;chicken-egg-problem&#34;&gt;Chicken Egg Problem&lt;/h1&gt;
+
+&lt;p&gt;You might have noticed that CKB already implements such a script, named a &lt;a href=&#34;https://github.com/nervosnetwork/ckb/blob/2145e4e3adee46670b3c9411c4ac547fc76e3a23/script/src/type_id.rs&#34;&gt;type ID&lt;/a&gt; script. But unlike the other system scripts, this one is implemented purely in Rust outside of CKB VM. I&amp;rsquo;m sure you will have this rant: you said CKB VM is flexible, don&amp;rsquo;t you?&lt;/p&gt;
+
+&lt;p&gt;I do have made that claim in many different occasions, and in fact I&amp;rsquo;ve shown you above a way to implement the type ID logic in C code that could be compiled and run in CKB VM. But the problem here, is that we are at a chicken-egg situation: if we implement the type ID script, should we make it upgradable? If so, what should we put in as its type script? And if it&amp;rsquo;s not upgradable, how can we make sure it&amp;rsquo;s free from bugs and all the other vulnerabilities?&lt;/p&gt;
+
+&lt;p&gt;We thought hard on this question, and it really seems the easiest and safest solution, is to implement the type ID script via pure Rust, so we can deal with any potential situations in a more mature and experienced way.&lt;/p&gt;
+
+&lt;p&gt;But unlike some other chains which keep provide discounts for builtin smart contracts, we do set a very large cycle cost on the type ID script to discourage the use of the builtin script. At mainnet, it is now set as 1 million cycles. This is much much larger than the same logic implemented on CKB VM, we are hoping one day there will be fully vetted and secure type ID script that everyone will use instead of using this builtin type ID script.&lt;/p&gt;
+
+&lt;h1 id=&#34;trust-issue&#34;&gt;Trust Issue&lt;/h1&gt;
+
+&lt;p&gt;We do want to mention this new feature is not without its drawbacks. You should really understand how it works and the tradeoffs involved before using it. This section tries to discuss all those considerations, but I do want to warn you it might still miss something, and you should use your own judgments.&lt;/p&gt;
+
+&lt;h2 id=&#34;determinism-property-a&#34;&gt;Determinism Property A&lt;/h2&gt;
+
+&lt;p&gt;The type ID solution does provide a way to solve property A: when a bug is discovered, it&amp;rsquo;s possible to fix the smart contracts without affecting existing cells using the same smart contracts. But it does require certain considerations:&lt;/p&gt;
+
+&lt;h3 id=&#34;ownership&#34;&gt;Ownership&lt;/h3&gt;
+
+&lt;p&gt;With a type ID solution, people might be able to steal your coin by hacking the cell containing smart contracts you use. Since typical cells are guarded by only one or more signatures, some human errors could cause major problems. Fundamentally, it&amp;rsquo;s a tradeoff situation:&lt;/p&gt;
+
+&lt;p&gt;1) For the truly paranoid ones, they might want to stick to the old way of referencing a script via its own hash, not the type script hash of the containing cell. The &amp;ldquo;code is law&amp;rdquo; principle is fully enforced here. You will know exactly what can be used to unlock your cell, and it won&amp;rsquo;t change anytime in the future.
+2) For people willing to sacrifice a little bit, they can gain the ability to upgrade existing smart contracts for different benefits. But please do make sure to fully understand the lock script of the cell containing the script you use.&lt;/p&gt;
+
+&lt;p&gt;For example, if you look at the deployed system scripts in CKB&amp;rsquo;s mainnet, they all use type ID setup, but they all have their lock script&amp;rsquo;s code hash set to all zeros, meaning no one gets to change the lock script easily via a signature. We want to make sure there&amp;rsquo;s a need to change the default lock script, it will be via a fork agreed upon by the whole community, after all IMHO it really is the whole Nervos community that &lt;em&gt;owns&lt;/em&gt; CKB :P&lt;/p&gt;
+
+&lt;p&gt;There is some initial ideas that you can use to guard the script contained in a cell. For example, in addition to type ID logic, the type script can also contains other logics to validate the actual script contained in its cell. For example, formal analysis methods might be used, or certain test cases can be provided in which the type script run the actual script against. Only when the analysis or the test cases pass, will one be able to change script contained in a cell. Though I must say this is just some priliminary ideas, much research and development work needs to be done to make this a reality.&lt;/p&gt;
+
+&lt;h3 id=&#34;availability&#34;&gt;Availability&lt;/h3&gt;
+
+&lt;p&gt;A different issue with type ID, is availability of the script. When you have a cell using a script with &lt;code&gt;hash type&lt;/code&gt; set as &lt;code&gt;data&lt;/code&gt;, you are not worried someone might destroy the used script, you can always redeploy the script on-chain then unlock your cell.&lt;/p&gt;
+
+&lt;p&gt;But with a type ID solution, if something bad happens, and the cell with matching type script hash is destroyed, your cell will be locked forever, since your might never be able to build a cell with the same type script hash. There are some methods you can use, such as restricting the ability to destroy a cell with a type ID script but they all just mitigate the problem, not completely solving the problem.&lt;/p&gt;
+
+&lt;h2 id=&#34;determinism-property-b&#34;&gt;Determinism Property B&lt;/h2&gt;
+
+&lt;p&gt;We do want to mention that type ID does not provide a solution to property B. When you have a signed transaction, the behavior for this transaction won&amp;rsquo;t be changed with the upgrade of one smart contract.&lt;/p&gt;
+
+&lt;p&gt;Though there is way that the type ID solution might affect an already signed transaction: if a transaction uses a script from cell, and the cell gets updated, the transaction will be render invalidated, since the cell referenced in the original OutPoint is already spent. But one could argue with the old referencing solution, this problem might also happen.&lt;/p&gt;
+
+&lt;h1 id=&#34;conclusion&#34;&gt;Conclusion&lt;/h1&gt;
+
+&lt;p&gt;So that all I know about type ID at the moment :) It certainly has its drawbacks, but we do believe it can be proved very useful for certain users. For other users, this will be completely optional, and you are perfectly ignoring this feature at all. It&amp;rsquo;s my hope that this new feature rarely seen in other blockchains, can provide a starting point to boost more possibilities.&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>Let&#39;s Build a Minimal Blockchain 1: Dawn</title>
