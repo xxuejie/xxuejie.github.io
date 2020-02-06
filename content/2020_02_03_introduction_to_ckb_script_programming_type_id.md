@@ -205,4 +205,4 @@ Though there is way that the type ID solution might affect an already signed tra
 
 # Conclusion
 
-So that all I know about type ID at the moment :) It certainly has its drawbacks, but we do believe it can be proved very useful for certain users. For other users, this will be completely optional, and you are perfectly ignoring this feature at all. It's my hope that this new feature rarely seen in other blockchains, can provide a starting point to boost more possibilities.
+So that's all I know about type ID at the moment :) It certainly has its drawbacks, but we do believe it can be proved very useful for certain users. For other users, this will be completely optional, and you are perfectly ignoring this feature at all. It's my hope that this new feature rarely seen in other blockchains, can provide a starting point to boost more possibilities.
