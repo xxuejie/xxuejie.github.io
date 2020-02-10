@@ -74,4 +74,6 @@ And yet there is still a way to ensure upgradability when using native Rust code
 
 People who know me will know that I'm a Gopher fan, and there was a time that I used to believe Go can be a quite decent fit for building blockchains. But lately I stopped thinking that way, I believe the future of blockchains lies in a hybrid solution between a BEAM powered network stack, and a native code module written (possibly) in Rust. The result here, will a blockchain that can truly runs forever without needs for any forks.
 
+And it's actually not about forks, it's just about minimizing human interventions. If I'm just a merchant using Bitcoin to accept payments, why should I care about forks? As long as bitcoin continuously works for me, I am not worried about how many forks it performs underneath. Right now people worries about forks since forks require them to upgrade their software at a certain time frame, if a blockchain supports transparent, seamless upgrades, I wonder if forks will still be so hard to perform.
+
 Some might call this imaginary features, but we are in a very early phase of the field, and we are seeing people throw the old blockchains and start from new all the time. Who knows the stack we have today will work tomorrow? Personally I believe that is a future that is worth to explore more.
