@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="MobileOptimized" content="320">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
+    
+
+    
+      <link href='https://fonts.googleapis.com/css?family=Open+Sans:400|Old+Standard+TT:400&display=swap' rel='stylesheet' type='text/css'>
+    
+
+    <link rel="icon" type="image/png" href="https://xuejie.space/favicon_16x16.png" sizes="16x16">
+    <link rel="icon" type="image/png" href="https://xuejie.space/favicon_32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="https://xuejie.space/favicon_128x128.png" sizes="128x128">
+
+    <title>
+      
+      
+         Let&#39;s Build a Minimal Blockchain 2: Ultimate Upgradability 
+      
+    </title>
+    <link rel="canonical" href="https://xuejie.space/2020_02_08_lets_build_a_minimal_blockchain_ultimate_upgradability/">
+
+    <style>
+  * {
+    border:0;
+    font:inherit;
+    font-size:100%;
+    vertical-align:baseline;
+    margin:0;
+    padding:0;
+    color: black;
+    text-decoration-skip: ink;
+  }
+
+  body {
+    font-family:'Open Sans', 'Myriad Pro', Myriad, sans-serif;
+    font-size:17px;
+    line-height:160%;
+    color:#1d1313;
+    max-width:700px;
+    margin:auto;
+  }
+
+  p {
+    margin: 20px 0;
+  }
+
+  a img {
+    border:none;
+  }
+
+  img {
+    margin: 10px auto 10px auto;
+    max-width: 100%;
+    display: block;
+  }
+
+  .left-justify {
+    float: left;
+  }
+
+  .right-justify {
+    float:right;
+  }
+
+  pre, code {
+    font: 12px Consolas, "Liberation Mono", Menlo, Courier, monospace;
+    background-color: #f7f7f7;
+  }
+
+  code {
+    font-size: 12px;
+    padding: 4px;
+  }
+
+  pre {
+    margin-top: 0;
+    margin-bottom: 16px;
+    word-wrap: normal;
+    padding: 16px;
+    overflow: auto;
+    font-size: 85%;
+    line-height: 1.45;
+  }
+
+  pre>code {
+    padding: 0;
+    margin: 0;
+    font-size: 100%;
+    word-break: normal;
+    white-space: pre;
+    background: transparent;
+    border: 0;
+  }
+
+  pre code {
+    display: inline;
+    max-width: auto;
+    padding: 0;
+    margin: 0;
+    overflow: visible;
+    line-height: inherit;
+    word-wrap: normal;
+    background-color: transparent;
+    border: 0;
+  }
+
+  pre code::before,
+  pre code::after {
+    content: normal;
+  }
+
+  em,q,em,dfn {
+    font-style:italic;
+  }
+
+  .sans,html .gist .gist-file .gist-meta {
+    font-family:"Open Sans","Myriad Pro",Myriad,sans-serif;
+  }
+
+  .mono,pre,code,tt,p code,li code {
+    font-family:Menlo,Monaco,"Andale Mono","lucida console","Courier New",monospace;
+  }
+
+  .heading,.serif,h1,h2,h3 {
+    font-family:"Old Standard TT",serif;
+  }
+
+  strong {
+    font-weight:600;
+  }
+
+  q:before {
+    content:"\201C";
+  }
+
+  q:after {
+    content:"\201D";
+  }
+
+  del,s {
+    text-decoration:line-through;
+  }
+
+  blockquote {
+    font-family:"Old Standard TT",serif;
+    text-align:center;
+    padding:50px;
+  }
+
+  blockquote p {
+    display:inline-block;
+    font-style:italic;
+  }
+
+  blockquote:before,blockquote:after {
+    font-family:"Old Standard TT",serif;
+    content:'\201C';
+    font-size:35px;
+    color:#403c3b;
+  }
+
+  blockquote:after {
+    content:'\201D';
+  }
+
+  hr {
+    width:40%;
+    height: 1px;
+    background:#403c3b;
+    margin: 25px auto;
+  }
+
+  h1 {
+    font-size:35px;
+  }
+
+  h2 {
+    font-size:28px;
+  }
+
+  h3 {
+    font-size:22px;
+    margin-top:18px;
+  }
+
+  h1 a,h2 a,h3 a {
+    text-decoration:none;
+  }
+
+  h1,h2 {
+    margin-top:28px;
+  }
+
+  #sub-header, time {
+    color:#403c3b;
+    font-size:13px;
+  }
+
+  #sub-header {
+    margin: 0 4px;
+  }
+
+  #nav h1 a {
+    font-size:35px;
+    color:#1d1313;
+    line-height:120%;
+  }
+
+  .posts_listing a,#nav a {
+    text-decoration: none;
+  }
+
+  li {
+    margin-left: 20px;
+  }
+
+  ul li {
+    margin-left: 5px;
+  }
+
+  ul li {
+    list-style-type: none;
+  }
+  ul li:before {
+    content:"\00BB \0020";
+  }
+
+  #nav ul li:before, .posts_listing li:before {
+    content:'';
+    margin-right:0;
+  }
+
+  #content {
+    text-align:left;
+    width:100%;
+    font-size:15px;
+    padding:60px 0 80px;
+  }
+
+  #content h1,#content h2 {
+    margin-bottom:5px;
+  }
+
+  #content h2 {
+    font-size:25px;
+  }
+
+  #content .entry-content {
+    margin-top:15px;
+  }
+
+  #content time {
+    margin-left:3px;
+  }
+
+  #content h1 {
+    font-size:30px;
+  }
+
+  .highlight {
+    margin: 10px 0;
+  }
+
+  .posts_listing {
+    margin:0 0 50px;
+  }
+
+  .posts_listing li {
+    margin:0 0 25px 15px;
+  }
+
+  .posts_listing li a:hover,#nav a:hover {
+    text-decoration: underline;
+  }
+
+  #nav {
+    text-align:center;
+    position:static;
+    margin-top:60px;
+  }
+
+  #nav ul {
+    display: table;
+    margin: 8px auto 0 auto;
+  }
+
+  #nav li {
+    list-style-type:none;
+    display:table-cell;
+    font-size:15px;
+    padding: 0 20px;
+  }
+
+  #links {
+    margin: 50px 0 0 0;
+  }
+
+  #links :nth-child(2) {
+    float:right;
+  }
+
+  #not-found {
+    text-align: center;
+  }
+
+  #not-found a {
+    font-family:"Old Standard TT",serif;
+    font-size: 200px;
+    text-decoration: none;
+    display: inline-block;
+    padding-top: 225px;
+  }
+
+  @media (max-width: 750px) {
+    body {
+      padding-left:20px;
+      padding-right:20px;
+    }
+
+    #nav h1 a {
+      font-size:28px;
+    }
+
+    #nav li {
+      font-size:13px;
+      padding: 0 15px;
+    }
+
+    #content {
+      margin-top:0;
+      padding-top:50px;
+      font-size:14px;
+    }
+
+    #content h1 {
+      font-size:25px;
+    }
+
+    #content h2 {
+      font-size:22px;
+    }
+
+    .posts_listing li div {
+      font-size:12px;
+    }
+  }
+
+  @media (max-width: 400px) {
+    body {
+      padding-left:20px;
+      padding-right:20px;
+    }
+
+    #nav h1 a {
+      font-size:22px;
+    }
+
+    #nav li {
+      font-size:12px;
+      padding: 0 10px;
+    }
+
+    #content {
+      margin-top:0;
+      padding-top:20px;
+      font-size:12px;
+    }
+
+    #content h1 {
+      font-size:20px;
+    }
+
+    #content h2 {
+      font-size:18px;
+    }
+
+    .posts_listing li div{
+      font-size:12px;
+    }
+  }
+</style>
+
+
+    
+  </head>
+
+  <body>
+    <section id=nav>
+      <h1><a href="https://xuejie.space/">Less is More</a></h1>
+      <ul>
+        
+          <li><a href="https://xuejie.space/about">About</a></li>
+        
+          <li><a href="https://github.com/xxuejie">GitHub</a></li>
+        
+          <li><a href="https://xuejie.space/index.xml">RSS</a></li>
+        
+          <li><a href="https://twitter.com/xxuejie">Twitter</a></li>
+        
+      </ul>
+    </section>
+
+
+<section id=content>
+  <h1> Let&#39;s Build a Minimal Blockchain 2: Ultimate Upgradability </h1>
+
+  
+    <div id=sub-header>
+      February 2020 · 8 minute read
+    </div>
+  
+
+  <div class="entry-content">
+    
+
+<p><a href="../2019_10_21_lets_build_a_minimal_blockchain_dawn">Last time</a> I mentioned the very core of a blockchain: the block verification logic. This time, we will look at the bigger problem: everyone seems to be providing upgradable block verification logic, no matter it&rsquo;s called <code>runtime</code>, <code>module</code> or something else. But there&rsquo;s more to just block verification, how can we ensure the ultimate upgradability of a blockchain?</p>
+
+<h1 id="network-stack">Network Stack</h1>
+
+<p>The network stack in a blockchain is one component that typically receives the least amount of changes after launch. It is usually left there unchanged, following &ldquo;if it ain&rsquo;t broke, don&rsquo;t fix it&rdquo; principle. Some of the reason might be compatibility needs, other reasons might also include security, etc. And when there is a change needed, you might encounter release notes <a href="https://bitcoin.org/en/alert/2018-09-21-required-upgrade">like following</a>:</p>
+
+<blockquote>
+<p>You should not run any version of Bitcoin Core other than 0.16.3. Older versions should not exist on the network. If you know anyone who is running an older version, tell them to upgrade it as soon as possible.</p>
+</blockquote>
+
+<p>Different people would have different interpretations here, many would argue this is not a problem. But personally I&rsquo;m not so sure on this: manual intervention is required here to download the latest version of Bitcoin and upgrade the current version. For large organizations with sophisticated ops team, this might seem transparent. But for the many of us running nodes in home computer, manual invervention, while might be easy most of the time, is still work required. In addition, to people who just want a <a href="https://keys.casa/lightning-bitcoin-node/">plug-n-forget node</a> running Bitcoin helping his/her business, manual work is always a hurdle. I know many will have different opinions but to me, this is some sort of &ldquo;fork&rdquo;, cuz forks, when looking from the ordinary eyes of end-user, is just upgrading to a newer version of software, which is no different from what the above release note requires people to do.</p>
+
+<p>I&rsquo;m not sure if this question is useful, but I have never seen people raising this question so I want to do it here: is it possible to have a blockchain node that can transparently upgrade network stack(and hopefully many other parts) without restarting the node? Can we truly have a piece of blockchain software that runs forever?</p>
+
+<p>First, I think we should talk about a totally different issue:</p>
+
+<h1 id="native-languages-vs-image-based-languages">Native Languages vs Image Based Languages</h1>
+
+<p>I don&rsquo;t usually care for programming languages. I believe we do have far too many programming languages, many of which are only differs in the superficial syntaxes. But looking beyond that, there are still several different unique types of programming langauges, and the choices between them can make quite a big difference.</p>
+
+<p>In recent years, native languages, such as Rust, Go, Elixir are starting to make their revenges. With the development of type inference algorithms, native languages start to gain some of the benefits of dynamic languages, while at the same time providing better stories in terms of performance, as well as code maintainability. This is indeed an advancement in a sense, but on the other hand we are also losing one unique possibility that is (at least till now) only feasible in dynamic languages: the ability to alter code on the fly.</p>
+
+<p>While many of the toy grade dynamic languages do not offer this feature, almost hidden in the history there is a unique branch of programming languages named <code>image based languages</code>. The way they work, is that a runtime environment is started first, then the environment could be used to run different applications, even new applications deployed on the fly. What this means, is that while some code could be packed together with the runtime environment (called an <code>image</code>) to boot together, more code could be added on the fly which alter the application behavior. This means unlike a native language, an image based language could be used to provide upgradability.</p>
+
+<p>Unfortunately, most image based languages have either been a lost art or only filled in a niche environment. It is really hard to find an industry grade image based programming language that is not only used by die-core lovers, but I think we do still have one available.</p>
+
+<h1 id="beam">BEAM!</h1>
+
+<p>Now we are coming to the topic of this talk! I personally believe BEAM, which is the VM powers <a href="http://erlang.org/">Erlang</a>/<a href="https://elixir-lang.org/">Elixir</a>, can be a perfect fit for building blockchains. We have continuously talked about how we feel blockchains are exactly like hardware. Well it turns out BEAM has been used for years to build software for hardware that never stops, such as telephone switches. When putting into the best use, I do feel BEAM will have unique advantages for building blockchains:</p>
+
+<h3 id="network-stack-1">Network stack</h3>
+
+<p>Believe it or not, the original use for Erlang, is telephone switches with relays voice data from one wire to one of many other wires. If we wrap our head a bit, I personally feel this is exactly what the network stack in modern blockchain does:</p>
+
+<ul>
+<li>You are maintaining a series of connections with other peers, telephone switches do that, check;</li>
+<li>From time to time, you receive a transaction/block, and wants to relay it to one or many different other locations, telephone switches do that and they even do something more: they have real-time requirements, check;</li>
+<li>You do want to minimize the downtime when it happens, telephone switches usually have legal contracts preventing downtime, check</li>
+</ul>
+
+<p>As mentioned above, telephone switches usually have legal contracts preventing downtime, they have to do hot upgrades with no downtime, which provides the exact benefit that we can upgrade the network stack of a blockchain, when powered by BEAM.</p>
+
+<p>In fact our requirements might not be as harsh as telephone switches, we could tolerate slight downtime, all we need to do is reduce manual human interventions. So we can do something simpler here:</p>
+
+<ul>
+<li>In the initial handshake protocol, each peer includes its own protocol version;</li>
+<li>When a peer using a higher version protocol notices a lower version protocol, it sends the new upgraded network stack code to the other peer;</li>
+<li>When the peer with lower version protocol receives and validates(possibly via signature verification) the code, it reloads it current network stack, and runs the upgraded network stack</li>
+</ul>
+
+<p>This means a reconnection might be needed when a node is upgrading its own network stack, but at least we are cutting the human intervention, and those who are really annoyed by this are well welcome to implement the full Erlang hot upgrading protocol, resulting in a real zero downtime upgrades.</p>
+
+<h3 id="block-validation-logic-and-others">Block validation logic(and others)</h3>
+
+<p>People who know Erlang/Elixir well might start to object me: but Erlang/Elixir is slow in modern blockchain&rsquo;s standard! You might never have a fast modern blockchain built with Erlang/Elixir!</p>
+
+<p>I totally agree with that, that&rsquo;s why I believe the futures lies in a hybrid stack between a network stack via BEAM, and a native, fast language such as Rust that can unleash all potentials of a computer. BEAM is slow indeed, but the other side of story, is that network stack should never take a huge portion of the CPU time in a well-tuned application. I would personally argue 5% of the CPU time is well enough to perform all the networking stack in a modern blockchain, even when we are using Erlang/Elixir running on BEAM. You could use Rust however you want to unleash the beast in your computer for maximum blockchain performance.</p>
+
+<p>And yet there is still a way to ensure upgradability when using native Rust code:</p>
+
+<ul>
+<li>BEAM does provide a <a href="http://erlang.org/doc/man/erl_nif.html">way</a> to perform upgrades on native code it uses. This means even though we are packing our block validation logic(and possibly many other parts, such as storage) in native code, it is still possible to perform hot upgrades on the native part without restarting the whole node. This means it&rsquo;s easy to implement things like &ldquo;when the block number reaches 600000, we will start using the new block validation rules&rdquo;, and this could all work without any restarts to the whole application, a blockchain node can perfectly run forever as long as it needs.</li>
+<li>There will be people who are frightened by the need to dynamiclly run native code, or people who want to leverage more than one CPU architecture. It&rsquo;s perfectly possible to leverage techniques mentioned in the <a href="../2019_10_21_lets_build_a_minimal_blockchain_dawn">previous post</a>: one can pack the core block verification logic in RISC-V, and runs it in a CKB VM instance. That means for the most of the time, all you need to do, is upgrade the program running in the VM, you don&rsquo;t have to touch the dangerous action of upgrading a whole module written in native code. This whole process still works.</li>
+</ul>
+
+<h1 id="ultimate-upgradability">Ultimate Upgradability</h1>
+
+<p>People who know me will know that I&rsquo;m a Gopher fan, and there was a time that I used to believe Go can be a quite decent fit for building blockchains. But lately I stopped thinking that way, I believe the future of blockchains lies in a hybrid solution between a BEAM powered network stack, and a native code module written (possibly) in Rust. The result here, will a blockchain that can truly runs forever without needs for any forks.</p>
+
+<p>Some might call this imaginary features, but we are in a very early phase of the field, and we are seeing people throw the old blockchains and start from new all the time. Who knows the stack we have today will work tomorrow? Personally I believe that is a future that is worth to explore more.</p>
+
+  </div>
+
+  <div id=links>
+    
+      <a class="basic-alignment left" href="https://xuejie.space/2020_02_03_introduction_to_ckb_script_programming_type_id/">&laquo; Introduction to CKB Script Programming 6: Type ID</a>
+    
+    
+  </div>
+</section>
+
+  
+</body>
+</html>
+
+
+
