@@ -31,13 +31,17 @@ Unfortunately, most image based languages have either been a lost art or only fi
 
 Now we are coming to the topic of this talk! I personally believe BEAM, which is the VM powers [Erlang](http://erlang.org/)/[Elixir](https://elixir-lang.org/), can be a perfect fit for building blockchains. We have continuously talked about how we feel blockchains are exactly like hardware. Well it turns out BEAM has been used for years to build software for hardware that never stops, such as telephone switches. When putting into the best use, I do feel BEAM will have unique advantages for building blockchains:
 
-### Network stack
+## Network stack
 
 Believe it or not, the original use for Erlang, is telephone switches with relays voice data from one wire to one of many other wires. If we wrap our head a bit, I personally feel this is exactly what the network stack in modern blockchain does:
 
 * You are maintaining a series of connections with other peers, telephone switches do that, check;
 * From time to time, you receive a transaction/block, and wants to relay it to one or many different other locations, telephone switches do that and they even do something more: they have real-time requirements, check;
 * You do want to minimize the downtime when it happens, telephone switches usually have legal contracts preventing downtime, check
+
+Besides those points, there are actually more that can be brought by BEAM:
+
+### Zero Downtime
 
 As mentioned above, telephone switches usually have legal contracts preventing downtime, they have to do hot upgrades with no downtime, which provides the exact benefit that we can upgrade the network stack of a blockchain, when powered by BEAM.
 
@@ -49,7 +53,13 @@ In fact our requirements might not be as harsh as telephone switches, we could t
 
 This means a reconnection might be needed when a node is upgrading its own network stack, but at least we are cutting the human intervention, and those who are really annoyed by this are well welcome to implement the full Erlang hot upgrading protocol, resulting in a real zero downtime upgrades.
 
-### Block validation logic(and others)
+### Fairness
+
+A telephone switch doesn't run only one telephone line at a time, it runs numerous telephone lines simultaneously, and all of them should function smoothly without delays. That's why BEAM treats fairness as the top priority when scheduling code running on it. It ensures all parts of the code gets a fair chance to run. This might sound counter-intuitive at first but it actually suits a blockchain stack quite well. Let me explain.
+
+In the network stack of many blockchains, there is an IBD(Initial Block Download) mode, and a normal mode. This is because when a node initially starts to sync, it needs to grab a lot of blocks, and we have to handle it specially, so it won't affect other peers currently in a network. With a fairness scheduler, we might be able to simply the code, so a network stack without IBD can still handle initial node syncing as well as normal block syncing in a fairness way. Note this might be possible in other stacks, but the thing is: if we have a well-designed foundation that has this property developed and tested for years, why not embrace that instead of rolling one on our own?
+
+## Block validation logic(and others)
 
 People who know Erlang/Elixir well might start to object me: but Erlang/Elixir is slow in modern blockchain's standard! You might never have a fast modern blockchain built with Erlang/Elixir!
 
