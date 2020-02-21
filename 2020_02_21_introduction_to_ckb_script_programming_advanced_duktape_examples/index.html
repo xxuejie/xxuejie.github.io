@@ -1,0 +1,1812 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="MobileOptimized" content="320">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
+    
+
+    
+      <link href='https://fonts.googleapis.com/css?family=Open+Sans:400|Old+Standard+TT:400&display=swap' rel='stylesheet' type='text/css'>
+    
+
+    <link rel="icon" type="image/png" href="https://xuejie.space/favicon_16x16.png" sizes="16x16">
+    <link rel="icon" type="image/png" href="https://xuejie.space/favicon_32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="https://xuejie.space/favicon_128x128.png" sizes="128x128">
+
+    <title>
+      
+      
+         Introduction to CKB Script Programming 7: Advanced Duktape Examples 
+      
+    </title>
+    <link rel="canonical" href="https://xuejie.space/2020_02_21_introduction_to_ckb_script_programming_advanced_duktape_examples/">
+
+    <style>
+  * {
+    border:0;
+    font:inherit;
+    font-size:100%;
+    vertical-align:baseline;
+    margin:0;
+    padding:0;
+    color: black;
+    text-decoration-skip: ink;
+  }
+
+  body {
+    font-family:'Open Sans', 'Myriad Pro', Myriad, sans-serif;
+    font-size:17px;
+    line-height:160%;
+    color:#1d1313;
+    max-width:700px;
+    margin:auto;
+  }
+
+  p {
+    margin: 20px 0;
+  }
+
+  a img {
+    border:none;
+  }
+
+  img {
+    margin: 10px auto 10px auto;
+    max-width: 100%;
+    display: block;
+  }
+
+  .left-justify {
+    float: left;
+  }
+
+  .right-justify {
+    float:right;
+  }
+
+  pre, code {
+    font: 12px Consolas, "Liberation Mono", Menlo, Courier, monospace;
+    background-color: #f7f7f7;
+  }
+
+  code {
+    font-size: 12px;
+    padding: 4px;
+  }
+
+  pre {
+    margin-top: 0;
+    margin-bottom: 16px;
+    word-wrap: normal;
+    padding: 16px;
+    overflow: auto;
+    font-size: 85%;
+    line-height: 1.45;
+  }
+
+  pre>code {
+    padding: 0;
+    margin: 0;
+    font-size: 100%;
+    word-break: normal;
+    white-space: pre;
+    background: transparent;
+    border: 0;
+  }
+
+  pre code {
+    display: inline;
+    max-width: auto;
+    padding: 0;
+    margin: 0;
+    overflow: visible;
+    line-height: inherit;
+    word-wrap: normal;
+    background-color: transparent;
+    border: 0;
+  }
+
+  pre code::before,
+  pre code::after {
+    content: normal;
+  }
+
+  em,q,em,dfn {
+    font-style:italic;
+  }
+
+  .sans,html .gist .gist-file .gist-meta {
+    font-family:"Open Sans","Myriad Pro",Myriad,sans-serif;
+  }
+
+  .mono,pre,code,tt,p code,li code {
+    font-family:Menlo,Monaco,"Andale Mono","lucida console","Courier New",monospace;
+  }
+
+  .heading,.serif,h1,h2,h3 {
+    font-family:"Old Standard TT",serif;
+  }
+
+  strong {
+    font-weight:600;
+  }
+
+  q:before {
+    content:"\201C";
+  }
+
+  q:after {
+    content:"\201D";
+  }
+
+  del,s {
+    text-decoration:line-through;
+  }
+
+  blockquote {
+    font-family:"Old Standard TT",serif;
+    text-align:center;
+    padding:50px;
+  }
+
+  blockquote p {
+    display:inline-block;
+    font-style:italic;
+  }
+
+  blockquote:before,blockquote:after {
+    font-family:"Old Standard TT",serif;
+    content:'\201C';
+    font-size:35px;
+    color:#403c3b;
+  }
+
+  blockquote:after {
+    content:'\201D';
+  }
+
+  hr {
+    width:40%;
+    height: 1px;
+    background:#403c3b;
+    margin: 25px auto;
+  }
+
+  h1 {
+    font-size:35px;
+  }
+
+  h2 {
+    font-size:28px;
+  }
+
+  h3 {
+    font-size:22px;
+    margin-top:18px;
+  }
+
+  h1 a,h2 a,h3 a {
+    text-decoration:none;
+  }
+
+  h1,h2 {
+    margin-top:28px;
+  }
+
+  #sub-header, time {
+    color:#403c3b;
+    font-size:13px;
+  }
+
+  #sub-header {
+    margin: 0 4px;
+  }
+
+  #nav h1 a {
+    font-size:35px;
+    color:#1d1313;
+    line-height:120%;
+  }
+
+  .posts_listing a,#nav a {
+    text-decoration: none;
+  }
+
+  li {
+    margin-left: 20px;
+  }
+
+  ul li {
+    margin-left: 5px;
+  }
+
+  ul li {
+    list-style-type: none;
+  }
+  ul li:before {
+    content:"\00BB \0020";
+  }
+
+  #nav ul li:before, .posts_listing li:before {
+    content:'';
+    margin-right:0;
+  }
+
+  #content {
+    text-align:left;
+    width:100%;
+    font-size:15px;
+    padding:60px 0 80px;
+  }
+
+  #content h1,#content h2 {
+    margin-bottom:5px;
+  }
+
+  #content h2 {
+    font-size:25px;
+  }
+
+  #content .entry-content {
+    margin-top:15px;
+  }
+
+  #content time {
+    margin-left:3px;
+  }
+
+  #content h1 {
+    font-size:30px;
+  }
+
+  .highlight {
+    margin: 10px 0;
+  }
+
+  .posts_listing {
+    margin:0 0 50px;
+  }
+
+  .posts_listing li {
+    margin:0 0 25px 15px;
+  }
+
+  .posts_listing li a:hover,#nav a:hover {
+    text-decoration: underline;
+  }
+
+  #nav {
+    text-align:center;
+    position:static;
+    margin-top:60px;
+  }
+
+  #nav ul {
+    display: table;
+    margin: 8px auto 0 auto;
+  }
+
+  #nav li {
+    list-style-type:none;
+    display:table-cell;
+    font-size:15px;
+    padding: 0 20px;
+  }
+
+  #links {
+    margin: 50px 0 0 0;
+  }
+
+  #links :nth-child(2) {
+    float:right;
+  }
+
+  #not-found {
+    text-align: center;
+  }
+
+  #not-found a {
+    font-family:"Old Standard TT",serif;
+    font-size: 200px;
+    text-decoration: none;
+    display: inline-block;
+    padding-top: 225px;
+  }
+
+  @media (max-width: 750px) {
+    body {
+      padding-left:20px;
+      padding-right:20px;
+    }
+
+    #nav h1 a {
+      font-size:28px;
+    }
+
+    #nav li {
+      font-size:13px;
+      padding: 0 15px;
+    }
+
+    #content {
+      margin-top:0;
+      padding-top:50px;
+      font-size:14px;
+    }
+
+    #content h1 {
+      font-size:25px;
+    }
+
+    #content h2 {
+      font-size:22px;
+    }
+
+    .posts_listing li div {
+      font-size:12px;
+    }
+  }
+
+  @media (max-width: 400px) {
+    body {
+      padding-left:20px;
+      padding-right:20px;
+    }
+
+    #nav h1 a {
+      font-size:22px;
+    }
+
+    #nav li {
+      font-size:12px;
+      padding: 0 10px;
+    }
+
+    #content {
+      margin-top:0;
+      padding-top:20px;
+      font-size:12px;
+    }
+
+    #content h1 {
+      font-size:20px;
+    }
+
+    #content h2 {
+      font-size:18px;
+    }
+
+    .posts_listing li div{
+      font-size:12px;
+    }
+  }
+</style>
+
+
+    
+  </head>
+
+  <body>
+    <section id=nav>
+      <h1><a href="https://xuejie.space/">Less is More</a></h1>
+      <ul>
+        
+          <li><a href="https://xuejie.space/about">About</a></li>
+        
+          <li><a href="https://github.com/xxuejie">GitHub</a></li>
+        
+          <li><a href="https://xuejie.space/index.xml">RSS</a></li>
+        
+          <li><a href="https://twitter.com/xxuejie">Twitter</a></li>
+        
+      </ul>
+    </section>
+
+
+<section id=content>
+  <h1> Introduction to CKB Script Programming 7: Advanced Duktape Examples </h1>
+
+  
+    <div id=sub-header>
+      February 2020 · 29 minute read
+    </div>
+  
+
+  <div class="entry-content">
+    
+
+<p>I&rsquo;ve introduced duktape before, shown how you can run JavaScript code on Nervos CKB. But up to this point, the code I&rsquo;ve shown is all single piece of code with very simple logic. What if we need to parse CKB data structures? What if I need external libraries in my script? In this post we will create a duktape-powered CKB script with the following requirements:</p>
+
+<ul>
+<li>External library dependency</li>
+<li>Serialization/Deserialization of CKB data structures</li>
+<li>Hashing</li>
+</ul>
+
+<p>Before continuing on this post, I want to mention that the major work used in this post, is not written by me. The credit really goes to <a href="https://github.com/Keith-CY">one</a> of my colleagues, who spent the effort putting together a very nice <a href="https://github.com/xxuejie/ckb-duktape-template">template</a> we can use here, so we can have a streamlined CKB script development experience via JavaScript &amp; duktape.</p>
+
+<p>This post is written based on current CKB Lina mainnet version now.</p>
+
+<h1 id="scope">Scope</h1>
+
+<p>In this post, we will write a simple <a href="https://en.bitcoin.it/wiki/Hash_Time_Locked_Contracts">HTLC</a> script in JavaScript. Let me admit that I&rsquo;m not the world&rsquo;s best teacher, there&rsquo;re many, many people who are better than me in <a href="https://liquality.io/blog/hash-time-locked-contracts-htlcs-explained/~">explaining HTLC</a>. So if you want to know what HTLC is, feel free to check other places first and come back here later.</p>
+
+<p>Now I will assume you know what HTLC is :P The HTLC script we create here, will be unlocked if either one of the following conditions is met:</p>
+
+<ul>
+<li>A correct secret string, and a valid signature for public key A are provided;</li>
+<li>Certain amount of time is passed, and a valid signature for public key B is provided</li>
+</ul>
+
+<p>And there are also several points made in the design of our HTLC script:</p>
+
+<ol>
+<li>For simplicity, we will use a trick to do signature verification here: instead of doing signature verification directly in JavaScript, we will rely on a separate cell to provide that a signature of the correct public key is provided. Later in this post we will explain the consequence and consideration regarding signature verifi2ation in JavaScript;</li>
+<li>A hash of the correct secret string will be included in <code>args</code> part of the CKB HTLC script structure, so when the script runs, it can run a hashing function on the provided secret string, testing if it is correct;</li>
+<li>The amount of time is always set as 100 blocks. To verify 100 blocks has passed, the unlock transaction should include a block header which at least 100 blocks after the cell to unlock is committed on chain.</li>
+</ol>
+
+<p>With the design set in stone, let&rsquo;s jump to the implementation now.</p>
+
+<h1 id="getting-our-hands-dirty">Getting Our Hands Dirty</h1>
+
+<p>While you are certainly welcome to craft the skeleton on your own, a decent <a href="https://github.com/xxuejie/ckb-duktape-template">template</a> has already been prepared by one of my colleagues to save us the time. In this post, we will start from the already built template here:</p>
+
+<pre><code>$ export TOP=$(pwd)
+$ git clone https://github.com/xxuejie/ckb-duktape-template htlc-template
+$ cd htlc-template
+$ npm install
+# now you can try building the script first to ensure everything works
+$ npm run build
+</code></pre>
+
+<p>Now you can use your favorite editor to open <code>src/index.js</code> file in <code>htlc-template</code> repo, the current content of the file looks like this:</p>
+
+<pre><code>$ cd $TOP/htlc-template
+$ cat src/index.js
+const { Molecule } = require('molecule-javascript')
+const schema = require('../schema/blockchain-combined.json')
+
+const names = schema.declarations.map(declaration =&gt; declaration.name)
+const scriptTypeIndex = names.indexOf('Script')
+const scriptType = schema.declarations[scriptTypeIndex]
+
+// Write your script logic here.
+CKB.debug(scriptType)
+</code></pre>
+
+<p>We will modify this file to add the logic we need.</p>
+
+<h2 id="script-debugger-preparation">Script Debugger Preparation</h2>
+
+<p>To aid script programming, let&rsquo;s put together a debugging environment. The debugging environment will serve 2 purposes:</p>
+
+<ul>
+<li>Prepare a complete transaction that can be loaded to CKB debugger;</li>
+<li>Create transactions and relay them to CKB</li>
+</ul>
+
+<p>Let&rsquo;s first create the environment skeleton:</p>
+
+<pre><code>$ cd $TOP
+$ mkdir htlc-runner
+$ cd htlc-runner
+$ npm init
+$ npm install --save @nervosnetwork/ckb-sdk-core
+$ npm install --save @nervosnetwork/ckb-sdk-utils
+$ npm install --save molecule-javascript
+$ npm install --save crc32
+</code></pre>
+
+<p>Now let&rsquo;s create a transaction skeleton for debugger usage:</p>
+
+<pre><code>$ cd $TOP/htlc-runner
+$ cat skeleton.json
+{
+  &quot;mock_info&quot;: {
+    &quot;inputs&quot;: [
+      {
+        &quot;input&quot;: {
+          &quot;previous_output&quot;: {
+            &quot;tx_hash&quot;: &quot;0xa98c57135830e1b91345948df6c4b8870828199a786b26f09f7dec4bc27a73da&quot;,
+            &quot;index&quot;: &quot;0x0&quot;
+          },
+          &quot;since&quot;: &quot;0x0&quot;
+        },
+        &quot;output&quot;: {
+          &quot;capacity&quot;: &quot;0x4b9f96b00&quot;,
+          &quot;lock&quot;: {
+            &quot;args&quot;: &quot;0x32e555f3ff8e135cece1351a6a2971518392c1e30375c1e006ad0ce8eac07947c219351b150b900e50a7039f1e448b844110927e5fd9bd30425806cb8ddff1fd970dd9a8&quot;,
+            &quot;code_hash&quot;: &quot;@DUKTAPE_HASH&quot;,
+            &quot;hash_type&quot;: &quot;data&quot;
+          },
+          &quot;type&quot;: null
+        },
+        &quot;data&quot;: &quot;0x&quot;
+      }
+    ],
+    &quot;cell_deps&quot;: [
+      {
+        &quot;cell_dep&quot;: {
+          &quot;out_point&quot;: {
+            &quot;tx_hash&quot;: &quot;0xfcd1b3ddcca92b1e49783769e9bf606112b3f8cf36b96cac05bf44edcf5377e6&quot;,
+            &quot;index&quot;: &quot;0x0&quot;
+          },
+          &quot;dep_type&quot;: &quot;code&quot;
+        },
+        &quot;output&quot;: {
+          &quot;capacity&quot;: &quot;0x702198d000&quot;,
+          &quot;lock&quot;: {
+            &quot;args&quot;: &quot;0x&quot;,
+            &quot;code_hash&quot;: &quot;0x0000000000000000000000000000000000000000000000000000000000000000&quot;,
+            &quot;hash_type&quot;: &quot;data&quot;
+          },
+          &quot;type&quot;: null
+        },
+        &quot;data&quot;: &quot;@SCRIPT_CODE&quot;
+      },
+      {
+        &quot;cell_dep&quot;: {
+          &quot;out_point&quot;: {
+            &quot;tx_hash&quot;: &quot;0xfcd1b3ddcca92b1e49783769e9bf606112b3f8cf36b96cac05bf44edcf5377e6&quot;,
+            &quot;index&quot;: &quot;0x1&quot;
+          },
+          &quot;dep_type&quot;: &quot;code&quot;
+        },
+        &quot;output&quot;: {
+          &quot;capacity&quot;: &quot;0x702198d000&quot;,
+          &quot;lock&quot;: {
+            &quot;args&quot;: &quot;0x&quot;,
+            &quot;code_hash&quot;: &quot;0x0000000000000000000000000000000000000000000000000000000000000000&quot;,
+            &quot;hash_type&quot;: &quot;data&quot;
+          },
+          &quot;type&quot;: null
+        },
+        &quot;data&quot;: &quot;@DUKTAPE_CODE&quot;
+      }
+    ],
+    &quot;header_deps&quot;: [
+      {
+        &quot;compact_target&quot;: &quot;0x1a1e4c2f&quot;,
+        &quot;hash&quot;: &quot;0x51d199c4060f703344eab3c9b8794e6c60195ae9093986c35dba7c3486224409&quot;,
+        &quot;number&quot;: &quot;0xd8fc4&quot;,
+        &quot;parent_hash&quot;: &quot;0xc02e01eb57b205c6618c9870667ed90e13adb7e9a7ae00e7a780067a6bfa6a7b&quot;,
+        &quot;nonce&quot;: &quot;0xca8c7caa8100003400231b4f9d6e0300&quot;,
+        &quot;timestamp&quot;: &quot;0x17061eab69e&quot;,
+        &quot;transactions_root&quot;: &quot;0xffb0863f4ae1f3026ba99b2458de2fa69881f7508599e2ff1ee51a54c88b5f88&quot;,
+        &quot;proposals_hash&quot;: &quot;0x0000000000000000000000000000000000000000000000000000000000000000&quot;,
+        &quot;uncles_hash&quot;: &quot;0x0000000000000000000000000000000000000000000000000000000000000000&quot;,
+        &quot;version&quot;: &quot;0x0&quot;,
+        &quot;epoch&quot;: &quot;0x53f00fa000232&quot;,
+        &quot;dao&quot;: &quot;0x4bfe53a5a9bb9a30c88898b9dfe22300a58f2bafed47680000d3b9f5b6630107&quot;
+      }
+    ]
+  },
+  &quot;tx&quot;: {
+    &quot;version&quot;: &quot;0x0&quot;,
+    &quot;cell_deps&quot;: [
+      {
+        &quot;out_point&quot;: {
+          &quot;tx_hash&quot;: &quot;0xfcd1b3ddcca92b1e49783769e9bf606112b3f8cf36b96cac05bf44edcf5377e6&quot;,
+          &quot;index&quot;: &quot;0x0&quot;
+        },
+        &quot;dep_type&quot;: &quot;code&quot;
+      },
+      {
+        &quot;out_point&quot;: {
+          &quot;tx_hash&quot;: &quot;0xfcd1b3ddcca92b1e49783769e9bf606112b3f8cf36b96cac05bf44edcf5377e6&quot;,
+          &quot;index&quot;: &quot;0x1&quot;
+        },
+        &quot;dep_type&quot;: &quot;code&quot;
+      }
+    ],
+    &quot;header_deps&quot;: [
+      &quot;0x51d199c4060f703344eab3c9b8794e6c60195ae9093986c35dba7c3486224409&quot;
+    ],
+    &quot;inputs&quot;: [
+      {
+        &quot;previous_output&quot;: {
+          &quot;tx_hash&quot;: &quot;0xa98c57135830e1b91345948df6c4b8870828199a786b26f09f7dec4bc27a73da&quot;,
+          &quot;index&quot;: &quot;0x0&quot;
+        },
+        &quot;since&quot;: &quot;0x0&quot;
+      }
+    ],
+    &quot;outputs&quot;: [
+      {
+        &quot;capacity&quot;: &quot;0x0&quot;,
+        &quot;lock&quot;: {
+          &quot;args&quot;: &quot;0x&quot;,
+          &quot;code_hash&quot;: &quot;0x0000000000000000000000000000000000000000000000000000000000000000&quot;,
+          &quot;hash_type&quot;: &quot;data&quot;
+        },
+        &quot;type&quot;: null
+      }
+    ],
+    &quot;witnesses&quot;: [
+      &quot;0x210000000c0000001d0000000d0000006920616d20612073656372657400000000&quot;
+    ],
+    &quot;outputs_data&quot;: [
+      &quot;0x&quot;
+    ]
+  }
+}
+</code></pre>
+
+<p>You might notice that the skeleton skips dep cell data part, this is because as we develop the HTLC script, we might need to insert different contents in the skeleton. Hence a runner here is needed to prepare the skeleton to a full transaction, then run it via CKB debugger:</p>
+
+<pre><code>$ cd $TOP/htlc-runner
+$ cat runner.js
+#!/usr/bin/env node
+
+const { Molecule } = require('molecule-javascript')
+const schema = require('../htlc-template/schema/blockchain-combined.json')
+const utils = require(&quot;@nervosnetwork/ckb-sdk-utils&quot;)
+const process = require('process')
+const fs = require('fs')
+
+function blake2b(buffer) {
+  return utils.blake2b(32, null, null, utils.PERSONAL).update(buffer).digest('binary')
+}
+
+if (process.argv.length !== 4) {
+  console.log(`Usage: ${process.argv[1]} &lt;duktape load0 binary&gt; &lt;js script&gt;`)
+  process.exit(1)
+}
+
+const duktape_binary = fs.readFileSync(process.argv[2])
+const duktape_hash = blake2b(duktape_binary)
+const js_script = fs.readFileSync(process.argv[3])
+
+const data = fs.readFileSync('skeleton.json', 'utf8').
+      replace(&quot;@DUKTAPE_HASH&quot;, utils.bytesToHex(duktape_hash)).
+      replace(&quot;@SCRIPT_CODE&quot;, utils.bytesToHex(js_script)).
+      replace(&quot;@DUKTAPE_CODE&quot;, utils.bytesToHex(duktape_binary))
+
+fs.writeFileSync('tx.json', data)
+
+const resolved_tx = JSON.parse(data)
+const json_lock_script = resolved_tx.mock_info.inputs[0].output.lock
+const lock_script = {
+  codeHash: json_lock_script.code_hash,
+  hashType: json_lock_script.hash_type,
+  args: json_lock_script.args
+}
+const lock_script_hash = blake2b(utils.hexToBytes(utils.serializeScript(lock_script)))
+
+console.log(`../ckb-standalone-debugger/bins/target/release/ckb-debugger -g lock -h ${utils.bytesToHex(lock_script_hash)} -t tx.json`)
+</code></pre>
+
+<p>We need to compile duktape here:</p>
+
+<pre><code>$ cd $TOP
+$ git clone --recursive https://github.com/xxuejie/ckb-duktape
+$ cd ckb-duktape
+$ sudo docker run --rm -it -v `pwd`:/code nervos/ckb-riscv-gnu-toolchain:bionic-20191209 bash
+root@18d4b1952624:/# cd /code
+root@18d4b1952624:/code# make
+root@18d4b1952624:/code# exit
+</code></pre>
+
+<p>And also CKB debugger:</p>
+
+<pre><code>$ cd $TOP
+$ git clone --recursive https://github.com/xxuejie/ckb-standalone-debugger
+$ cd ckb-standalone-debugger/bins
+$ cargo build --release
+</code></pre>
+
+<p>Now you can try running generated script:</p>
+
+<pre><code>$ cd $TOP/htlc-runner
+$ chmod +x runner.js
+$ RUST_LOG=debug `./runner.js ../ckb-duktape/build/load0 ../htlc-template/build/duktape.js`
+DEBUG:&lt;unknown&gt;: script group: Byte32(0x8209891745eb858abd6f5e53c99b4f101bca221bd150a2ece58a389b7b4f8fa7) DEBUG OUTPUT: [object Object]
+Run result: Ok(0)
+</code></pre>
+
+<p>This will prepare the transaction to run from duktape binary and JS script, then run it via CKB debugger, debug outputs and final results will be printed to stdout.</p>
+
+<p>Or if you find a REPL more helpful, you can use the following line to execute the script and then start a REPL:</p>
+
+<pre><code>$ cd $TOP/htlc-runner
+$ RUST_LOG=debug `./runner.js ../ckb-duktape/build/repl0 ../htlc-template/build/duktape.js`
+duk&gt;
+</code></pre>
+
+<p>With the debugger ready, let&rsquo;s now start to implement the HTLC script.</p>
+
+<h2 id="custom-arguments">Custom Arguments</h2>
+
+<p>CKB provides 2 places that we can use to hold arguments to scripts running on CKB:</p>
+
+<ul>
+<li><code>args</code> field in <code>Script</code> structure</li>
+<li><code>witnesses</code> field in <code>Transaction</code> structure</li>
+</ul>
+
+<p>The difference between them, is that <code>args</code> field is used to hold arguments that remains the same for all usage of the same script, while <code>witnesses</code> field is used for temporary arguments that are used in one-time transaction validation. One example here is: for a script that does signature verification, <code>args</code> field is typically used to store public key hash, while <code>witnesses</code> field is used to hold valid signature.</p>
+
+<p>For maximum flexibility, both <code>args</code> field and each item in the <code>witnesses</code> array field are just plain raw bytes. It&rsquo;s up to dapp developers to design the actual format of data they want to hold. In our HTLC script, we will use <a href="https://github.com/nervosnetwork/molecule">molecule</a> serialization format. Molecule is widely used in CKB. If you want to interact with CKB, such as reading certain cell/script used in the current transaction, you will need to deal with molecule format. Now this is a perfect opportunity to explain how one can interact with CKB via molecule in great details, hence we will implement the custom structure used by <code>args</code> and <code>witness</code> in molecule format. Though you are free to use any serialization format in your own scripts.</p>
+
+<p>Let&rsquo;s first create a file with the 2 needed data structure:</p>
+
+<pre><code>$ cd $TOP/htlc-template
+$ cat htlc.mol
+array Uint32 [byte; 4];
+array Byte32 [byte; 32];
+vector Bytes &lt;byte&gt;;
+
+struct HtlcArgs {
+  a: Byte32,
+  b: Byte32,
+  hash: Uint32,
+}
+
+table HtlcWitness {
+  s: Bytes,
+  i: Uint32,
+}
+</code></pre>
+
+<p>For more information on molecule, please refer to the <a href="https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0008-serialization/0008-serialization.md">RFC</a>. Here we are defining 2 structures with following requirements:</p>
+
+<ul>
+<li><code>HtlcArgs</code> requires 2 32-byte long raw bytes for storing both public keys(later we shall the HTLC script here actually generalizes a bit from this design), and a single 32-bit integer value for storing hash. For simplicity, our HTLC will use CRC32 as the hash function, but in a production setting, this is far from a secure solution, and you should definitely use a proper secure hash function for this;</li>
+<li><code>HtlcWitness</code> has 2 optional(denoted by the <code>table</code> construct) arguments: it contains either a variable length string containing the secret string for HTLC, or a 32-bit integer value denoting the header to check for 100 block rule.</li>
+</ul>
+
+<h2 id="deserializing-in-molecule">Deserializing in Molecule</h2>
+
+<p>With the molecule definition in place for the custom data structure, we need to first convert them into a format that can be consumed by the JavaScript implementation of molecule:</p>
+
+<pre><code>$ cd $TOP/htlc-template
+$ cargo install moleculec
+$ moleculec --language - --format json --schema-file htlc.mol &gt; src/htlc.json
+$ npx moleculec-js -ns src/htlc.json &gt; src/htlc-combined.json
+</code></pre>
+
+<p>Now we can fill in the code that loads current Script, and parses the serialized args into a valid structure:</p>
+
+<pre><code>$ cd $TOP/htlc-template
+$ cat src/index.js
+const { Molecule } = require('molecule-javascript')
+const schema = require('../schema/blockchain-combined.json')
+
+const names = schema.declarations.map(declaration =&gt; declaration.name)
+const scriptTypeIndex = names.indexOf('Script')
+const scriptType = new Molecule(schema.declarations[scriptTypeIndex])
+
+// Write your script logic here.
+const customSchema = require('./htlc-combined.json')
+const customNames = customSchema.declarations.map(d =&gt; d.name)
+
+const htlcArgsIndex = customNames.indexOf('HtlcArgs')
+const htlcArgsType = new Molecule(customSchema.declarations[htlcArgsIndex])
+
+function bytesToHex(b) {
+  return &quot;0x&quot; + Array.prototype.map.call(
+    new Uint8Array(b),
+    function(x) {
+      return ('00' + x.toString(16)).slice(-2)
+    }
+  ).join('')
+}
+
+function hexStringArrayToHexString(a) {
+  let s = &quot;0x&quot;;
+  for (let i = 0; i &lt; a.length; i++) {
+    s = s + a[i].substr(2)
+  }
+  return s
+}
+
+const current_script = scriptType.deserialize(bytesToHex(CKB.load_script(0)))
+const args = hexStringArrayToHexString(current_script[2][1])
+const htlcArgs = htlcArgsType.deserialize(args)
+
+CKB.debug(`a: ${hexStringArrayToHexString(htlcArgs[0][1])}`)
+CKB.debug(`b: ${hexStringArrayToHexString(htlcArgs[1][1])}`)
+CKB.debug(`c: ${hexStringArrayToHexString(htlcArgs[2][1])}`)
+</code></pre>
+
+<p>If we ignore the bookkeeping code for a sec, what matters here, is that we first use CKB syscall to load script, parse script structure, then get args:</p>
+
+<pre><code>const current_script = scriptType.deserialize(bytesToHex(CKB.load_script(0)))
+const args = hexStringArrayToHexString(current_script[2][1])
+const htlcArgs = htlcArgsType.deserialize(args)
+</code></pre>
+
+<p>We assume script args contain serialized HtlcArgs structure defined above, then we apply similar method to exact them:</p>
+
+<pre><code>const htlcArgs = htlcArgsType.deserialize(args)
+</code></pre>
+
+<p>I have already provided some meaningful data in the skeleton, so if we try to execute the script:</p>
+
+<pre><code>$ cd $TOP/htlc-template
+$ npm run build
+$ cd $TOP/htlc-runner
+$ RUST_LOG=debug `./runner.js ../ckb-duktape/build/load0 ../htlc-template/build/duktape.js`
+DEBUG:&lt;unknown&gt;: script group: Byte32(0x35ab3d033e66c426573ed4b7ce816e248cb042d908fd8cfe7bba27acb37fb108) DEBUG OUTPUT: a: 0x32e555f3ff8e135cece1351a6a2971518392c1e30375c1e006ad0ce8eac07947
+DEBUG:&lt;unknown&gt;: script group: Byte32(0x35ab3d033e66c426573ed4b7ce816e248cb042d908fd8cfe7bba27acb37fb108) DEBUG OUTPUT: b: 0xc219351b150b900e50a7039f1e448b844110927e5fd9bd30425806cb8ddff1fd
+DEBUG:&lt;unknown&gt;: script group: Byte32(0x35ab3d033e66c426573ed4b7ce816e248cb042d908fd8cfe7bba27acb37fb108) DEBUG OUTPUT: c: 0x970dd9a8
+Run result: Ok(0)
+</code></pre>
+
+<p>We can find parsed results from debug logs.</p>
+
+<h2 id="adding-new-library">Adding new library</h2>
+
+<p>Another thing I want to show here, is that you can include many libraries out there already on npm, assuming:</p>
+
+<ul>
+<li>There&rsquo;s a ES5 version(or you can actually adjust the webpack pipeline yourself to add polyfills) of the library;</li>
+<li>It is implemented purely in JavaScript without native code</li>
+</ul>
+
+<p>In the HTLC script, I&rsquo;m gonna add <a href="https://github.com/beatgammit/crc32">crc32</a>, and use crc32 to calculate secret string hash. I want to mention again here that CRC32 is never a secure hash function. We pick it out of simplicity, not security. In a production setting, you should really use a real secure hash function probably implemented natively rather than using JavaScript. But for now, crc32 is quite perfect for our tutorial :P</p>
+
+<p>Let&rsquo;s include crc32 in our template, and write some debugging code to test it:</p>
+
+<pre><code>$ cd $TOP/htlc-template
+$ npm install --save crc32
+$ cat src/index.js
+const { Molecule } = require('molecule-javascript')
+const schema = require('../schema/blockchain-combined.json')
+
+const names = schema.declarations.map(declaration =&gt; declaration.name)
+const scriptTypeIndex = names.indexOf('Script')
+const scriptType = new Molecule(schema.declarations[scriptTypeIndex])
+
+// Write your script logic here.
+const customSchema = require('./htlc-combined.json')
+const customNames = customSchema.declarations.map(d =&gt; d.name)
+
+const htlcArgsIndex = customNames.indexOf('HtlcArgs')
+const htlcArgsType = new Molecule(customSchema.declarations[htlcArgsIndex])
+
+function bytesToHex(b) {
+  return &quot;0x&quot; + Array.prototype.map.call(
+    new Uint8Array(b),
+    function(x) {
+      return ('00' + x.toString(16)).slice(-2)
+    }
+  ).join('')
+}
+
+function hexStringArrayToHexString(a) {
+  let s = &quot;0x&quot;;
+  for (let i = 0; i &lt; a.length; i++) {
+    s = s + a[i].substr(2)
+  }
+  return s
+}
+
+const current_script = scriptType.deserialize(bytesToHex(CKB.load_script(0)))
+const args = hexStringArrayToHexString(current_script[2][1])
+const htlcArgs = htlcArgsType.deserialize(args)
+
+CKB.debug(`c: ${hexStringArrayToHexString(htlcArgs[2][1])}`)
+
+const crc32 = require('crc32')
+CKB.debug(crc32('i am a secret'))
+$ npm run build
+$ cd $TOP/htlc-runner
+$ RUST_LOG=debug `./runner.js ../ckb-duktape/build/load0 ../htlc-template/build/duktape.js`
+DEBUG:&lt;unknown&gt;: script group: Byte32(0x35ab3d033e66c426573ed4b7ce816e248cb042d908fd8cfe7bba27acb37fb108) DEBUG OUTPUT: c: 0x970dd9a8
+DEBUG:&lt;unknown&gt;: script group: Byte32(0x35ab3d033e66c426573ed4b7ce816e248cb042d908fd8cfe7bba27acb37fb108) DEBUG OUTPUT: 970dd9a8
+Run result: Ok(0)
+</code></pre>
+
+<p>You might noticed that the 2 values we printed here are exactly the same! That&rsquo;s because <code>i am a secret</code> is exactly the secret string I&rsquo;m picking when preparing the skeleton.</p>
+
+<h2 id="piecing-the-contract-together">Piecing the Contract Together</h2>
+
+<p>With all the libraries and required knowledge in place, we can now finish implementing the script:</p>
+
+<pre><code>$ cd $TOP/htlc-template
+$ cat src/index.js
+const { Molecule } = require('molecule-javascript')
+const schema = require('../schema/blockchain-combined.json')
+
+const names = schema.declarations.map(declaration =&gt; declaration.name)
+const scriptTypeIndex = names.indexOf('Script')
+const scriptType = new Molecule(schema.declarations[scriptTypeIndex])
+
+// Write your script logic here.
+const customSchema = require('./htlc-combined.json')
+const customNames = customSchema.declarations.map(d =&gt; d.name)
+
+const htlcArgsIndex = customNames.indexOf('HtlcArgs')
+const htlcArgsType = new Molecule(customSchema.declarations[htlcArgsIndex])
+
+function bytesToHex(b) {
+  return &quot;0x&quot; + Array.prototype.map.call(
+    new Uint8Array(b),
+    function(x) {
+      return ('00' + x.toString(16)).slice(-2)
+    }
+  ).join('')
+}
+
+function hexStringArrayToString(a) {
+  let s = &quot;&quot;;
+  for (let i = 0; i &lt; a.length; i++) {
+    s = s + String.fromCharCode(parseInt(a[i]))
+  }
+  return s
+}
+
+function hexStringArrayToHexString(a) {
+  let s = &quot;0x&quot;;
+  for (let i = 0; i &lt; a.length; i++) {
+    s = s + a[i].substr(2)
+  }
+  return s
+}
+
+function parseLittleEndianHexStringArray(a) {
+  let v = 0
+  const l = a.length
+  for (let i = 0; i &lt; l; i++) {
+    v = (v &lt;&lt; 8) | parseInt(a[l - i - 1])
+  }
+  return v
+}
+
+const current_script = scriptType.deserialize(bytesToHex(CKB.load_script(0)))
+const args = hexStringArrayToHexString(current_script[2][1])
+const htlcArgs = htlcArgsType.deserialize(args)
+
+// Load and parse witness data using the same method as above
+const htlcWitnessIndex = customNames.indexOf('HtlcWitness')
+const htlcWitnessType = new Molecule(customSchema.declarations[htlcWitnessIndex])
+
+const rawWitness = CKB.load_witness(0, 0, CKB.SOURCE.GROUP_INPUT)
+if (typeof rawWitness === 'number') {
+  throw new Error(`Invalid response when loading witness: ${rawWitness}`)
+}
+const htlcWitness = htlcWitnessType.deserialize(bytesToHex(rawWitness))
+
+let lockHashToMatch;
+if (htlcWitness[0][1].length &gt; 0) {
+  // Test secret string hash
+  const crc32 = require('crc32')
+  const hash = '0x' + crc32(hexStringArrayToString(htlcWitness[0][1]))
+  if (hash !== hexStringArrayToHexString(htlcArgs[2][1])) {
+    throw new Error(`Invalid secret string!`)
+  }
+  lockHashToMatch = hexStringArrayToHexString(htlcArgs[0][1])
+} else {
+  // Test header block
+  const headerTypeIndex = names.indexOf('Header')
+  const headerType = new Molecule(schema.declarations[headerTypeIndex])
+
+  // Load header for current input first
+  const rawInputHeader = CKB.load_header(0, 0, CKB.SOURCE.GROUP_INPUT)
+  if (typeof rawWitness === 'number') {
+    throw new Error(`Invalid response when loading input header: ${rawInputHeader}`)
+  }
+  const inputHeader = headerType.deserialize(bytesToHex(rawInputHeader))
+  const inputHeaderNumber = parseLittleEndianHexStringArray(inputHeader[0][1][3][1])
+
+  const targetHeaderIndex = parseLittleEndianHexStringArray(htlcWitness[1][1])
+  const rawTargetHeader = CKB.load_header(0, targetHeaderIndex,
+                                          CKB.SOURCE.HEADER_DEP)
+  if (typeof rawTargetHeader === 'number') {
+    throw new Error(`Invalid response when loading target header: ${rawTargetHeader}`)
+  }
+  const targetHeader = headerType.deserialize(bytesToHex(rawTargetHeader))
+  const targetHeaderNumber = parseLittleEndianHexStringArray(targetHeader[0][1][3][1])
+
+  if (targetHeaderNumber &lt; inputHeaderNumber + 100) {
+    throw new Error(`Timeout period has not reached!`)
+  }
+  lockHashToMatch = hexStringArrayToHexString(htlcArgs[1][1])
+}
+
+// Now we know which lock hash to test against, we look for an input cell
+// with the specified lock hash
+let i = 0
+while (true) {
+  const rawHash = CKB.load_cell_by_field(0, i, CKB.SOURCE.INPUT, CKB.CELL.LOCK_HASH)
+  if (rawHash == CKB.CODE.INDEX_OUT_OF_BOUND) {
+    throw new Error(`Cannot find input cell using lock hash ${lockHashToMatch}`)
+  }
+  if (typeof rawHash === 'number') {
+    throw new Error(`Invalid response when loading input cell: ${rawHash}`)
+  }
+  if (bytesToHex(rawHash) == lockHashToMatch) {
+    break
+  }
+  i += 1
+}
+</code></pre>
+
+<p>It uses similar techniques as shown above to parse witness and block headers, which are also in molecule format.</p>
+
+<p>There&rsquo;s one trick worth mentioning: in the design of HTLC script, I mentioned that the script needs to do signature verification for a given public key. The actual implemention we have here, generalizes slightly from this design:</p>
+
+<ol>
+<li>Instead of test a given public key, we are testing for the whole lock script hash. While this certainly satisfies our requirement, it provides more possibilities: if everyone is using the default secp256k1 lock script, different public keys will be reflected in script args part, resulting in differnet lock scripts. So testing lock scripts can certainly ensure different public keys are using. On the other hand, not everyone might be using the default secp256k1 lock script, so testing lock script hash directly, can enable more flexibilities in the HTLC script usage.</li>
+<li>While one can certainly embeds the signature verification logic within the HTLC script, we opt for a different and simpler solution here: we just test that one of the input cell has the specified lock script. Per CKB&rsquo;s validation rules, if the transaction is accepted by the blockchain, each input cells&rsquo; lock script must pass validation, which means the lock script specified in the HTLC script will also pass validation, satisfying the validation rules of HTLC script.</li>
+</ol>
+
+<p>To summarize a bit, we are actually showing 2 patterns that can be handy when desining dapps on CKB:</p>
+
+<ol>
+<li>Instead of testing signature verification for a public key, one can test for the validation of a lock script to enable flexibilities.</li>
+<li>Instead of duplicating a different lock script, one can check for the existence of an input cell using the same lock, and delegate the validation work to the input cell&rsquo;s lock script.</li>
+</ol>
+
+<p>Fundamentally, it depends on your use case to see if those patterns can apply. Later we might also build real composable scripts via dynamic linking to supplyment pattern 2. But having those in your armory might turn out to be useful when your design can be simply by them.</p>
+
+<h2 id="always-audit-your-script">Always Audit Your Script</h2>
+
+<p>One final note here, is that you should always remember to audit the script before deploying it and putting real tokens in it. The above HTLC script is primarily for introductory purposes. I can easily recognize a few vulnerabilities in them. You should never use it directly on CKB mainnet. However, it does provide a quite interesting exercise, so if you are interested, feel free to read the script and see if you can spot the vulnerabilities yourself :P</p>
+
+<h1 id="running-htlc-script-on-chain">Running HTLC Script on Chain</h1>
+
+<p>There&rsquo;re 2 parts in testing a CKB script: previously, we were using a off-chain debugger environment to test the script for faster iteration. Now that we have a complete HTLC script, we should also deploy it on a dev chain and test the whole workflow. After all any blockchain smart contracts cannot live alone, they have to have a surrounding environments that help prepare the transaction and invoke them on chain. This is more the case for CKB, since CKB uses a separated validator-generator model.</p>
+
+<p>To test our HTLC script on chain, we are gonna reuse our <code>htlc-runner</code> environment here, and write a few more node executables that can deploy and test the HTLC script on chain. The first executable we will write, is an executable to deploy duktape binary as well as our HTLC script on chain:</p>
+
+<pre><code>$ cd $TOP/htlc-runner
+$ cat deploy_scripts.js
+#!/usr/bin/env node
+
+const CKB = require(&quot;@nervosnetwork/ckb-sdk-core&quot;).default
+const utils = require(&quot;@nervosnetwork/ckb-sdk-utils&quot;)
+const process = require('process')
+const fs = require('fs')
+
+if (process.argv.length !== 6) {
+  console.log(`Usage: ${process.argv[1]} &lt;duktape load0 binary&gt; &lt;js script&gt; &lt;private key&gt; &lt;node URL&gt;`)
+  process.exit(1)
+}
+
+const duktapeBinary = fs.readFileSync(process.argv[2])
+const jsScript = fs.readFileSync(process.argv[3])
+
+const privateKey = process.argv[4]
+const nodeUrl = process.argv[5]
+
+const run = async () =&gt; {
+  const ckb = new CKB(nodeUrl)
+  const secp256k1Dep = await ckb.loadSecp256k1Dep()
+
+  const publicKey = ckb.utils.privateKeyToPublicKey(privateKey)
+  const publicKeyHash = `0x${ckb.utils.blake160(publicKey, 'hex')}`
+
+  const lockScript = {
+    hashType: secp256k1Dep.hashType,
+    codeHash: secp256k1Dep.codeHash,
+    args: publicKeyHash
+  }
+  const lockHash = ckb.utils.scriptToHash(lockScript)
+
+  const unspentCells = await ckb.loadCells({
+    lockHash
+  })
+  const totalCapacity = unspentCells.reduce((sum, cell) =&gt; sum + BigInt(cell.capacity), 0n)
+
+  // For simplicity, we will just use 1 CKB as fee. On a real setup you
+  // might not want to do this.
+  const fee = 100000000n
+  const duktapeBinaryCapacity = BigInt(duktapeBinary.length) * 100000000n + 4100000000n
+  const jsScriptCapacity = BigInt(jsScript.length) * 100000000n + 4100000000n
+
+  const outputs = [
+    {
+      lock: {
+        codeHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
+        hashType: 'data',
+        args: '0x'
+      },
+      type: null,
+      capacity: '0x' + duktapeBinaryCapacity.toString(16)
+    },
+    {
+      lock: {
+        codeHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
+        hashType: 'data',
+        args: '0x'
+      },
+      type: null,
+      capacity: '0x' + jsScriptCapacity.toString(16)
+    },
+    {
+      lock: lockScript,
+      type: null,
+      capacity: '0x' + (totalCapacity - jsScriptCapacity - duktapeBinaryCapacity - fee).toString(16)
+    }
+  ]
+  const outputsData = [
+    utils.bytesToHex(duktapeBinary),
+    utils.bytesToHex(jsScript),
+    '0x'
+  ]
+
+  const transaction = {
+    version: '0x0',
+    cellDeps: [
+      {
+        outPoint: secp256k1Dep.outPoint,
+        depType: 'depGroup'
+      }
+    ],
+    headerDeps: [],
+    inputs: unspentCells.map(cell =&gt; ({
+      previousOutput: cell.outPoint,
+      since: '0x0'
+    })),
+    outputs,
+    witnesses: [
+      {
+        lock: '',
+        inputType: '',
+        outputType: ''
+      }
+    ],
+    outputsData
+  }
+  const signedTransaction = ckb.signTransaction(privateKey)(transaction)
+
+  const txHash = await ckb.rpc.sendTransaction(signedTransaction, 'passthrough')
+
+  console.log(`Transaction hash: ${txHash}`)
+  fs.writeFileSync('deploy_scripts_result.txt', txHash)
+}
+
+run()
+</code></pre>
+
+<p>The second executable creates a cell using HTLC script as lock:</p>
+
+<pre><code>$ cd $TOP/htlc-runner
+$ cat create_htlc_cell.js
+#!/usr/bin/env node
+
+const { Molecule } = require('molecule-javascript')
+const crc32 = require('crc32')
+const CKB = require(&quot;@nervosnetwork/ckb-sdk-core&quot;).default
+const utils = require(&quot;@nervosnetwork/ckb-sdk-utils&quot;)
+const process = require('process')
+const fs = require('fs')
+
+function blake2b(buffer) {
+  return utils.blake2b(32, null, null, utils.PERSONAL).update(buffer).digest('binary')
+}
+
+if (process.argv.length !== 8) {
+  console.log(`Usage: ${process.argv[1]} &lt;duktape load0 binary&gt; &lt;deployed tx hash&gt; &lt;private key&gt; &lt;node URL&gt; &lt;lock hash A&gt; &lt;lock hash B&gt;`)
+  process.exit(1)
+}
+
+const duktapeBinary = fs.readFileSync(process.argv[2])
+const duktapeHash = blake2b(duktapeBinary)
+
+const deployedTxHash = process.argv[3]
+const privateKey = process.argv[4]
+const nodeUrl = process.argv[5]
+const lockHashA = process.argv[6]
+const lockHashB = process.argv[7]
+
+function hexStringToHexStringArray(s) {
+  let arr = []
+  for (let i = 2; i &lt; s.length; i += 2) {
+    arr.push('0x' + s.substr(i, 2))
+  }
+  return arr
+}
+
+const run = async () =&gt; {
+  const ckb = new CKB(nodeUrl)
+  const secp256k1Dep = await ckb.loadSecp256k1Dep()
+
+  const publicKey = ckb.utils.privateKeyToPublicKey(privateKey)
+  const publicKeyHash = `0x${ckb.utils.blake160(publicKey, 'hex')}`
+
+  const lockScript = {
+    hashType: secp256k1Dep.hashType,
+    codeHash: secp256k1Dep.codeHash,
+    args: publicKeyHash
+  }
+  const lockHash = ckb.utils.scriptToHash(lockScript)
+
+  const unspentCells = await ckb.loadCells({
+    lockHash
+  })
+  const totalCapacity = unspentCells.reduce((sum, cell) =&gt; sum + BigInt(cell.capacity), 0n)
+
+  // For simplicity, we will just use 1 CKB as fee. On a real setup you
+  // might not want to do this.
+  const fee = 100000000n
+  const htlcCellCapacity = 200000000000n
+
+  const customSchema = JSON.parse(fs.readFileSync('../htlc-template/src/htlc-combined.json'))
+  const htlcArgsType = new Molecule(
+    customSchema.declarations.find(d =&gt; d.name == &quot;HtlcArgs&quot;))
+  const htlcScriptArgs = htlcArgsType.serialize([
+    ['a', hexStringToHexStringArray(lockHashA)],
+    ['b', hexStringToHexStringArray(lockHashB)],
+    ['hash', hexStringToHexStringArray('0x' + crc32('i am a secret'))]
+  ])
+
+  const transaction = {
+    version: '0x0',
+    cellDeps: [
+      {
+        outPoint: secp256k1Dep.outPoint,
+        depType: 'depGroup'
+      }
+    ],
+    headerDeps: [],
+    inputs: unspentCells.map(cell =&gt; ({
+      previousOutput: cell.outPoint,
+      since: '0x0'
+    })),
+    outputs: [
+      {
+        lock: {
+          codeHash: utils.bytesToHex(duktapeHash),
+          hashType: 'data',
+          args: htlcScriptArgs
+        },
+        type: null,
+        capacity: '0x' + htlcCellCapacity.toString(16)
+      },
+      {
+        lock: lockScript,
+        type: null,
+        capacity: '0x' + (totalCapacity - fee - htlcCellCapacity).toString(16)
+      }
+    ],
+    witnesses: [
+      {
+        lock: '',
+        inputType: '',
+        outputType: ''
+      }
+    ],
+    outputsData: [
+      '0x',
+      '0x'
+    ]
+  }
+  const signedTransaction = ckb.signTransaction(privateKey)(transaction)
+
+  const txHash = await ckb.rpc.sendTransaction(signedTransaction, 'passthrough')
+
+  console.log(`Transaction hash: ${txHash}`)
+  fs.writeFileSync('create_htlc_cell_result.txt', txHash)
+}
+
+run()
+</code></pre>
+
+<p>One thing worth mentioning, is that this executable shows how we can serialize a molecule formatted data structure:</p>
+
+<pre><code>// ...
+
+function hexStringToHexStringArray(s) {
+  let arr = []
+  for (let i = 2; i &lt; s.length; i += 2) {
+    arr.push('0x' + s.substr(i, 2))
+  }
+  return arr
+}
+
+// ...
+
+const customSchema = JSON.parse(fs.readFileSync('../htlc-template/src/htlc-combined.json'))
+const htlcArgsType = new Molecule(
+  customSchema.declarations.find(d =&gt; d.name == &quot;HtlcArgs&quot;))
+const htlcScriptArgs = htlcArgsType.serialize([
+  ['a', hexStringToHexStringArray(lockHashA)],
+  ['b', hexStringToHexStringArray(lockHashB)],
+  ['hash', hexStringToHexStringArray('0x' + crc32('i am a secret'))]
+])
+
+// ...
+</code></pre>
+
+<p>And now a executable that tries to unlock HTLC guarded cell by providing secret string:</p>
+
+<pre><code>$ cd $TOP/htlc-runner
+$ cat unlock_via_secret_string.js
+#!/usr/bin/env node
+
+const { Molecule } = require('molecule-javascript')
+const crc32 = require('crc32')
+const CKB = require(&quot;@nervosnetwork/ckb-sdk-core&quot;).default
+const utils = require(&quot;@nervosnetwork/ckb-sdk-utils&quot;)
+const process = require('process')
+const fs = require('fs')
+
+function blake2b(buffer) {
+  return utils.blake2b(32, null, null, utils.PERSONAL).update(buffer).digest('binary')
+}
+
+if (process.argv.length !== 8) {
+  console.log(`Usage: ${process.argv[1]} &lt;deployed tx hash&gt; &lt;htlc cell tx hash&gt; &lt;private key&gt; &lt;node URL&gt; &lt;secret string&gt; &lt;dry run&gt;`)
+  process.exit(1)
+}
+
+const deployedTxHash = process.argv[2]
+const htlcCellTxHash = process.argv[3]
+const privateKey = process.argv[4]
+const nodeUrl = process.argv[5]
+const secretString = process.argv[6]
+const dryrun = process.argv[7] === 'true'
+
+function stringToHexStringArray(s) {
+  let a = []
+  for (let i = 0; i &lt; s.length; i++) {
+    a.push('0x' + ('00' + s.charCodeAt(i).toString(16)).slice(-2))
+  }
+  return a
+}
+
+const run = async () =&gt; {
+  const ckb = new CKB(nodeUrl)
+  const secp256k1Dep = await ckb.loadSecp256k1Dep()
+
+  const publicKey = ckb.utils.privateKeyToPublicKey(privateKey)
+  const publicKeyHash = `0x${ckb.utils.blake160(publicKey, 'hex')}`
+
+  const lockScript = {
+    hashType: secp256k1Dep.hashType,
+    codeHash: secp256k1Dep.codeHash,
+    args: publicKeyHash
+  }
+  const lockHash = ckb.utils.scriptToHash(lockScript)
+
+  const unspentCells = await ckb.loadCells({
+    lockHash
+  })
+  const totalCapacity = unspentCells.reduce((sum, cell) =&gt; sum + BigInt(cell.capacity), 0n)
+
+  // For simplicity, we will just use 1 CKB as fee. On a real setup you
+  // might not want to do this.
+  const fee = 100000000n
+  const htlcCellCapacity = 200000000000n
+
+  const customSchema = JSON.parse(fs.readFileSync('../htlc-template/src/htlc-combined.json'))
+  const htlcWitnessType = new Molecule(
+    customSchema.declarations.find(d =&gt; d.name == &quot;HtlcWitness&quot;))
+  const htlcWitness = htlcWitnessType.serialize([
+    ['s', stringToHexStringArray(secretString)],
+    ['i', ['0x0', '0x0', '0x0', '0x0']]
+  ])
+
+  const transaction = {
+    version: '0x0',
+    cellDeps: [
+      // Due to the requirement of load0 duktape binary, JavaScript source cell
+      // should be the first one in cell deps
+      {
+        outPoint: {
+          txHash: deployedTxHash,
+          index: &quot;0x1&quot;
+        },
+        depType: 'code'
+      },
+      {
+        outPoint: {
+          txHash: deployedTxHash,
+          index: &quot;0x0&quot;
+        },
+        depType: 'code'
+      },
+      {
+        outPoint: secp256k1Dep.outPoint,
+        depType: 'depGroup'
+      }
+    ],
+    headerDeps: [],
+    inputs: unspentCells.map(cell =&gt; ({
+      previousOutput: cell.outPoint,
+      since: '0x0'
+    })),
+    outputs: [
+      {
+        lock: lockScript,
+        type: null,
+        capacity: '0x' + (totalCapacity + htlcCellCapacity - fee).toString(16)
+      }
+    ],
+    witnesses: unspentCells.map(_cell =&gt; '0x'),
+    outputsData: [
+      '0x',
+      '0x'
+    ]
+  }
+  transaction.inputs.push({
+    previousOutput: {
+      txHash: htlcCellTxHash,
+      index: &quot;0x0&quot;
+    },
+    since: '0x0'
+  })
+  transaction.witnesses[0] = {
+    lock: '',
+    inputType: '',
+    outputType: ''
+  }
+  const signedTransaction = ckb.signTransaction(privateKey)(transaction)
+  signedTransaction.witnesses.push(htlcWitness)
+
+  if (dryrun) {
+    try {
+      const result = await ckb.rpc.dryRunTransaction(signedTransaction)
+      console.log(`Dry run success result: ${JSON.stringify(result, null, 2)}`)
+    } catch (e) {
+      console.log(`Dry run failure result: ${JSON.stringify(JSON.parse(e.message), null, 2)}`)
+    }
+  } else {
+    const txHash = await ckb.rpc.sendTransaction(signedTransaction, 'passthrough')
+
+    console.log(`Transaction hash: ${txHash}`)
+    fs.writeFileSync('unlock_via_secret_string_result.txt', txHash)
+  }
+}
+
+run()
+</code></pre>
+
+<p>Finally a executable that tries to unlock HTLC guarded cell assuming the waiting period has passed:</p>
+
+<pre><code>$ cd $TOP/htlc-runner
+$ cat unlock_via_timeout.js
+#!/usr/bin/env node
+
+const { Molecule } = require('molecule-javascript')
+const crc32 = require('crc32')
+const CKB = require(&quot;@nervosnetwork/ckb-sdk-core&quot;).default
+const utils = require(&quot;@nervosnetwork/ckb-sdk-utils&quot;)
+const process = require('process')
+const fs = require('fs')
+
+function blake2b(buffer) {
+  return utils.blake2b(32, null, null, utils.PERSONAL).update(buffer).digest('binary')
+}
+
+if (process.argv.length !== 8) {
+  console.log(`Usage: ${process.argv[1]} &lt;deployed tx hash&gt; &lt;htlc cell tx hash&gt; &lt;private key&gt; &lt;node URL&gt; &lt;header hash&gt; &lt;dry run&gt;`)
+  process.exit(1)
+}
+
+const deployedTxHash = process.argv[2]
+const htlcCellTxHash = process.argv[3]
+const privateKey = process.argv[4]
+const nodeUrl = process.argv[5]
+const headerHash = process.argv[6]
+const dryrun = process.argv[7] === 'true'
+
+const run = async () =&gt; {
+  const ckb = new CKB(nodeUrl)
+  const secp256k1Dep = await ckb.loadSecp256k1Dep()
+
+  const htlcCellTx = await ckb.rpc.getTransaction(htlcCellTxHash)
+  const htlcCellHeaderHash = htlcCellTx.txStatus.blockHash
+
+  const publicKey = ckb.utils.privateKeyToPublicKey(privateKey)
+  const publicKeyHash = `0x${ckb.utils.blake160(publicKey, 'hex')}`
+
+  const lockScript = {
+    hashType: secp256k1Dep.hashType,
+    codeHash: secp256k1Dep.codeHash,
+    args: publicKeyHash
+  }
+  const lockHash = ckb.utils.scriptToHash(lockScript)
+
+  const unspentCells = await ckb.loadCells({
+    lockHash
+  })
+  const totalCapacity = unspentCells.reduce((sum, cell) =&gt; sum + BigInt(cell.capacity), 0n)
+
+  // For simplicity, we will just use 1 CKB as fee. On a real setup you
+  // might not want to do this.
+  const fee = 100000000n
+  const htlcCellCapacity = 200000000000n
+
+  const customSchema = JSON.parse(fs.readFileSync('../htlc-template/src/htlc-combined.json'))
+  const htlcWitnessType = new Molecule(
+    customSchema.declarations.find(d =&gt; d.name == &quot;HtlcWitness&quot;))
+  const htlcWitness = htlcWitnessType.serialize([
+    ['s', []],
+    ['i', ['0x1', '0x0', '0x0', '0x0']]
+  ])
+
+  const transaction = {
+    version: '0x0',
+    cellDeps: [
+      // Due to the requirement of load0 duktape binary, JavaScript source cell
+      // should be the first one in cell deps
+      {
+        outPoint: {
+          txHash: deployedTxHash,
+          index: &quot;0x1&quot;
+        },
+        depType: 'code'
+      },
+      {
+        outPoint: {
+          txHash: deployedTxHash,
+          index: &quot;0x0&quot;
+        },
+        depType: 'code'
+      },
+      {
+        outPoint: secp256k1Dep.outPoint,
+        depType: 'depGroup'
+      }
+    ],
+    headerDeps: [
+      htlcCellHeaderHash,
+      headerHash,
+    ],
+    inputs: unspentCells.map(cell =&gt; ({
+      previousOutput: cell.outPoint,
+      since: '0x0'
+    })),
+    outputs: [
+      {
+        lock: lockScript,
+        type: null,
+        capacity: '0x' + (totalCapacity + htlcCellCapacity - fee).toString(16)
+      }
+    ],
+    witnesses: unspentCells.map(_cell =&gt; '0x'),
+    outputsData: [
+      '0x',
+      '0x'
+    ]
+  }
+  transaction.inputs.push({
+    previousOutput: {
+      txHash: htlcCellTxHash,
+      index: &quot;0x0&quot;
+    },
+    since: '0x0'
+  })
+  transaction.witnesses[0] = {
+    lock: '',
+    inputType: '',
+    outputType: ''
+  }
+  const signedTransaction = ckb.signTransaction(privateKey)(transaction)
+  signedTransaction.witnesses.push(htlcWitness)
+
+  if (dryrun) {
+    try {
+      const result = await ckb.rpc.dryRunTransaction(signedTransaction)
+      console.log(`Dry run success result: ${JSON.stringify(result, null, 2)}`)
+    } catch (e) {
+      console.log(`Dry run failure result: ${JSON.stringify(JSON.parse(e.message), null, 2)}`)
+    }
+  } else {
+    const txHash = await ckb.rpc.sendTransaction(signedTransaction, 'passthrough')
+
+    console.log(`Transaction hash: ${txHash}`)
+    fs.writeFileSync('unlock_via_timeout_result.txt', txHash)
+  }
+}
+
+run()
+</code></pre>
+
+<p>We are putting the header dep for HTLC input cell at index 0, the header to test for current timestamp at index 1, hence when we are preparing witness data, we use 0x01000000 for i, which is the little endian representation for 1.</p>
+
+<p>This also provides a different inspiration. To prove certain time has past in CKB, you can use <code>since</code> field as shown in Nervos DAO validator script, you can also include a header on chain, and rely on the header&rsquo;s block number or timestamp to prove that certain time has already been reached. It really depends on your use case to tell which one is the better choice here.</p>
+
+<p>With all 4 executables ready here, we are ready to play with our HTLC script a bit. But first, let&rsquo;s start a new CKB dev chain.</p>
+
+<pre><code>$ cd $TOP
+$ export CKB=&quot;&lt;path to your ckb binary&gt;&quot;
+$ $CKB --version
+ckb 0.28.0 (728eff2 2020-02-04)
+# Block assembler args configured here correspond to the following private key:
+# 0x0a14c6fd7af6a3f13c9e2aacad80d78968de5d068a342828080650084bf20104
+$ $CKB init -c dev -C ckb-data --ba-arg 0x5a7487f529b8b8fd4d4a57c12dc0c70f7958a196
+$ $CKB run -C ckb-data
+</code></pre>
+
+<p>On a different terminal, let&rsquo;s start a miner instance:</p>
+
+<pre><code>$ cd $TOP
+$ $CKB miner -C ckb-data
+</code></pre>
+
+<p>We are using CKB&rsquo;s dev chain, since there are already 2 handy <a href="https://github.com/nervosnetwork/ckb/blob/dad394ea3f50f518a40e5a8a457dfb6811ba245a/resource/specs/dev.toml#L70-L82">addresses</a> with issued balance, so we don&rsquo;t have to mine the CKB before testing. In addition, with a dev chain you can customize block issuing speed. However if you like you can also use the testnet, just remember never to use mainnet for testing here.</p>
+
+<p>With the CKB instance running, HTLC script can be deployed and tested for real on chain.</p>
+
+<pre><code># Make sure the HTLC script is successfully built first
+$ cd $TOP/htlc-template
+$ npm run build
+# Ensure all scripts are runnable
+$ cd $TOP/htlc-runner
+$ chmod +x deploy_scripts.js
+$ chmod +x create_htlc_cell.js
+$ chmod +x unlock_via_secret_string.js
+$ chmod +x unlock_via_timeout.js
+
+# Let's first deploy duktape binary and JS scripts
+$ ./deploy_scripts.js \
+    ../ckb-duktape/build/load0 \
+    ../htlc-template/build/duktape.js \
+    0xd00c06bfd800d27397002dca6fb0993d5ba6399b4238b2f29ee9deb97593d2bc \
+    &quot;http://127.0.0.1:8114/&quot;
+This method is only for demo, don't use it in production
+Transaction hash: 0xf30e1e8989fc3a4cb1e52dacc85090f8ff74b05e008d636b8c9154f5c296e1f4
+
+# Let's create a HTLC cell
+$ ./create_htlc_cell.js \
+    ../ckb-duktape/build/load0 \
+    0xf30e1e8989fc3a4cb1e52dacc85090f8ff74b05e008d636b8c9154f5c296e1f4 \
+    0xd00c06bfd800d27397002dca6fb0993d5ba6399b4238b2f29ee9deb97593d2bc \
+    &quot;http://127.0.0.1:8114/&quot; \
+    0x32e555f3ff8e135cece1351a6a2971518392c1e30375c1e006ad0ce8eac07947 \
+    0xc219351b150b900e50a7039f1e448b844110927e5fd9bd30425806cb8ddff1fd
+This method is only for demo, don't use it in production
+Transaction hash: 0x7de8ea6b0d6cb9941e76976d1d55edf844c4fa81485e00fb8eba2d161b5830cd
+
+# To save us the hassle of recreating cells, both unlock executables support
+# a dry run mode, where we only does full transaction verification, but do not
+# commit the success ones on chain.
+# First let's show that we can unlock a HTLC cell given the right secret string
+# and lock script
+$ ./unlock_via_secret_string.js \
+    0xf30e1e8989fc3a4cb1e52dacc85090f8ff74b05e008d636b8c9154f5c296e1f4 \
+    0x7de8ea6b0d6cb9941e76976d1d55edf844c4fa81485e00fb8eba2d161b5830cd \
+    0xd00c06bfd800d27397002dca6fb0993d5ba6399b4238b2f29ee9deb97593d2bc \
+    &quot;http://127.0.0.1:8114/&quot; \
+    &quot;i am a secret&quot; \
+    true
+This method is only for demo, don't use it in production
+Dry run success result: {
+  &quot;cycles&quot;: &quot;0xb1acc38&quot;
+}
+
+# Given an invalid secret string, the transaction would fail the validation.
+# If you have enabled debug output in CKB's configuration like mentioned here:
+# https://docs.nervos.org/dev-guide/debugging-ckb-script.html#debug-syscall
+# you can notice the failure lines in CKB's debug logs.
+$ ./unlock_via_secret_string.js \
+    0xf30e1e8989fc3a4cb1e52dacc85090f8ff74b05e008d636b8c9154f5c296e1f4 \
+    0x7de8ea6b0d6cb9941e76976d1d55edf844c4fa81485e00fb8eba2d161b5830cd \
+    0xd00c06bfd800d27397002dca6fb0993d5ba6399b4238b2f29ee9deb97593d2bc \
+    &quot;http://127.0.0.1:8114/&quot; \
+    &quot;invalid secret&quot; \
+    true
+Dry run failure result: {
+  &quot;code&quot;: -3,
+  &quot;message&quot;: &quot;Error { kind: ValidationFailure(-2) ...}&quot;
+}
+
+# Given the correct secret string but an invalid public key, this would still
+# fail the validation:
+$ ./unlock_via_secret_string.js \
+    0xf30e1e8989fc3a4cb1e52dacc85090f8ff74b05e008d636b8c9154f5c296e1f4 \
+    0x7de8ea6b0d6cb9941e76976d1d55edf844c4fa81485e00fb8eba2d161b5830cd \
+    0x63d86723e08f0f813a36ce6aa123bb2289d90680ae1e99d4de8cdb334553f24d \
+    &quot;http://127.0.0.1:8114/&quot; \
+    &quot;i am a secret&quot; \
+    true
+Dry run failure result: {
+  &quot;code&quot;: -3,
+  &quot;message&quot;: &quot;Error { kind: ValidationFailure(-2) ...}&quot;
+}
+
+# Now we've tested unlocking by providing secret string, let's try unlocking
+# via waiting enough time. In my setup, I have the following values:
+# HTLC cell is packed in transaction:
+# 0xf30e1e8989fc3a4cb1e52dacc85090f8ff74b05e008d636b8c9154f5c296e1f4
+# which is commited in block:
+# 0x04539cff3e1a106773bc1ec35804340c0981804093ce8d7a17e9ebc37a3268ff
+# whose block number is 399.
+#
+# I'm gonna test it with block:
+# 0xe93ebb311d156847fbcdc159d1fa3c38f12613121e51582272d909379c4d1a60
+# whose block number is 409, and block:
+# 0x665ccfab2d854afa035f4697a2301f2bad9d4aa86506090b104f8ed18772ca01
+# whose block number is 510.
+# Let's first try block 510 to verify that we can unlock the HTLC cell this way:
+$ ./unlock_via_timeout.js \
+    0xf30e1e8989fc3a4cb1e52dacc85090f8ff74b05e008d636b8c9154f5c296e1f4 \
+    0x7de8ea6b0d6cb9941e76976d1d55edf844c4fa81485e00fb8eba2d161b5830cd \
+    0x63d86723e08f0f813a36ce6aa123bb2289d90680ae1e99d4de8cdb334553f24d \
+    &quot;http://127.0.0.1:8114/&quot; \
+    0x665ccfab2d854afa035f4697a2301f2bad9d4aa86506090b104f8ed18772ca01 \
+    true
+This method is only for demo, don't use it in production
+Dry run success result: {
+  &quot;cycles&quot;: &quot;0x16c500ba&quot;
+  }
+# Notice here we are unlocking using lock script hash:
+# 0x63d86723e08f0f813a36ce6aa123bb2289d90680ae1e99d4de8cdb334553f24d
+# which is different from unlocking by providing secret string.
+
+# Now let's try block 409 here:
+$ ./unlock_via_timeout.js \
+    0xf30e1e8989fc3a4cb1e52dacc85090f8ff74b05e008d636b8c9154f5c296e1f4 \
+    0x7de8ea6b0d6cb9941e76976d1d55edf844c4fa81485e00fb8eba2d161b5830cd \
+    0x63d86723e08f0f813a36ce6aa123bb2289d90680ae1e99d4de8cdb334553f24d \
+    &quot;http://127.0.0.1:8114/&quot; \
+    0xe93ebb311d156847fbcdc159d1fa3c38f12613121e51582272d909379c4d1a60 \
+    true
+Dry run failure result: {
+  &quot;code&quot;: -3,
+  &quot;message&quot;: &quot;Error { kind: ValidationFailure(-2) ...}&quot;
+}
+# As expected, this fails validatin, and if we check CKB's debug log(if you
+# have enabled it), we can find log lines containing &quot;Timeout period has not
+# reached!&quot;, proving our script works as expected.
+
+# One final step would checking unlocking with enough waiting, but using the
+# wrong public key.
+$ ./unlock_via_timeout.js \
+    0xf30e1e8989fc3a4cb1e52dacc85090f8ff74b05e008d636b8c9154f5c296e1f4 \
+    0x7de8ea6b0d6cb9941e76976d1d55edf844c4fa81485e00fb8eba2d161b5830cd \
+    0xd00c06bfd800d27397002dca6fb0993d5ba6399b4238b2f29ee9deb97593d2bc \
+    &quot;http://127.0.0.1:8114/&quot; \
+    0x665ccfab2d854afa035f4697a2301f2bad9d4aa86506090b104f8ed18772ca01 \
+    true
+Dry run failure result: {
+  &quot;code&quot;: -3,
+  &quot;message&quot;: &quot;Error { kind: ValidationFailure(-2) ...}&quot;
+}
+# As expected, this also fails validation.
+</code></pre>
+
+<p>Notice the generated transaction hashes might different in each different run. So make sure to adjust parameters to the cells as needed.</p>
+
+<p>This concludes our HTLC script runs as expected(well, excluding those vulnarable situations), hooray!</p>
+
+<h1 id="compute-intensive-code-in-javascript">Compute Intensive Code in JavaScript</h1>
+
+<p>Let&rsquo;s jump back for a second. I&rsquo;ve been avoiding doing signatue verification code in our HTLC script written in JavaScript here. You might notice we also use a very simple CRC32 hashing algorithm, instead of the more secure hashing algorithms such as blake2b. While one major reason I did, is for the simplicity of this post(if you read till this point you will notice this post is already insanely long!), it is still not recommended to do those operations in JavaScript since:</p>
+
+<ul>
+<li>A crypto algorithm requires precise implementation, while I&rsquo;m not saying you cannot do that, it certainly requires more care to build crypto algorithms in a higher-level language like JavaScript. It&rsquo;s much better to leverage existing battle-tested libraries written in C or Rust.</li>
+<li>Crypto algorithms are typical compute intensive code, since we are running JavaScript code in duktape, it can easily slow your code by 10x or even 100x. A native implementation can be much faster and saves significant cycles on CKB.</li>
+</ul>
+
+<p>Right now the <a href="https://github.com/xxuejie/ckb-duktape">duktape</a> distribution used here only contains duktape with no external libraries. In the future I might add other distributions with certain crypto algorithms shipped together, such as secp256k1 and blake2b. This way you will be able to invoke fast and secure crypto algorithms well within JavaScript. But please also remember sometimes, the delegate patterns mentioned above might suit your use case better.</p>
+
+<h1 id="recap">Recap</h1>
+
+<p>I sincerely hope you have read till this far, instead of skipping it. This is a ridiculously long post, but it contains a lot of useful information when building scripts on CKB:</p>
+
+<ul>
+<li>How to prepare a debugging environment that aids writting the script</li>
+<li>How to build custom data structure in molecule format</li>
+<li>How to serialize/deserialize molecule data structures</li>
+<li>How to include external libraries on npm and pack a single JavaScript for CKB use</li>
+</ul>
+
+<p>While I might still add more posts to this series if I noticed interesting stuff to write, I&rsquo;m sure the existing 7 posts in this series, together with <a href="https://justjjy.com/Build-CKB-contract-with-Rust-part-1">many</a> <a href="https://justjjy.com/CKB-contract-in-Rust-part-2-Rewrite-contract-with-ckb">other</a> <a href="https://docs.nervos.org/dev-guide/debugging-ckb-script.html">awesome</a> <a href="https://mp.weixin.qq.com/s/9cP_Qik-AsdpiqL-q0ac4w">posts</a> by my colleagues, have well prepared you to build awesome things on CKB. We are all prepared to amazed by the beautiful things you build on CKB :)</p>
+
+  </div>
+
+  <div id=links>
+    
+      <a class="basic-alignment left" href="https://xuejie.space/2020_02_08_lets_build_a_minimal_blockchain_ultimate_upgradability/">&laquo; Let&#39;s Build a Minimal Blockchain 2: Ultimate Upgradability</a>
+    
+    
+  </div>
+</section>
+
+  
+</body>
+</html>
+
+
+
