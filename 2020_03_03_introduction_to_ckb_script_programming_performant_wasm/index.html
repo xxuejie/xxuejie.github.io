@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="MobileOptimized" content="320">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
+    
+
+    
+      <link href='https://fonts.googleapis.com/css?family=Open+Sans:400|Old+Standard+TT:400&display=swap' rel='stylesheet' type='text/css'>
+    
+
+    <link rel="icon" type="image/png" href="https://xuejie.space/favicon_16x16.png" sizes="16x16">
+    <link rel="icon" type="image/png" href="https://xuejie.space/favicon_32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="https://xuejie.space/favicon_128x128.png" sizes="128x128">
+
+    <title>
+      
+      
+         Introduction to CKB Script Programming 8: Performant WASM 
+      
+    </title>
+    <link rel="canonical" href="https://xuejie.space/2020_03_03_introduction_to_ckb_script_programming_performant_wasm/">
+
+    <style>
+  * {
+    border:0;
+    font:inherit;
+    font-size:100%;
+    vertical-align:baseline;
+    margin:0;
+    padding:0;
+    color: black;
+    text-decoration-skip: ink;
+  }
+
+  body {
+    font-family:'Open Sans', 'Myriad Pro', Myriad, sans-serif;
+    font-size:17px;
+    line-height:160%;
+    color:#1d1313;
+    max-width:700px;
+    margin:auto;
+  }
+
+  p {
+    margin: 20px 0;
+  }
+
+  a img {
+    border:none;
+  }
+
+  img {
+    margin: 10px auto 10px auto;
+    max-width: 100%;
+    display: block;
+  }
+
+  .left-justify {
+    float: left;
+  }
+
+  .right-justify {
+    float:right;
+  }
+
+  pre, code {
+    font: 12px Consolas, "Liberation Mono", Menlo, Courier, monospace;
+    background-color: #f7f7f7;
+  }
+
+  code {
+    font-size: 12px;
+    padding: 4px;
+  }
+
+  pre {
+    margin-top: 0;
+    margin-bottom: 16px;
+    word-wrap: normal;
+    padding: 16px;
+    overflow: auto;
+    font-size: 85%;
+    line-height: 1.45;
+  }
+
+  pre>code {
+    padding: 0;
+    margin: 0;
+    font-size: 100%;
+    word-break: normal;
+    white-space: pre;
+    background: transparent;
+    border: 0;
+  }
+
+  pre code {
+    display: inline;
+    max-width: auto;
+    padding: 0;
+    margin: 0;
+    overflow: visible;
+    line-height: inherit;
+    word-wrap: normal;
+    background-color: transparent;
+    border: 0;
+  }
+
+  pre code::before,
+  pre code::after {
+    content: normal;
+  }
+
+  em,q,em,dfn {
+    font-style:italic;
+  }
+
+  .sans,html .gist .gist-file .gist-meta {
+    font-family:"Open Sans","Myriad Pro",Myriad,sans-serif;
+  }
+
+  .mono,pre,code,tt,p code,li code {
+    font-family:Menlo,Monaco,"Andale Mono","lucida console","Courier New",monospace;
+  }
+
+  .heading,.serif,h1,h2,h3 {
+    font-family:"Old Standard TT",serif;
+  }
+
+  strong {
+    font-weight:600;
+  }
+
+  q:before {
+    content:"\201C";
+  }
+
+  q:after {
+    content:"\201D";
+  }
+
+  del,s {
+    text-decoration:line-through;
+  }
+
+  blockquote {
+    font-family:"Old Standard TT",serif;
+    text-align:center;
+    padding:50px;
+  }
+
+  blockquote p {
+    display:inline-block;
+    font-style:italic;
+  }
+
+  blockquote:before,blockquote:after {
+    font-family:"Old Standard TT",serif;
+    content:'\201C';
+    font-size:35px;
+    color:#403c3b;
+  }
+
+  blockquote:after {
+    content:'\201D';
+  }
+
+  hr {
+    width:40%;
+    height: 1px;
+    background:#403c3b;
+    margin: 25px auto;
+  }
+
+  h1 {
+    font-size:35px;
+  }
+
+  h2 {
+    font-size:28px;
+  }
+
+  h3 {
+    font-size:22px;
+    margin-top:18px;
+  }
+
+  h1 a,h2 a,h3 a {
+    text-decoration:none;
+  }
+
+  h1,h2 {
+    margin-top:28px;
+  }
+
+  #sub-header, time {
+    color:#403c3b;
+    font-size:13px;
+  }
+
+  #sub-header {
+    margin: 0 4px;
+  }
+
+  #nav h1 a {
+    font-size:35px;
+    color:#1d1313;
+    line-height:120%;
+  }
+
+  .posts_listing a,#nav a {
+    text-decoration: none;
+  }
+
+  li {
+    margin-left: 20px;
+  }
+
+  ul li {
+    margin-left: 5px;
+  }
+
+  ul li {
+    list-style-type: none;
+  }
+  ul li:before {
+    content:"\00BB \0020";
+  }
+
+  #nav ul li:before, .posts_listing li:before {
+    content:'';
+    margin-right:0;
+  }
+
+  #content {
+    text-align:left;
+    width:100%;
+    font-size:15px;
+    padding:60px 0 80px;
+  }
+
+  #content h1,#content h2 {
+    margin-bottom:5px;
+  }
+
+  #content h2 {
+    font-size:25px;
+  }
+
+  #content .entry-content {
+    margin-top:15px;
+  }
+
+  #content time {
+    margin-left:3px;
+  }
+
+  #content h1 {
+    font-size:30px;
+  }
+
+  .highlight {
+    margin: 10px 0;
+  }
+
+  .posts_listing {
+    margin:0 0 50px;
+  }
+
+  .posts_listing li {
+    margin:0 0 25px 15px;
+  }
+
+  .posts_listing li a:hover,#nav a:hover {
+    text-decoration: underline;
+  }
+
+  #nav {
+    text-align:center;
+    position:static;
+    margin-top:60px;
+  }
+
+  #nav ul {
+    display: table;
+    margin: 8px auto 0 auto;
+  }
+
+  #nav li {
+    list-style-type:none;
+    display:table-cell;
+    font-size:15px;
+    padding: 0 20px;
+  }
+
+  #links {
+    margin: 50px 0 0 0;
+  }
+
+  #links :nth-child(2) {
+    float:right;
+  }
+
+  #not-found {
+    text-align: center;
+  }
+
+  #not-found a {
+    font-family:"Old Standard TT",serif;
+    font-size: 200px;
+    text-decoration: none;
+    display: inline-block;
+    padding-top: 225px;
+  }
+
+  @media (max-width: 750px) {
+    body {
+      padding-left:20px;
+      padding-right:20px;
+    }
+
+    #nav h1 a {
+      font-size:28px;
+    }
+
+    #nav li {
+      font-size:13px;
+      padding: 0 15px;
+    }
+
+    #content {
+      margin-top:0;
+      padding-top:50px;
+      font-size:14px;
+    }
+
+    #content h1 {
+      font-size:25px;
+    }
+
+    #content h2 {
+      font-size:22px;
+    }
+
+    .posts_listing li div {
+      font-size:12px;
+    }
+  }
+
+  @media (max-width: 400px) {
+    body {
+      padding-left:20px;
+      padding-right:20px;
+    }
+
+    #nav h1 a {
+      font-size:22px;
+    }
+
+    #nav li {
+      font-size:12px;
+      padding: 0 10px;
+    }
+
+    #content {
+      margin-top:0;
+      padding-top:20px;
+      font-size:12px;
+    }
+
+    #content h1 {
+      font-size:20px;
+    }
+
+    #content h2 {
+      font-size:18px;
+    }
+
+    .posts_listing li div{
+      font-size:12px;
+    }
+  }
+</style>
+
+
+    
+  </head>
+
+  <body>
+    <section id=nav>
+      <h1><a href="https://xuejie.space/">Less is More</a></h1>
+      <ul>
+        
+          <li><a href="https://xuejie.space/about">About</a></li>
+        
+          <li><a href="https://github.com/xxuejie">GitHub</a></li>
+        
+          <li><a href="https://xuejie.space/index.xml">RSS</a></li>
+        
+          <li><a href="https://twitter.com/xxuejie">Twitter</a></li>
+        
+      </ul>
+    </section>
+
+
+<section id=content>
+  <h1> Introduction to CKB Script Programming 8: Performant WASM </h1>
+
+  
+    <div id=sub-header>
+      March 2020 · 19 minute read
+    </div>
+  
+
+  <div class="entry-content">
+    
+
+<p>In an <a href="../2019_10_09_introduction_to_ckb_script_programming_wasm_on_ckb/">earlier post</a>, I&rsquo;ve shown you that you can have WASM programming running on CKB, with a little caveat that the WASM programs might not be so performant. I also mentioned that there is a potential solution that could solve the problem. And now it&rsquo;s the day! We now have a new <a href="https://github.com/xxuejie/wavm-aot-generator">project</a> that could be used to generate performant WASM programs. Let&rsquo;s see how it works in this post.</p>
+
+<h1 id="background">Background</h1>
+
+<p>(If you are impatient, you can skip this section and jump directly to Examples)</p>
+
+<p>In the previous post, we are translating the WebAssembly programs back to C code, then compile it from C code to RISC-V again. But this has many drawbacks:</p>
+
+<ul>
+<li>It&rsquo;s not always possible to preserve all the optimizations done on the code in a C intermediate layer.</li>
+<li>Due to limitations in C, it is not possible to fully customize memory layout for the maximum performance.</li>
+<li>A C layer can be flaky at times and is not always easy to debug.</li>
+</ul>
+
+<p>Here we are trying a different solution: <a href="https://github.com/WAVM/WAVM">WAVM</a> is a high performance(<a href="https://00f.net/2019/10/22/updated-webassembly-benchmark/">benchmarks</a> show this is the highest performance WASM implementation so far) translation layer that compiles WASM code directly to native code via LLVM. Since LLVM 9+ has official RISC-V support, we can just retarget WAVM to RISC-V code, it will then be able to translate WASM program directly to RISC-V native code.</p>
+
+<p>There&rsquo;s one additional problem: WAVM requires a runtime part to complement the native with surrounding environments. Currently this is included within WAVM with dependency on LLVM, which makes the binary quite huge. One day it suddenly occurs to me that all the information needed to build the runtime, is already included in the original WASM file, so we can just build a separate project, that processes the original WASM file and emits a minimal runtime part in plain C code, then we link it together with generated native code, the result will be a single RISC-V native program that is compiled from WASM code, and can run independently.</p>
+
+<h1 id="examples">Examples</h1>
+
+<p>Here we will use the exact same examples as the previous post: the fibonacci code written in AssemblyScript, and secp256k1 example in pure Rust. We will do a side-by-side comparison on the generated code size, and cycles consumed running in CKB VM. For the sake of completeness, we will also include native versions written in pure C in each example. As we will see below, even if our current WASM solution still has way to go towards the pure C version, it is already quite close and could enable many use cases.</p>
+
+<p>First let&rsquo;s clone all the needed repos and do necessary preparations:</p>
+
+<pre><code>$ export TOP=$(pwd)
+$ git clone https://github.com/AssemblyScript/assemblyscript.git
+$ cd assemblyscript
+$ git checkout b433bc425633c3df6a4a30c735c91c78526a9eb7
+$ npm install
+
+$ cd $TOP
+$ git clone --recursive https://github.com/WebAssembly/wabt
+$ cd wabt
+$ git checkout bec78eafbc203d81b9a6d1ce81f5a80dd7bf692a
+$ mkdir build
+$ cd build
+$ cmake ..
+$ cmake --build .
+
+$ cd $TOP
+$ git clone https://github.com/xxuejie/WAVM
+$ cd WAVM
+$ git checkout cb35225feeb4ba1b5a9c73cbbdb07f4cace9b359
+$ mkdir build
+$ cd build
+# Make sure you are using LLVM 9+, you might need to tweak this path depending
+# on your environment
+$ cmake .. -DLLVM_DIR=/usr/lib/llvm-9/lib/cmake/llvm
+$ cmake --build .
+
+$ cd $TOP
+$ git clone https://github.com/xxuejie/wavm-aot-generator
+$ cd wavm-aot-generator
+$ git checkout 8c818747eb19494fc9c5e0289810aa7ad484a22e
+$ cargo build --release
+
+$ cd $TOP
+$ git clone https://github.com/xxuejie/ckb-standalone-debugger
+$ cd ckb-standalone-debugger
+$ git checkout 15e8813b8cb886e95e2c81bbee9f26d47a831850
+$ cd bins
+$ cargo build --release
+
+$ cd $TOP
+$ git clone https://github.com/xxuejie/ckb-binary-patcher
+$ cd ckb-binary-patcher
+$ git checkout 930f0b468a8f426ebb759d9da735ebaa1e2f98ba
+$ cd ckb-binary-patcher
+$ cargo build --release
+
+$ cd $TOP
+$ git clone https://github.com/nervosnetwork/ckb-c-stdlib
+$ cd ckb-c-stdlib
+$ git checkout 693c58163fe37d6abd326c537447260a846375f0
+</code></pre>
+
+<h2 id="assemblyscript-example">AssemblyScript Example</h2>
+
+<p>Here&rsquo;s our old fibonacci example in AssemblyScript, let&rsquo;s compile it to WebAssembly program first:</p>
+
+<pre><code>$ cd $TOP
+$ cat &lt;&lt; EOF &gt; fib.ts
+export function fib(n: i32): i32 {
+  var a = 0, b = 1;
+    for (let i = 0; i &lt; n; i++) {
+        let t = a + b; a = b; b = t;
+  }
+  return b;
+}
+EOF
+$ assemblyscript/bin/asc fib.ts -b fib.wasm -O3
+</code></pre>
+
+<p>We will compile the WASM code to 2 different versions: C code, and RISC-V native code.</p>
+
+<pre><code>$ cd $TOP
+$ wabt/build/wasm2c fib.wasm -o fib.c
+$ WAVM/build/bin/wavm compile --target-triple riscv64 fib.wasm fib_precompiled.wasm
+$ wavm-aot-generator/target/release/wavm-aot-generator fib_precompiled.wasm fib_precompiled
+</code></pre>
+
+<p>You might noticed that instead of generating native RISC-V code, we are using WAVM to generated a <code>precompiled object</code> formatted file. This is essentially the original WASM file with native code embedded in a custom section, this way we can feed a single file to our generator for convenience reasons.</p>
+
+<p>Let&rsquo;s attach 2 distinct wrapper files used in 2 WASM solutions, and also provide a native implementation:</p>
+
+<pre><code>$ cd $TOP
+$ cat &lt;&lt; EOF &gt; fib_wabt_main.c
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &quot;ckb_syscalls.h&quot;
+
+#include &quot;fib.h&quot;
+
+void (*Z_envZ_abortZ_viiii)(u32, u32, u32, u32);
+
+void env_abort(u32 a, u32 b, u32 c, u32 d) {
+  abort();
+}
+
+int main() {
+  uint32_t value;
+  uint64_t len = 4;
+  int ret = ckb_load_witness((void*) &amp;value, &amp;len, 0, 0,
+                             CKB_SOURCE_GROUP_INPUT);
+  if (ret != CKB_SUCCESS) {
+    return ret;
+  }
+  if (len &lt; 4) {
+    return -1;
+  }
+
+  init();
+  u8 result = Z_fibZ_ii(value);
+
+  return result;
+}
+EOF
+$ cat &lt;&lt; EOF &gt; fib_wavm_main.c
+#include &quot;fib_precompiled_glue.h&quot;
+#include &quot;abi/ckb_vm_wasi_abi.h&quot;
+#include &quot;ckb_syscalls.h&quot;
+
+void* wavm_env_abort(void* dummy, int32_t code, int32_t a, int32_t b, int32_t c)
+{
+  ckb_exit(code);
+
+  return dummy;
+}
+
+int main() {
+  uint32_t value;
+  uint64_t len = 4;
+  int ret = ckb_load_witness((void*) &amp;value, &amp;len, 0, 0,
+                             CKB_SOURCE_GROUP_INPUT);
+  if (ret != CKB_SUCCESS) {
+    return ret;
+  }
+  if (len &lt; 4) {
+    return -1;
+  }
+
+  wavm_ret_int32_t wavm_ret = wavm_exported_function_fib(NULL, value);
+  return wavm_ret.value;
+}
+EOF
+$ cat &lt;&lt; EOF &gt; fib_native_main.c
+#include &quot;ckb_syscalls.h&quot;
+
+int32_t fib(int32_t n) {
+  int32_t a = 0;
+  int32_t b = 1;
+
+  for (int32_t i = 0; i &lt; n; i++) {
+    int32_t t = a + b;
+    a = b;
+    b = t;
+  }
+
+  return b;
+}
+
+int main() {
+  uint32_t value;
+  uint64_t len = 4;
+  int ret = ckb_load_witness((void*) &amp;value, &amp;len, 0, 0,
+                             CKB_SOURCE_GROUP_INPUT);
+  if (ret != CKB_SUCCESS) {
+    return ret;
+  }
+  if (len &lt; 4) {
+    return -1;
+  }
+
+  return fib(value);
+}
+EOF
+</code></pre>
+
+<p>You might noticed that we altered the wabt wrapper used in previous post, so that all 3 versions here load the input to fibonacci function from witness data, this way we can set the same standard for comparison.</p>
+
+<p>Let&rsquo;s compile the 3 files first:</p>
+
+<pre><code>$ cd $TOP
+$ sudo docker run --rm -it -v `pwd`:/code nervos/ckb-riscv-gnu-toolchain:bionic-20191209 bash
+root@7f24745ca702:/# cd /code
+root@7f24745ca702:/code# riscv64-unknown-elf-gcc -O3 -I ckb-c-stdlib -I wavm-aot-generator -I wabt/wasm2c fib_wabt_main.c fib.c wabt/wasm2c/wasm-rt-impl.c -o fib_wabt
+root@7f24745ca702:/code# riscv64-unknown-elf-gcc -O3 -I ckb-c-stdlib -I wavm-aot-generator -I wabt/wasm2c fib_wavm_main.c wavm-aot-generator/abi/riscv64_runtime.S fib_precompiled.o -o fib_wavm -Wl,-T wavm-aot-generator/abi/riscv64.lds
+root@7f24745ca702:/code# riscv64-unknown-elf-gcc -O3 -I ckb-c-stdlib -I wavm-aot-generator -I wabt/wasm2c fib_native_main.c -o fib_native
+root@7f24745ca702:/code# exit
+exit
+$ ckb-binary-patcher/target/release/ckb-binary-patcher -i fib_wavm -o fib_wavm_patched
+</code></pre>
+
+<p>Due to a <a href="https://github.com/nervosnetwork/ckb-vm/issues/92">VM bug</a>, a <a href="https://github.com/xxuejie/ckb-binary-patcher">patcher</a> utility has been provided to workaround RISC-V code that would generate the bug. Even though we only observed LLVM affected by this bug(GCC has optimizations that would generate different code), it still recommended to run the patcher against any script that you would want to run on CKB.</p>
+
+<p>We also prepare a runner to run the scripts:</p>
+
+<pre><code>$ cd $TOP
+$ cat &lt;&lt; EOF &gt; runner.rb
+#!/usr/bin/env ruby
+
+require &quot;rbnacl&quot;
+
+def bin_to_hex(bin)
+  &quot;0x#{bin.unpack1('H*')}&quot;
+end
+
+def blake2b(data)
+  RbNaCl::Hash::Blake2b.digest(data,
+                               personal: &quot;ckb-default-hash&quot;,
+                               digest_size: 32)
+end
+
+if ARGV.length != 2
+  STDERR.puts &quot;Usage: runner.rb &lt;script file&gt; &lt;witness args&gt;&quot;
+  exit 1
+end
+
+script_binary = File.read(ARGV[0])
+script_hash = blake2b(script_binary)
+
+tx = DATA.read.sub(&quot;@FIB_CODE&quot;, bin_to_hex(script_binary))
+       .sub(&quot;@FIB_HASH&quot;, bin_to_hex(script_hash))
+       .sub(&quot;@FIB_ARG&quot;, ARGV[1])
+
+File.write(&quot;tx.json&quot;, tx)
+commandline = &quot;ckb-standalone-debugger/bins/target/release/ckb-debugger --tx-file tx.json --script-group-type type -i 0 -e input&quot;
+STDERR.puts &quot;Executing: #{commandline}&quot;
+exec(commandline)
+
+__END__
+{
+  &quot;mock_info&quot;: {
+    &quot;inputs&quot;: [
+      {
+        &quot;input&quot;: {
+          &quot;previous_output&quot;: {
+            &quot;tx_hash&quot;: &quot;0xa98c57135830e1b91345948df6c4b8870828199a786b26f09f7dec4bc27a73da&quot;,
+            &quot;index&quot;: &quot;0x0&quot;
+          },
+          &quot;since&quot;: &quot;0x0&quot;
+        },
+        &quot;output&quot;: {
+          &quot;capacity&quot;: &quot;0x4b9f96b00&quot;,
+          &quot;lock&quot;: {
+            &quot;args&quot;: &quot;0x&quot;,
+            &quot;code_hash&quot;: &quot;0x0000000000000000000000000000000000000000000000000000000000000000&quot;,
+            &quot;hash_type&quot;: &quot;data&quot;
+          },
+          &quot;type&quot;: {
+            &quot;args&quot;: &quot;0x&quot;,
+            &quot;code_hash&quot;: &quot;@FIB_HASH&quot;,
+            &quot;hash_type&quot;: &quot;data&quot;
+          }
+        },
+        &quot;data&quot;: &quot;0x&quot;
+      }
+    ],
+    &quot;cell_deps&quot;: [
+      {
+        &quot;cell_dep&quot;: {
+          &quot;out_point&quot;: {
+            &quot;tx_hash&quot;: &quot;0xfcd1b3ddcca92b1e49783769e9bf606112b3f8cf36b96cac05bf44edcf5377e6&quot;,
+            &quot;index&quot;: &quot;0x0&quot;
+          },
+          &quot;dep_type&quot;: &quot;code&quot;
+        },
+        &quot;output&quot;: {
+          &quot;capacity&quot;: &quot;0x702198d000&quot;,
+          &quot;lock&quot;: {
+            &quot;args&quot;: &quot;0x&quot;,
+            &quot;code_hash&quot;: &quot;0x0000000000000000000000000000000000000000000000000000000000000000&quot;,
+            &quot;hash_type&quot;: &quot;data&quot;
+          },
+          &quot;type&quot;: null
+        },
+        &quot;data&quot;: &quot;@FIB_CODE&quot;
+      }
+    ],
+    &quot;header_deps&quot;: []
+  },
+  &quot;tx&quot;: {
+    &quot;version&quot;: &quot;0x0&quot;,
+    &quot;cell_deps&quot;: [
+      {
+        &quot;out_point&quot;: {
+          &quot;tx_hash&quot;: &quot;0xfcd1b3ddcca92b1e49783769e9bf606112b3f8cf36b96cac05bf44edcf5377e6&quot;,
+          &quot;index&quot;: &quot;0x0&quot;
+        },
+        &quot;dep_type&quot;: &quot;code&quot;
+      }
+    ],
+    &quot;header_deps&quot;: [
+    ],
+    &quot;inputs&quot;: [
+      {
+        &quot;previous_output&quot;: {
+          &quot;tx_hash&quot;: &quot;0xa98c57135830e1b91345948df6c4b8870828199a786b26f09f7dec4bc27a73da&quot;,
+          &quot;index&quot;: &quot;0x0&quot;
+        },
+        &quot;since&quot;: &quot;0x0&quot;
+      }
+    ],
+    &quot;outputs&quot;: [
+      {
+        &quot;capacity&quot;: &quot;0x0&quot;,
+        &quot;lock&quot;: {
+          &quot;args&quot;: &quot;0x&quot;,
+          &quot;code_hash&quot;: &quot;0x0000000000000000000000000000000000000000000000000000000000000000&quot;,
+          &quot;hash_type&quot;: &quot;data&quot;
+        },
+        &quot;type&quot;: null
+      }
+    ],
+    &quot;witnesses&quot;: [
+      &quot;@FIB_ARG&quot;
+    ],
+    &quot;outputs_data&quot;: [
+      &quot;0x&quot;
+    ]
+  }
+}
+EOF
+$ chmod +x runner.rb
+</code></pre>
+
+<p>Now we can take a look at the binary size of each version, and run the 3 versions of fibonacci calculation:</p>
+
+<pre><code>$ ls -lh fib_wabt fib_wavm_patched fib_native
+-rwxr-xr-x 1 root 11K Mar  3 03:27 fib_native*
+-rwxr-xr-x 1 root 53K Mar  3 03:26 fib_wabt*
+-rwxr-xr-x 1 root 88K Mar  3 03:26 fib_wavm_patched*
+$ ./runner.rb fib_wabt 0x10000000
+Run result: Ok(61)
+Total cycles consumed: 549478
+Transfer cycles: 6530, running cycles: 542948
+$ ./runner.rb fib_wabt 0x20000000
+Run result: Ok(-30)
+Total cycles consumed: 549590
+Transfer cycles: 6530, running cycles: 543060
+$ ./runner.rb fib_wabt 0x00010000
+Run result: Ok(29)
+Total cycles consumed: 551158
+Transfer cycles: 6530, running cycles: 544628
+$ ./runner.rb fib_wavm_patched 0x10000000
+Run result: Ok(61)
+Total cycles consumed: 22402
+Transfer cycles: 19696, running cycles: 2706
+$ ./runner.rb fib_wavm_patched 0x20000000
+Run result: Ok(-30)
+Total cycles consumed: 22578
+Transfer cycles: 19696, running cycles: 2882
+$ ./runner.rb fib_wavm_patched 0x00010000
+Run result: Ok(29)
+Total cycles consumed: 25042
+Transfer cycles: 19696, running cycles: 5346
+$ ./runner.rb fib_native 0x10000000
+Run result: Ok(61)
+Total cycles consumed: 3114
+Transfer cycles: 1137, running cycles: 1977
+$ ./runner.rb fib_native 0x20000000
+Run result: Ok(-30)
+Total cycles consumed: 3226
+Transfer cycles: 1137, running cycles: 2089
+$ ./runner.rb fib_native 0x00010000
+Run result: Ok(29)
+Total cycles consumed: 4794
+Transfer cycles: 1137, running cycles: 3657
+</code></pre>
+
+<p>The input value is encoded in witness part as 32-bit unsigned little endian integer, meaning <code>0x10000000</code>, <code>0x20000000</code> and <code>0x00010000</code> here represent <code>16</code>, <code>32</code> and <code>256</code> respectively.</p>
+
+<p>Since CKB VM emits 8-bit signed value as output, the calculated value are truncated here. But we do not care so much about the actual fibonacci number(well of course, assuming the 3 versions generate the same result), it&rsquo;s the cycle consumption that we care about here.</p>
+
+<p>Some insights can thus be deduced from the values:</p>
+
+<ul>
+<li>The WAVM version generates the biggest binary size(88K), in fact it also requires loading more bytes into the VM as confirmed by <code>transfer cycles</code> of 19696(roughly speaking, 1 transfer cycle means 4 bytes loaded into the VM).</li>
+<li>The WABT version and native version both take about 7 cycles to calculate one round of fibonacci iteration, while the WAVM version takes about 11 cycles to calculate one round of iteration</li>
+<li>However, the WAVM version requires only about 2530 cycles to set up the running environment, while the WABT version takes about 542836 cycles to set up.</li>
+</ul>
+
+<p>We can see that the WAVM version does take significant less cycles in the initial setup(this is hugely due to the custom memory layout we can leverage in WAVM version), but the WAVM version is slightly slower per fibonacci iteration. This might be due to the fact that LLVM still needs some work to catch up GCC&rsquo;s code generation quality for RISC-V, and it could also be that fibonacci is so simple, that GCC can perfectly pick up the calculation structure from the restored C code. For more complex examples, this might not be the case anymore.</p>
+
+<p>I personally did do some investigation into the large binary size of WAVM binary, and the problem, is that all the symbols generated in WAVM, are declared public symbols. That means we cannot rely on dead code elimination(DCE) to purge those variables and functions that we are not used, hence a larger binary is generated here. If the original WASM program is generated by Rust or LLVM directly, this won&rsquo;t be a problem since DCE is already performed, but Assemblyscript tends to do less DCE, hence we have a larger binary. Later I might look into WAVM to see if there&rsquo;s a way we can tweak non-exported functions to be module local, if that can be resolved, we should be able to reduce the binary size of WAVM version to the same level like the other solutions.</p>
+
+<h1 id="rust-secp256k1-example">Rust Secp256k1 Example</h1>
+
+<p>Let&rsquo;s also try the more complicated Rust based secp256k1 example:</p>
+
+<pre><code>$ cd $TOP
+$ git clone https://github.com/nervosnetwork/wasm-secp256k1-test
+$ cd wasm-secp256k1-test
+$ cargo build --release --target=wasm32-unknown-unknown
+
+$ cd $TOP
+$ wabt/bin/wasm2c wasm-secp256k1-test/target/wasm32-unknown-unknown/release/wasm-secp256k1-test.wasm -o secp.c
+# There's a symbol confliction in the latest versioni of gcc with wabt here, this
+# can serve as a temporary solutin
+$ sed -i s/bcmp/bcmp1/g secp.c
+$ WAVM/build/bin/wavm compile --target-triple riscv64 wasm-secp256k1-test/target/wasm32-unknown-unknown/release/wasm-secp256k1-test.wasm secp_precompiled.wasm
+$ wavm-aot-generator/target/release/wavm-aot-generator secp_precompiled.wasm secp_precompiled
+
+$ cd $TOP
+$ cat &lt;&lt; EOF &gt; secp_wabt_main.c
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &quot;ckb_syscalls.h&quot;
+
+#include &quot;secp.h&quot;
+
+int main() {
+  uint32_t value;
+  uint64_t len = 4;
+  int ret = ckb_load_witness((void*) &amp;value, &amp;len, 0, 0,
+                             CKB_SOURCE_GROUP_INPUT);
+  if (ret != CKB_SUCCESS) {
+    return ret;
+  }
+  if (len &lt; 4) {
+    return -1;
+  }
+
+  init();
+
+  uint32_t times = value &gt;&gt; 8;
+  value = value &amp; 0xFF;
+  uint8_t result = 0;
+
+  for (int i = 0; i &lt; times; i++) {
+    result += Z_runZ_ii(value);
+  }
+
+  return result;
+}
+EOF
+$ cat &lt;&lt; EOF &gt; secp_wavm_main.c
+#include &quot;secp_precompiled_glue.h&quot;
+#include &quot;abi/ckb_vm_wasi_abi.h&quot;
+#include &quot;ckb_syscalls.h&quot;
+
+int main() {
+  uint32_t value;
+  uint64_t len = 4;
+  int ret = ckb_load_witness((void*) &amp;value, &amp;len, 0, 0,
+                             CKB_SOURCE_GROUP_INPUT);
+  if (ret != CKB_SUCCESS) {
+    return ret;
+  }
+  if (len &lt; 4) {
+    return -1;
+  }
+
+  uint32_t times = value &gt;&gt; 8;
+  value = value &amp; 0xFF;
+  uint8_t result = 0;
+
+  for (int i = 0; i &lt; times; i++) {
+    ckb_debug(&quot;One run!&quot;);
+    wavm_ret_int32_t wavm_ret = wavm_exported_function_run(NULL, value);
+    result += wavm_ret.value;
+  }
+
+  return result;
+}
+EOF
+</code></pre>
+
+<p>Now we can compile the code, then compare binary size as well as running cycles:</p>
+
+<pre><code>$ cd $TOP
+$ sudo docker run --rm -it -v `pwd`:/code nervos/ckb-riscv-gnu-toolchain:bionic-20191209 bash
+root@a237c0d00b1c:/# cd /code/
+root@a237c0d00b1c:/code# riscv64-unknown-elf-gcc -O3 -I ckb-c-stdlib -I wavm-aot-generator -I wabt/wasm2c secp_wabt_main.c secp.c wabt/wasm2c/wasm-rt-impl.c -o secp_wabt
+root@a237c0d00b1c:/code# riscv64-unknown-elf-gcc -O3 -I ckb-c-stdlib -I wavm-aot-generator -I wabt/wasm2c secp_wavm_main.c wavm-aot-generator/abi/riscv64_runtime.S secp_precompiled.o -o secp_wavm -Wl,-T wavm-aot-generator/abi/riscv64.lds
+root@a237c0d00b1c:/code# exit
+exit
+$ ckb-binary-patcher/target/release/ckb-binary-patcher -i secp_wavm -o secp_wavm_patched
+
+$ ls -l secp_wabt secp_wavm_patched
+-rwxrwxr-x 1 ubuntu 1791744 Mar  3 05:27 secp_wabt*
+-rw-rw-r-- 1 ubuntu 1800440 Mar  3 05:29 secp_wavm_patched
+$ ./runner.rb secp_wabt 0x01010000
+Run result: Ok(0)
+Total cycles consumed: 35702943
+Transfer cycles: 438060, running cycles: 35264883
+$ ./runner.rb secp_wabt 0x01050000
+Run result: Ok(0)
+Total cycles consumed: 90164183
+Transfer cycles: 438060, running cycles: 89726123
+$ ./runner.rb secp_wavm_patched 0x01010000
+Run result: Ok(0)
+Total cycles consumed: 10206568
+Transfer cycles: 428764, running cycles: 9777804
+$ ./runner.rb secp_wavm_patched 0x01050000
+Run result: Ok(0)
+Total cycles consumed: 49307936
+Transfer cycles: 428764, running cycles: 48879172
+</code></pre>
+
+<p>Like the previous case, we can deduce facts from the values as well:</p>
+
+<ul>
+<li>The binary sizes generated by the 2 version are only slightly different, WAVM has a slightly larger binary but the bytes needed to load into VM is less.</li>
+<li>In this case, a single secp256k1 verification step takes 9775342 in the WAVM version, while 13615310 cycles are needed in the WABT version. Here we can see doing translations in LLVM directly does provide better performance than a restored C version in WABT.</li>
+<li>For such a complex program, the WAVM version still only takes 2462 cycles to set up, while the WABT version would take an enourmous 21649573 cycles to set up things. Here WAVM version can provide you with big wins.</li>
+</ul>
+
+<p>Since the current direct path from Rust to RISC-V does not allow std to be used. We cannot provide a similar native version directly. But just for the curious ones, I still provide a similar function in pure C, and we can measure the cycles taken by the C version compiled directly into RISC-V:</p>
+
+<pre><code>$ cd $TOP
+$ git clone --recursive https://github.com/nervosnetwork/ckb-vm-bench-scripts
+$ cd ckb-vm-bench-scripts
+$ git checkout f7ab37c055b1a59bbc4f931c732331642c728c1d
+$ cd $TOP
+$ sudo docker run --rm -it -v `pwd`:/code nervos/ckb-riscv-gnu-toolchain:bionic-20191209 bash
+root@ad22c452cb54:/# cd /code/ckb-vm-bench-scripts
+root@ad22c452cb54:/code/ckb-vm-bench-scripts# make
+(omitted ...)
+root@ad22c452cb54:/code/ckb-vm-bench-scripts# exit
+exit
+
+$ ./runner.rb ckb-vm-bench-scripts/build/secp256k1_bench 0x01010000
+Run result: Ok(0)
+Total cycles consumed: 1621594
+Transfer cycles: 272630, running cycles: 1348964
+
+$ ./runner.rb ckb-vm-bench-scripts/build/secp256k1_bench 0x01050000
+Run result: Ok(0)
+Total cycles consumed: 7007598
+Transfer cycles: 272630, running cycles: 6734968
+</code></pre>
+
+<p>As we can see here, the C native version takes 1346501 cycles per secp256k1 step, and 2463 cycles for initial bookkeeping work. Both the binary sizes and loaded bytes are also smaller.</p>
+
+<p>I do want to mention here that we are not comparing the same code here, the C version and Rust version use different implementation, and we haven&rsquo;t benched the quality of the 2 implementations directly. That being said, assuming the 2 versions have similar performance, the Rust code, compiled to WASM first, then to RISC-V, is roughly 7x the performance of C code. Considering bound checking logic might also be performed by the Rust version, I would consider this is good performance for many many use cases. There&rsquo;re a whole lot of scripts that can work with this level of performance. What&rsquo;s more, you can always combine the C implemented performance oriented code and Rust implemented logic code together to enjoy the best of both works. And we haven&rsquo;t mentioned the best of this new route.</p>
+
+<h1 id="wasi">WASI</h1>
+
+<p>I kept talking about doing Rust on CKB via WASM, my colleague has <a href="https://justjjy.com/Build-CKB-contract-with-Rust-part-1">proved</a> there is a path you can go directly from Rust to RISC-V, what does a WASM intermediate path help here? The problem with a native path, is that Rust&rsquo;s std is not supported in RISC-V port, to make matters worse, libc binding is also absent. This means you will really have to work with core Rust, a minimal and limited set of Rust. Please don&rsquo;t get me wrong, there&rsquo;s nothing bad about going with core Rust, if your use case is enough with Rust&rsquo;s std, you are perfectly good going that path. But I do want to provide a different path, where std is available, so most Rust libraries on crates can be used to build awesome CKB scripts. This is what the WASM path can enable us with WASI.</p>
+
+<p>If you haven&rsquo;t heard of it, <a href="https://wasi.dev/">WASI</a> is a standard way of interfacing with the running environment for a WebAssembly program. It has <a href="https://github.com/alexcrichton/cc-rs/issues/447">been</a> <a href="https://github.com/alexcrichton/cc-rs/issues/446">proved</a> that Rust&rsquo;s WASM future lies in a new <code>wasm32-wasi</code> target. By doing the WASM intermediate step, we can build WASI support right into CKB script, enjoying the future-proof <code>wasm32-wasi</code> target of Rust! In fact, WAVM already provides an <a href="https://github.com/xxuejie/WAVM/blob/master/Examples/helloworld.wast">example</a> that leverages 2 of WASI&rsquo;s API, let&rsquo;s see if we can get that to work on CKB:</p>
+
+<pre><code>$ cd $TOP
+$ WAVM/build/bin/wavm compile --target-triple riscv64 WAVM/Examples/helloworld.wast helloworld_precompiled.wasm
+$ wavm-aot-generator/target/release/wavm-aot-generator helloworld_precompiled.wasm helloworld_precompiled
+$ cat &lt;&lt; EOF &gt; helloworld_wavm_main.c
+#include &quot;helloworld_precompiled_glue.h&quot;
+#include &quot;abi/ckb_vm_wasi_abi.h&quot;
+
+/* main is already generated via wavm-aot-generator */
+EOF
+$ sudo docker run --rm -it -v `pwd`:/code nervos/ckb-riscv-gnu-toolchain:bionic-20191209 bash
+root@d28602dba318:/# cd /code
+root@d28602dba318:/code# riscv64-unknown-elf-gcc -O3 -I ckb-c-stdlib -I wavm-aot-generator -I wabt/wasm2c helloworld_wavm_main.c wavm-aot-generator/abi/riscv64_runtime.S
+helloworld_precompiled.o -o helloworld_wavm -Wl,-T wavm-aot-generator/abi/riscv64.lds
+root@d28602dba318:/code# exit
+exit
+$ ckb-binary-patcher/target/release/ckb-binary-patcher -i helloworld_wavm -o helloworld_wavm_patched
+$ RUST_LOG=debug ./runner.rb helloworld_wavm_patched 0x
+DEBUG:&lt;unknown&gt;: script group: Byte32(0x86cfac3b49b8f97f913aa5a09d02ad1e5b1ab5be0be793815e9cb714ba831948) DEBUG OUTPUT: Hello World!
+
+Run result: Ok(0)
+Total cycles consumed: 20260
+Transfer cycles: 17728, running cycles: 2532
+</code></pre>
+
+<p>We can see the WASI APIs work perfectly! This is because I have already provided the <a href="https://github.com/xxuejie/wavm-aot-generator/blob/8c818747eb19494fc9c5e0289810aa7ad484a22e/abi/ckb_vm_wasi_abi.h#L51-L91">implementation</a> for the 2 APIs used here. While it is incomplete now, I will work to add shims for all WASI APIs. After that we can have Rust programs, with std supported, compiled to <code>wasm32-wasi</code> target&rsquo;s WASM code, then translated to RISC-V perfectly.</p>
+
+<p>You see many different blockchains claiming they use WebAssembly everyday, but what they don&rsquo;t tell you, is that WebAssembly is designed to have many flavors, and they just choose to support one of them. In fact <a href="https://github.com/alexcrichton/cc-rs/issues/446">many</a> <a href="https://github.com/confio/cosmwasm/blob/master/Building.md#requirements">famous</a> <a href="https://github.com/CasperLabs/CasperLabs/tree/dev/execution-engine/cargo-casperlabs#building-the-contract~">blockchains</a> <a href="https://github.com/EOSIO/eosio.cdt/blob/master/tools/external/wabt/src/emscripten-helpers.cc">only</a> tend to support a bare minimal WebAssembly program. While most of them let you use Rust, they only use the flaky and could-be-deprecated <code>wasm32-unknown-unknown</code> target. As a result, they either just disable Rust std directly, claiming you don&rsquo;t need it, or has flaky support that might break going into the future, or they cannot afford to change the code for compatibility reasons. On the other hand, you can enjoy WASI and full feature Rust in CKB. Many ask us why we don&rsquo;t use WebAssembly directly, I would say that we are the first one, or at least among the first ones to get WebAssembly right on blockchains.</p>
+
+<h1 id="vice-verca-doesn-t-always-work-well">&ldquo;Vice Verca&rdquo; doesn&rsquo;t always work well</h1>
+
+<p>One recurring topic we heard, is that if you can translate WASM to RISC-V, you can also translate RISC-V to WASM! In a sense that is true, but there&rsquo;s a difference betweeen one thing that works, and one thing that works well. RISC-V, due to its design, is a very simple specification that maps extremely well to modern day CPUs. If you check our VM implementation, you might notice that most RISC-V instructions map directly onto a dozen x86-64 CPU instructions. We are just building a minimal secure layer that works on top of the CPUs in your machines. WASM, on the other hand, is a <a href="https://webassembly.org/docs/future-features/">beast</a> much like JVM, there are tons of features in the spec already, there are also tons of features being added to the spec everyday. Many of the new features don&rsquo;t have direct mappings on CPUs, ranging from lower level instructions such as  <code>memory.grow</code> or <code>callIndirect</code>, to higher level features such as garbage collections, or threading. When you pick WebAssembly as your blockchain&rsquo;s engine, you will have to pick a set of features, and decide how/if you want to migrate, when new features keep coming out. To complicate this matter, you cannot just change the implementation of some features in your current WebAssembly engine, cuz that might bring incompatible changes. When you pick RISC-V as the underlying engine, you don&rsquo;t have such concerns. RISC-V is designed for hardware that never changes. When the spec is fixed, it will be fixed forever, and all compilers have to respect bugs in the spec. And when you are implementing WebAssembly programs on top of RISC-V, you are free to change the implementations of higher constructs in WebAssembly anyway you want. For example, you might discover a new garbage collection algorithm that will help your smart contracts, you can deploy the algorithm by upgrading the a different smart contract, no forks are needed to support this. All of these are extremely hard to being even impossible if you tackle the problem starting from a WebAssembly engine. That is where I believe the true beauty of CKB&rsquo;s unique design lies.</p>
+
+<h1 id="recap">Recap</h1>
+
+<p>Here&rsquo;s one suggestion: if someone tells you his/her blockchain uses WebAssembly, do yourself a favor, and ask what specific spec his/her WebAssembly engine uses, and how he/she plan to tackle the problem when more features are added to the WebAssembly specification. There&rsquo;s nothing wrong relying on WebAssembly in the blockchain world, but it matters, if WebAssembly is used in the correct way. To me, CKB is one example that WebAssembly is used in the correct way with future issues considered. I do believe you will thank yourself years later, if you take the extra effort ensuring your choice of blockchain deploys WebAssembly the correct way.</p>
+
+  </div>
+
+  <div id=links>
+    
+      <a class="basic-alignment left" href="https://xuejie.space/2020_02_21_introduction_to_ckb_script_programming_advanced_duktape_examples/">&laquo; Introduction to CKB Script Programming 7: Advanced Duktape Examples</a>
+    
+    
+  </div>
+</section>
+
+  
+</body>
+</html>
+
+
+
