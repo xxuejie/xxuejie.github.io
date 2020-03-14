@@ -142,8 +142,8 @@ We can use a script structure! Since lock script is typically used for signature
     + If `hash type` is `data`, the dep cell's data hash is used as `test hash`
     + If `hash type` is `type`, the dep cell's type script hash is used as `test hash`
 * CKB extracts `code hash` and `hash type` values from the script structure to run
-* If CKB finds a dep cell whose `test hash` matches specified `code hash`, CKB uses the data in the found dep cell as the scrip tot run.
-* If no dep cell has test hash matching specified `code hash`, CKB results in a validation error.
+* If CKB finds a dep cell whose `test hash` matches specified `code hash`, CKB uses the data in the found dep cell as the scrip to run.
+* If no dep cell has `test hash` matching specified `code hash`, CKB results in a validation error.
 
 Notice the `hash type` used here, is the value belonging to the script to run, not the values of scripts in a dep cell. You could perfectly have 2 inputs in a transaction, one using `data` as `hash type`, the other using `type` as `hash type`. Either one of them will use its own correct way to locate the correct cell.
 
