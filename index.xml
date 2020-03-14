@@ -2258,8 +2258,8 @@ b. If the user tries to duplicate type script args as the first transaction inpu
 &lt;li&gt;If &lt;code&gt;hash type&lt;/code&gt; is &lt;code&gt;type&lt;/code&gt;, the dep cell&amp;rsquo;s type script hash is used as &lt;code&gt;test hash&lt;/code&gt;&lt;/li&gt;
 &lt;/ul&gt;&lt;/li&gt;
 &lt;li&gt;CKB extracts &lt;code&gt;code hash&lt;/code&gt; and &lt;code&gt;hash type&lt;/code&gt; values from the script structure to run&lt;/li&gt;
-&lt;li&gt;If CKB finds a dep cell whose &lt;code&gt;test hash&lt;/code&gt; matches specified &lt;code&gt;code hash&lt;/code&gt;, CKB uses the data in the found dep cell as the scrip tot run.&lt;/li&gt;
-&lt;li&gt;If no dep cell has test hash matching specified &lt;code&gt;code hash&lt;/code&gt;, CKB results in a validation error.&lt;/li&gt;
+&lt;li&gt;If CKB finds a dep cell whose &lt;code&gt;test hash&lt;/code&gt; matches specified &lt;code&gt;code hash&lt;/code&gt;, CKB uses the data in the found dep cell as the scrip to run.&lt;/li&gt;
+&lt;li&gt;If no dep cell has &lt;code&gt;test hash&lt;/code&gt; matching specified &lt;code&gt;code hash&lt;/code&gt;, CKB results in a validation error.&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;p&gt;Notice the &lt;code&gt;hash type&lt;/code&gt; used here, is the value belonging to the script to run, not the values of scripts in a dep cell. You could perfectly have 2 inputs in a transaction, one using &lt;code&gt;data&lt;/code&gt; as &lt;code&gt;hash type&lt;/code&gt;, the other using &lt;code&gt;type&lt;/code&gt; as &lt;code&gt;hash type&lt;/code&gt;. Either one of them will use its own correct way to locate the correct cell.&lt;/p&gt;
@@ -3304,17 +3304,15 @@ pry(main)&amp;gt; tx.outputs[0].type = carrot_type_script.dup&lt;/code&gt;&lt;/p
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-ruby&#34; data-lang=&#34;ruby&#34;&gt;pry(main)&amp;gt; carrot_cell_dep = CKB::Types::CellDep.new(&lt;span style=&#34;font-style:italic&#34;&gt;out_point&lt;/span&gt;: CKB::Types::OutPoint.new(&lt;span style=&#34;font-style:italic&#34;&gt;tx_hash&lt;/span&gt;: carrot_tx_hash, &lt;span style=&#34;font-style:italic&#34;&gt;index&lt;/span&gt;: 0))
 pry(main)&amp;gt; tx.cell_deps &amp;lt;&amp;lt; carrot_cell_dep.dup&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;Now we are ready to sign and send the transaction:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-ruby&#34; data-lang=&#34;ruby&#34;&gt;[44] pry(main)&amp;gt; tx.witnesses[0] = &lt;span style=&#34;font-style:italic&#34;&gt;&amp;#34;0x&amp;#34;&lt;/span&gt;
-[46] pry(main)&amp;gt; tx = tx.sign(wallet.key, api.compute_transaction_hash(tx))
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-ruby&#34; data-lang=&#34;ruby&#34;&gt;[46] pry(main)&amp;gt; tx = tx.sign(wallet.key, api.compute_transaction_hash(tx))
 [19] pry(main)&amp;gt; api.send_transaction(tx)
 =&amp;gt; &lt;span style=&#34;font-style:italic&#34;&gt;&amp;#34;0xd7b0fea7c1527cde27cc4e7a2e055e494690a384db14cc35cd2e51ec6f078163&amp;#34;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;Since this transaction does not have any cell containing &lt;code&gt;carrot&lt;/code&gt; in the cell data, the type script validates successfully. Now let&amp;rsquo;s try a different transaction that does have a cell that begins with &lt;code&gt;carrot&lt;/code&gt;:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-ruby&#34; data-lang=&#34;ruby&#34;&gt;pry(main)&amp;gt; tx2 = wallet.generate_tx(wallet2.address, CKB::Utils.byte_to_shannon(100), &lt;span style=&#34;font-style:italic&#34;&gt;fee&lt;/span&gt;: 5000)
-pry(main)&amp;gt; tx2.deps.push(carrot_cell_dep.dup)
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-ruby&#34; data-lang=&#34;ruby&#34;&gt;pry(main)&amp;gt; tx2 = wallet.generate_tx(wallet2.address, CKB::Utils.byte_to_shannon(400), &lt;span style=&#34;font-style:italic&#34;&gt;fee&lt;/span&gt;: 5000)
+pry(main)&amp;gt; tx2.cell_deps.push(carrot_cell_dep.dup)
 pry(main)&amp;gt; tx2.outputs[0].type = carrot_type_script.dup
 pry(main)&amp;gt; tx2.outputs_data[0] = CKB::Utils.bin_to_hex(&lt;span style=&#34;font-style:italic&#34;&gt;&amp;#34;carrot123&amp;#34;&lt;/span&gt;)
-pry(main)&amp;gt; tx2.witnesses[0] = &lt;span style=&#34;font-style:italic&#34;&gt;&amp;#34;0x&amp;#34;&lt;/span&gt;
-pry(main)&amp;gt; tx2 = tx2.sign(wallet.key, api.compute_transaction_hash(tx2))
+pry(main)&amp;gt; tx2 = tx2.sign(wallet.key)
 pry(main)&amp;gt; api.send_transaction(tx2)
 CKB::&lt;span style=&#34;font-style:italic&#34;&gt;RPCError&lt;/span&gt;: jsonrpc &lt;span style=&#34;font-style:italic&#34;&gt;error&lt;/span&gt;: {&lt;span style=&#34;font-style:italic&#34;&gt;:code&lt;/span&gt;=&amp;gt;-3, &lt;span style=&#34;font-style:italic&#34;&gt;:message&lt;/span&gt;=&amp;gt;&lt;span style=&#34;font-style:italic&#34;&gt;&amp;#34;InvalidTx(ScriptFailure(ValidationFailure(-1)))&amp;#34;&lt;/span&gt;}
 from &lt;span style=&#34;font-style:italic&#34;&gt;/home/u&lt;/span&gt;buntu/code/ckb-sdk-ruby/lib/ckb/rpc.rb:164&lt;span style=&#34;font-style:italic&#34;&gt;:in&lt;/span&gt; &lt;span style=&#34;font-style:italic&#34;&gt;`rpc_request&amp;#39;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
@@ -3369,7 +3367,7 @@ exit
 $ ls build/duktape
 build/duktape*&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;Like the carrot example, the first step here is to deploy duktape script code in a CKB cell:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-ruby&#34; data-lang=&#34;ruby&#34;&gt;pry(main)&amp;gt; data = File.read(&lt;span style=&#34;font-style:italic&#34;&gt;&amp;#34;../ckb-duktape/build/duktape&amp;#34;&lt;/span&gt;)
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-ruby&#34; data-lang=&#34;ruby&#34;&gt;pry(main)&amp;gt; duktape_data = File.read(&lt;span style=&#34;font-style:italic&#34;&gt;&amp;#34;../ckb-duktape/build/duktape&amp;#34;&lt;/span&gt;)
 pry(main)&amp;gt; duktape_data.bytesize
 =&amp;gt; 269064
 pry(main)&amp;gt; duktape_tx_hash = wallet.send_capacity(wallet.address, CKB::Utils.byte_to_shannon(280000), CKB::Utils.bin_to_hex(duktape_data))
@@ -3382,11 +3380,10 @@ pry(main)&amp;gt; duktape_cell_dep = CKB::Types::CellDep.new(&lt;span style=&#34
 &lt;p&gt;This echos the differences mentioned above on script code vs script: here duktape serves as a script code providing a JavaScript engine, while different script leveraging duktape script code serves different functionalities on chain.&lt;/p&gt;
 
 &lt;p&gt;Now we can create a cell with the duktape type script attached:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-ruby&#34; data-lang=&#34;ruby&#34;&gt;pry(main)&amp;gt; tx = wallet.generate_tx(wallet2.address, CKB::Utils.byte_to_shannon(200))
-pry(main)&amp;gt; tx.cell_deps.push(duktape_out_point.dup)
-pry(main)&amp;gt; tx.outputs.type = duktape_hello_type_script.dup
-pry(main)&amp;gt; tx.witnesses[0] = &lt;span style=&#34;font-style:italic&#34;&gt;&amp;#34;0x&amp;#34;&lt;/span&gt;
-pry(main)&amp;gt; tx = tx.sign(wallet.key, api.compute_transaction_hash(tx))
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-ruby&#34; data-lang=&#34;ruby&#34;&gt;pry(main)&amp;gt; tx = wallet.generate_tx(wallet2.address, CKB::Utils.byte_to_shannon(200), &lt;span style=&#34;font-style:italic&#34;&gt;fee&lt;/span&gt;: 600)
+pry(main)&amp;gt; tx.cell_deps.push(duktape_cell_dep.dup)
+pry(main)&amp;gt; tx.outputs[0].type = duktape_hello_type_script.dup
+pry(main)&amp;gt; tx = tx.sign(wallet.key)
 pry(main)&amp;gt; api.send_transaction(tx)
 =&amp;gt; &lt;span style=&#34;font-style:italic&#34;&gt;&amp;#34;0x2e4d3aab4284bc52fc6f07df66e7c8fc0e236916b8a8b8417abb2a2c60824028&amp;#34;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;We can see that the script executes successfully, and if you have &lt;code&gt;ckb-script&lt;/code&gt; module&amp;rsquo;s log level set to &lt;code&gt;debug&lt;/code&gt; in your &lt;code&gt;ckb.toml&lt;/code&gt; file, you can also notice the following log:&lt;/p&gt;

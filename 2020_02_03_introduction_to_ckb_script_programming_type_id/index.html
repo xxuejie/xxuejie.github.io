@@ -568,8 +568,8 @@ b. If the user tries to duplicate type script args as the first transaction inpu
 <li>If <code>hash type</code> is <code>type</code>, the dep cell&rsquo;s type script hash is used as <code>test hash</code></li>
 </ul></li>
 <li>CKB extracts <code>code hash</code> and <code>hash type</code> values from the script structure to run</li>
-<li>If CKB finds a dep cell whose <code>test hash</code> matches specified <code>code hash</code>, CKB uses the data in the found dep cell as the scrip tot run.</li>
-<li>If no dep cell has test hash matching specified <code>code hash</code>, CKB results in a validation error.</li>
+<li>If CKB finds a dep cell whose <code>test hash</code> matches specified <code>code hash</code>, CKB uses the data in the found dep cell as the scrip to run.</li>
+<li>If no dep cell has <code>test hash</code> matching specified <code>code hash</code>, CKB results in a validation error.</li>
 </ul>
 
 <p>Notice the <code>hash type</code> used here, is the value belonging to the script to run, not the values of scripts in a dep cell. You could perfectly have 2 inputs in a transaction, one using <code>data</code> as <code>hash type</code>, the other using <code>type</code> as <code>hash type</code>. Either one of them will use its own correct way to locate the correct cell.</p>
