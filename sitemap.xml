@@ -3,12 +3,17 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
-    <loc>https://xuejie.space/2020_03_03_introduction_to_ckb_script_programming_performant_wasm/</loc>
-    <lastmod>2020-03-02T00:00:00+00:00</lastmod>
+    <loc>https://xuejie.space/</loc>
+    <lastmod>2020-03-16T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://xuejie.space/</loc>
+    <loc>https://xuejie.space/2020_03_16_lets_build_a_minimal_blockchain_what_is_a_blockchain/</loc>
+    <lastmod>2020-03-16T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://xuejie.space/2020_03_03_introduction_to_ckb_script_programming_performant_wasm/</loc>
     <lastmod>2020-03-02T00:00:00+00:00</lastmod>
   </url>
   
