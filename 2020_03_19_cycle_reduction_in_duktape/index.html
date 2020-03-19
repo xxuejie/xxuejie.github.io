@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="MobileOptimized" content="320">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
+    
+
+    
+      <link href='https://fonts.googleapis.com/css?family=Open+Sans:400|Old+Standard+TT:400&display=swap' rel='stylesheet' type='text/css'>
+    
+
+    <link rel="icon" type="image/png" href="https://xuejie.space/favicon_16x16.png" sizes="16x16">
+    <link rel="icon" type="image/png" href="https://xuejie.space/favicon_32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="https://xuejie.space/favicon_128x128.png" sizes="128x128">
+
+    <title>
+      
+      
+         Introduction to CKB Script Programming 9: Cycle Reductions in Duktape Script 
+      
+    </title>
+    <link rel="canonical" href="https://xuejie.space/2020_03_19_cycle_reduction_in_duktape/">
+
+    <style>
+  * {
+    border:0;
+    font:inherit;
+    font-size:100%;
+    vertical-align:baseline;
+    margin:0;
+    padding:0;
+    color: black;
+    text-decoration-skip: ink;
+  }
+
+  body {
+    font-family:'Open Sans', 'Myriad Pro', Myriad, sans-serif;
+    font-size:17px;
+    line-height:160%;
+    color:#1d1313;
+    max-width:700px;
+    margin:auto;
+  }
+
+  p {
+    margin: 20px 0;
+  }
+
+  a img {
+    border:none;
+  }
+
+  img {
+    margin: 10px auto 10px auto;
+    max-width: 100%;
+    display: block;
+  }
+
+  .left-justify {
+    float: left;
+  }
+
+  .right-justify {
+    float:right;
+  }
+
+  pre, code {
+    font: 12px Consolas, "Liberation Mono", Menlo, Courier, monospace;
+    background-color: #f7f7f7;
+  }
+
+  code {
+    font-size: 12px;
+    padding: 4px;
+  }
+
+  pre {
+    margin-top: 0;
+    margin-bottom: 16px;
+    word-wrap: normal;
+    padding: 16px;
+    overflow: auto;
+    font-size: 85%;
+    line-height: 1.45;
+  }
+
+  pre>code {
+    padding: 0;
+    margin: 0;
+    font-size: 100%;
+    word-break: normal;
+    white-space: pre;
+    background: transparent;
+    border: 0;
+  }
+
+  pre code {
+    display: inline;
+    max-width: auto;
+    padding: 0;
+    margin: 0;
+    overflow: visible;
+    line-height: inherit;
+    word-wrap: normal;
+    background-color: transparent;
+    border: 0;
+  }
+
+  pre code::before,
+  pre code::after {
+    content: normal;
+  }
+
+  em,q,em,dfn {
+    font-style:italic;
+  }
+
+  .sans,html .gist .gist-file .gist-meta {
+    font-family:"Open Sans","Myriad Pro",Myriad,sans-serif;
+  }
+
+  .mono,pre,code,tt,p code,li code {
+    font-family:Menlo,Monaco,"Andale Mono","lucida console","Courier New",monospace;
+  }
+
+  .heading,.serif,h1,h2,h3 {
+    font-family:"Old Standard TT",serif;
+  }
+
+  strong {
+    font-weight:600;
+  }
+
+  q:before {
+    content:"\201C";
+  }
+
+  q:after {
+    content:"\201D";
+  }
+
+  del,s {
+    text-decoration:line-through;
+  }
+
+  blockquote {
+    font-family:"Old Standard TT",serif;
+    text-align:center;
+    padding:50px;
+  }
+
+  blockquote p {
+    display:inline-block;
+    font-style:italic;
+  }
+
+  blockquote:before,blockquote:after {
+    font-family:"Old Standard TT",serif;
+    content:'\201C';
+    font-size:35px;
+    color:#403c3b;
+  }
+
+  blockquote:after {
+    content:'\201D';
+  }
+
+  hr {
+    width:40%;
+    height: 1px;
+    background:#403c3b;
+    margin: 25px auto;
+  }
+
+  h1 {
+    font-size:35px;
+  }
+
+  h2 {
+    font-size:28px;
+  }
+
+  h3 {
+    font-size:22px;
+    margin-top:18px;
+  }
+
+  h1 a,h2 a,h3 a {
+    text-decoration:none;
+  }
+
+  h1,h2 {
+    margin-top:28px;
+  }
+
+  #sub-header, time {
+    color:#403c3b;
+    font-size:13px;
+  }
+
+  #sub-header {
+    margin: 0 4px;
+  }
+
+  #nav h1 a {
+    font-size:35px;
+    color:#1d1313;
+    line-height:120%;
+  }
+
+  .posts_listing a,#nav a {
+    text-decoration: none;
+  }
+
+  li {
+    margin-left: 20px;
+  }
+
+  ul li {
+    margin-left: 5px;
+  }
+
+  ul li {
+    list-style-type: none;
+  }
+  ul li:before {
+    content:"\00BB \0020";
+  }
+
+  #nav ul li:before, .posts_listing li:before {
+    content:'';
+    margin-right:0;
+  }
+
+  #content {
+    text-align:left;
+    width:100%;
+    font-size:15px;
+    padding:60px 0 80px;
+  }
+
+  #content h1,#content h2 {
+    margin-bottom:5px;
+  }
+
+  #content h2 {
+    font-size:25px;
+  }
+
+  #content .entry-content {
+    margin-top:15px;
+  }
+
+  #content time {
+    margin-left:3px;
+  }
+
+  #content h1 {
+    font-size:30px;
+  }
+
+  .highlight {
+    margin: 10px 0;
+  }
+
+  .posts_listing {
+    margin:0 0 50px;
+  }
+
+  .posts_listing li {
+    margin:0 0 25px 15px;
+  }
+
+  .posts_listing li a:hover,#nav a:hover {
+    text-decoration: underline;
+  }
+
+  #nav {
+    text-align:center;
+    position:static;
+    margin-top:60px;
+  }
+
+  #nav ul {
+    display: table;
+    margin: 8px auto 0 auto;
+  }
+
+  #nav li {
+    list-style-type:none;
+    display:table-cell;
+    font-size:15px;
+    padding: 0 20px;
+  }
+
+  #links {
+    margin: 50px 0 0 0;
+  }
+
+  #links :nth-child(2) {
+    float:right;
+  }
+
+  #not-found {
+    text-align: center;
+  }
+
+  #not-found a {
+    font-family:"Old Standard TT",serif;
+    font-size: 200px;
+    text-decoration: none;
+    display: inline-block;
+    padding-top: 225px;
+  }
+
+  @media (max-width: 750px) {
+    body {
+      padding-left:20px;
+      padding-right:20px;
+    }
+
+    #nav h1 a {
+      font-size:28px;
+    }
+
+    #nav li {
+      font-size:13px;
+      padding: 0 15px;
+    }
+
+    #content {
+      margin-top:0;
+      padding-top:50px;
+      font-size:14px;
+    }
+
+    #content h1 {
+      font-size:25px;
+    }
+
+    #content h2 {
+      font-size:22px;
+    }
+
+    .posts_listing li div {
+      font-size:12px;
+    }
+  }
+
+  @media (max-width: 400px) {
+    body {
+      padding-left:20px;
+      padding-right:20px;
+    }
+
+    #nav h1 a {
+      font-size:22px;
+    }
+
+    #nav li {
+      font-size:12px;
+      padding: 0 10px;
+    }
+
+    #content {
+      margin-top:0;
+      padding-top:20px;
+      font-size:12px;
+    }
+
+    #content h1 {
+      font-size:20px;
+    }
+
+    #content h2 {
+      font-size:18px;
+    }
+
+    .posts_listing li div{
+      font-size:12px;
+    }
+  }
+</style>
+
+
+    
+  </head>
+
+  <body>
+    <section id=nav>
+      <h1><a href="https://xuejie.space/">Less is More</a></h1>
+      <ul>
+        
+          <li><a href="https://xuejie.space/about">About</a></li>
+        
+          <li><a href="https://github.com/xxuejie">GitHub</a></li>
+        
+          <li><a href="https://xuejie.space/index.xml">RSS</a></li>
+        
+          <li><a href="https://twitter.com/xxuejie">Twitter</a></li>
+        
+      </ul>
+    </section>
+
+
+<section id=content>
+  <h1> Introduction to CKB Script Programming 9: Cycle Reductions in Duktape Script </h1>
+
+  
+    <div id=sub-header>
+      March 2020 · 10 minute read
+    </div>
+  
+
+  <div class="entry-content">
+    
+
+<p>As shown earlier, plain JavaScript can be used to build CKB scripts. But if you have tried this route before, one problem you would notice, is that JavaScript based scripts tend to consume much more cycles than a native version. While this is less of an issue in experimenting, it is very real in production environment: more cycles can naturally be reflected in more transaction fees. It&rsquo;s obvious that the following solutions can be used to tackle this problem:</p>
+
+<ol>
+<li>Rewrite a JavaScript in a native compiled language, such as C or Rust;</li>
+<li>Use better algorithms that require less cycles;</li>
+</ol>
+
+<p>In this post, we would take a different path, and take a look at JavaScript scripts alone. Even though JavaScript can consume more cycles, it still allows fast iteraction, which might be critical in certain use cases. So the question I want to ask here is: if we decide to use JavaScript to build our CKB scripts, and we have already improved the algorithms and implementations to an optimal state, are there any other steps we can take to further optimize cycle reductions? Here we shall see some attempts at the problem.</p>
+
+<h1 id="script-to-use">Script To Use</h1>
+
+<p>We will build a simple script here that reads and prints current script args. To build the JavaScript script, we will first need the <a href="https://github.com/xxuejie/ckb-duktape-template">duktape template</a>:</p>
+
+<pre><code>$ export TOP=$(pwd)
+$ git clone https://github.com/xxuejie/ckb-duktape-template
+$ cd ckb-duktape-template
+$ git checkout 1a3536ae1dc14abe1e91461ab356e8967cde8d7b
+$ npm i
+$ cat &lt;&lt; EOF &gt; src/index.js
+import { Script } from &quot;../schema/blockchain.js&quot;
+
+function bytesToHex(b) {
+  return &quot;0x&quot; + Array.prototype.map.call(
+    new Uint8Array(b),
+    function(x) {
+      return ('00' + x.toString(16)).slice(-2)
+    }
+  ).join('')
+}
+
+const script = new Script(CKB.load_script(0))
+const args = script.getArgs().raw()
+CKB.debug(bytesToHex(args))
+EOF
+$ npm run build
+</code></pre>
+
+<p>Note this example also levearges the rebuilt <a href="https://github.com/xxuejie/moleculec-es">Molecule JavaScript plugin</a>. Compared to the previous one, it provides a better API, while at the same time saving huge code size and runtime cycles.</p>
+
+<p>Let&rsquo;s get a baseline number first:</p>
+
+<pre><code>$ cd $TOP
+$ git clone --recursive https://github.com/xxuejie/ckb-duktape
+$ cd ckb-duktape
+$ git checkout d6241938247b402ec56c7af218acfc9049ac753d
+$ docker run --rm -it -v `pwd`:/code nervos/ckb-riscv-gnu-toolchain:bionic-20191209 bash
+root@0d31cad7a539:~# cd /code
+root@0d31cad7a539:/code# make
+root@0d31cad7a539:/code# exit
+exit
+$ cd $TOP
+$ git clone https://github.com/xxuejie/ckb-standalone-debugger
+$ cd ckb-standalone-debugger/bins
+$ git checkout 3c503b95962e29057b248aeed4f639180c132fff
+$ cargo build --release
+$ cd $TOP
+$ cat &lt;&lt; EOF &gt; runner.rb
+#!/usr/bin/env ruby
+
+require &quot;rbnacl&quot;
+
+def bin_to_hex(bin)
+  &quot;0x#{bin.unpack1('H*')}&quot;
+end
+
+def blake2b(data)
+  RbNaCl::Hash::Blake2b.digest(data,
+                               personal: &quot;ckb-default-hash&quot;,
+                               digest_size: 32)
+end
+
+if ARGV.length != 2 &amp;&amp; ARGV.length != 3
+  STDERR.puts &quot;Usage: runner.rb &lt;duktape file&gt; &lt;script file&gt; &lt;optional dump file&gt;&quot;
+  exit 1
+end
+
+duktape_binary = File.read(ARGV[0])
+duktape_hash = blake2b(duktape_binary)
+script_binary = File.read(ARGV[1])
+
+tx = DATA.read.sub(&quot;@DUKTAPE_CODE&quot;, bin_to_hex(duktape_binary))
+       .sub(&quot;@DUKTAPE_HASH&quot;, bin_to_hex(duktape_hash))
+       .sub(&quot;@SCRIPT_CODE&quot;, bin_to_hex(script_binary))
+
+File.write(&quot;tx.json&quot;, tx)
+commandline = &quot;ckb-standalone-debugger/bins/target/release/ckb-debugger --tx-file tx.json --script-group-type lock -i 0 -e input&quot;
+if ARGV.length == 3
+  commandline += &quot; -d #{ARGV[2]}&quot;
+end
+STDERR.puts &quot;Executing: #{commandline}&quot;
+exec(commandline)
+
+__END__
+{
+  &quot;mock_info&quot;: {
+    &quot;inputs&quot;: [
+      {
+        &quot;input&quot;: {
+          &quot;previous_output&quot;: {
+            &quot;tx_hash&quot;: &quot;0xa98c57135830e1b91345948df6c4b8870828199a786b26f09f7dec4bc27a73da&quot;,
+            &quot;index&quot;: &quot;0x0&quot;
+          },
+          &quot;since&quot;: &quot;0x0&quot;
+        },
+        &quot;output&quot;: {
+          &quot;capacity&quot;: &quot;0x4b9f96b00&quot;,
+          &quot;lock&quot;: {
+            &quot;args&quot;: &quot;0x32e555f3ff8e135cece1351a6a2971518392c1e30375c1e006ad0ce8eac07947c219351b150b900e50a7039f1e448b844110927e5fd9bd30425806cb8ddff1fd970dd9a8&quot;,
+            &quot;code_hash&quot;: &quot;@DUKTAPE_HASH&quot;,
+            &quot;hash_type&quot;: &quot;data&quot;
+          },
+          &quot;type&quot;: null
+        },
+        &quot;data&quot;: &quot;0x&quot;
+      }
+    ],
+    &quot;cell_deps&quot;: [
+      {
+        &quot;cell_dep&quot;: {
+          &quot;out_point&quot;: {
+            &quot;tx_hash&quot;: &quot;0xfcd1b3ddcca92b1e49783769e9bf606112b3f8cf36b96cac05bf44edcf5377e6&quot;,
+            &quot;index&quot;: &quot;0x0&quot;
+          },
+          &quot;dep_type&quot;: &quot;code&quot;
+        },
+        &quot;output&quot;: {
+          &quot;capacity&quot;: &quot;0x702198d000&quot;,
+          &quot;lock&quot;: {
+            &quot;args&quot;: &quot;0x&quot;,
+            &quot;code_hash&quot;: &quot;0x0000000000000000000000000000000000000000000000000000000000000000&quot;,
+            &quot;hash_type&quot;: &quot;data&quot;
+          },
+          &quot;type&quot;: null
+        },
+        &quot;data&quot;: &quot;@SCRIPT_CODE&quot;
+      },
+      {
+        &quot;cell_dep&quot;: {
+          &quot;out_point&quot;: {
+            &quot;tx_hash&quot;: &quot;0xfcd1b3ddcca92b1e49783769e9bf606112b3f8cf36b96cac05bf44edcf5377e6&quot;,
+            &quot;index&quot;: &quot;0x1&quot;
+          },
+          &quot;dep_type&quot;: &quot;code&quot;
+        },
+        &quot;output&quot;: {
+          &quot;capacity&quot;: &quot;0x702198d000&quot;,
+          &quot;lock&quot;: {
+            &quot;args&quot;: &quot;0x&quot;,
+            &quot;code_hash&quot;: &quot;0x0000000000000000000000000000000000000000000000000000000000000000&quot;,
+            &quot;hash_type&quot;: &quot;data&quot;
+          },
+          &quot;type&quot;: null
+        },
+        &quot;data&quot;: &quot;@DUKTAPE_CODE&quot;
+      }
+    ],
+    &quot;header_deps&quot;: [
+      {
+        &quot;compact_target&quot;: &quot;0x1a1e4c2f&quot;,
+        &quot;hash&quot;: &quot;0x51d199c4060f703344eab3c9b8794e6c60195ae9093986c35dba7c3486224409&quot;,
+        &quot;number&quot;: &quot;0xd8fc4&quot;,
+        &quot;parent_hash&quot;: &quot;0xc02e01eb57b205c6618c9870667ed90e13adb7e9a7ae00e7a780067a6bfa6a7b&quot;,
+        &quot;nonce&quot;: &quot;0xca8c7caa8100003400231b4f9d6e0300&quot;,
+        &quot;timestamp&quot;: &quot;0x17061eab69e&quot;,
+        &quot;transactions_root&quot;: &quot;0xffb0863f4ae1f3026ba99b2458de2fa69881f7508599e2ff1ee51a54c88b5f88&quot;,
+        &quot;proposals_hash&quot;: &quot;0x0000000000000000000000000000000000000000000000000000000000000000&quot;,
+        &quot;uncles_hash&quot;: &quot;0x0000000000000000000000000000000000000000000000000000000000000000&quot;,
+        &quot;version&quot;: &quot;0x0&quot;,
+        &quot;epoch&quot;: &quot;0x53f00fa000232&quot;,
+        &quot;dao&quot;: &quot;0x4bfe53a5a9bb9a30c88898b9dfe22300a58f2bafed47680000d3b9f5b6630107&quot;
+      }
+    ]
+  },
+  &quot;tx&quot;: {
+    &quot;version&quot;: &quot;0x0&quot;,
+    &quot;cell_deps&quot;: [
+      {
+        &quot;out_point&quot;: {
+          &quot;tx_hash&quot;: &quot;0xfcd1b3ddcca92b1e49783769e9bf606112b3f8cf36b96cac05bf44edcf5377e6&quot;,
+          &quot;index&quot;: &quot;0x0&quot;
+        },
+        &quot;dep_type&quot;: &quot;code&quot;
+      },
+      {
+        &quot;out_point&quot;: {
+          &quot;tx_hash&quot;: &quot;0xfcd1b3ddcca92b1e49783769e9bf606112b3f8cf36b96cac05bf44edcf5377e6&quot;,
+          &quot;index&quot;: &quot;0x1&quot;
+        },
+        &quot;dep_type&quot;: &quot;code&quot;
+      }
+    ],
+    &quot;header_deps&quot;: [
+      &quot;0x51d199c4060f703344eab3c9b8794e6c60195ae9093986c35dba7c3486224409&quot;
+    ],
+    &quot;inputs&quot;: [
+      {
+        &quot;previous_output&quot;: {
+          &quot;tx_hash&quot;: &quot;0xa98c57135830e1b91345948df6c4b8870828199a786b26f09f7dec4bc27a73da&quot;,
+          &quot;index&quot;: &quot;0x0&quot;
+        },
+        &quot;since&quot;: &quot;0x0&quot;
+      }
+    ],
+    &quot;outputs&quot;: [
+      {
+        &quot;capacity&quot;: &quot;0x0&quot;,
+        &quot;lock&quot;: {
+          &quot;args&quot;: &quot;0x&quot;,
+          &quot;code_hash&quot;: &quot;0x0000000000000000000000000000000000000000000000000000000000000000&quot;,
+          &quot;hash_type&quot;: &quot;data&quot;
+        },
+        &quot;type&quot;: null
+      }
+    ],
+    &quot;witnesses&quot;: [
+      &quot;0x210000000c0000001d0000000d0000006920616d20612073656372657400000000&quot;
+    ],
+    &quot;outputs_data&quot;: [
+      &quot;0x&quot;
+    ]
+  }
+}
+EOF
+$ chmod +x runner.rb
+$ RUST_LOG=debug ./runner.rb ckb-duktape/build/load0 ckb-duktape-template/build/duktape.js
+Executing: ckb-standalone-debugger/bins/target/release/ckb-debugger --tx-file tx.json --script-group-type lock -i 0 -e input
+DEBUG:&lt;unknown&gt;: script group: Byte32(0xcf13fa84ff3a615dd496e9ad8647af01078b11ba1c2757889f0a95e2520fdeb9) DEBUG OUTPUT: 0x32e555f3ff8e135cece1351a6a2971518392c1e30375c1e006ad0ce8eac07947c219351b150b900e50a7039f1e448b844110927e5fd9bd30425806cb8ddff1fd970dd9a8
+Run result: Ok(0)
+Total cycles consumed: 20198757
+Transfer cycles: 67328, running cycles: 20131429
+</code></pre>
+
+<p>About 20 million cycles are needed for this simple script. As a comparison, we can also implement similar function in pure C:</p>
+
+<pre><code>$ cd $TOP
+$ cat &lt;&lt; EOF &gt; c.c
+#include &quot;blockchain.h&quot;
+#include &quot;ckb_syscalls.h&quot;
+
+#define MAXIMUM_ARG_SIZE 4096
+#define SCRIPT_SIZE 32768
+
+#define ERROR_ARGUMENTS_LEN -1
+#define ERROR_ENCODING -2
+#define ERROR_SYSCALL -3
+#define ERROR_SCRIPT_TOO_LONG -21
+#define ERROR_OVERFLOWING -51
+#define ERROR_AMOUNT -52
+
+int main() {
+  unsigned char script[SCRIPT_SIZE];
+  uint64_t len = SCRIPT_SIZE;
+  int ret = ckb_load_script(script, &amp;len, 0);
+  if (ret != CKB_SUCCESS) {
+    return ERROR_SYSCALL;
+  }
+  if (len &gt; SCRIPT_SIZE) {
+    return ERROR_SCRIPT_TOO_LONG;
+  }
+  mol_seg_t script_seg;
+  script_seg.ptr = (uint8_t *)script;
+  script_seg.size = len;
+
+  if (MolReader_Script_verify(&amp;script_seg, false) != MOL_OK) {
+    return ERROR_ENCODING;
+  }
+
+  mol_seg_t args_seg = MolReader_Script_get_args(&amp;script_seg);
+  mol_seg_t args_bytes_seg = MolReader_Bytes_raw_bytes(&amp;args_seg);
+  if (args_bytes_seg.size &gt; MAXIMUM_ARG_SIZE) {
+    return ERROR_ARGUMENTS_LEN;
+  }
+
+  static const char HEXCHARS[] = &quot;0123456789abcdef&quot;;
+  char hex[MAXIMUM_ARG_SIZE * 2 + 1];
+  for (size_t i = 0; i &lt; args_bytes_seg.size; i++) {
+    hex[i * 2] = HEXCHARS[args_bytes_seg.ptr[i] &gt;&gt; 4];
+    hex[i * 2 + 1] = HEXCHARS[args_bytes_seg.ptr[i] &amp; 0xF];
+  }
+  hex[args_bytes_seg.size * 2] = '\0';
+  ckb_debug(hex);
+
+  return CKB_SUCCESS;
+}
+EOF
+$ docker run --rm -it -v `pwd`:/code nervos/ckb-riscv-gnu-toolchain:bionic-20191209 bash
+root@57b79063c965:/# cd /code
+root@57b79063c965:/code# riscv64-unknown-elf-gcc -O3 -I ckb-duktape/deps/ckb-c-stdlib -I ckb-duktape/deps/molecule c.c -o c -Wl,-static -fdata-sections -ffunction-sections -Wl,--gc-sections -Wl,-s
+root@57b79063c965:/code# exit
+exit
+$ RUST_LOG=debug ./runner.rb c ckb-duktape-template/build/duktape.js
+Executing: ckb-standalone-debugger/bins/target/release/ckb-debugger --tx-file tx.json --script-group-type lock -i 0 -e input
+DEBUG:&lt;unknown&gt;: script group: Byte32(0x9f637b251b36de8e6c8b48a1db2f2dcbb0e7b667de1d3ec02c589a7b680842e1) DEBUG OUTPUT: 32e555f3ff8e135cece1351a6a2971518392c1e30375c1e006ad0ce8eac07947c219351b150b900e50a7039f1e448b844110927e5fd9bd30425806cb8ddff1fd970dd9a8
+Run result: Ok(0)
+Total cycles consumed: 5456
+Transfer cycles: 878, running cycles: 4578
+</code></pre>
+
+<p>As we shall see here, a similar C script takes only 4578 cycles, which is much less than the JavaScript scripts. Even though our JavaScript script might need consume so less cycles, we can still significantly reduce the cycle consumptions.</p>
+
+<h1 id="step-1-skip-initialization">Step 1: Skip Initialization</h1>
+
+<p>Those who are familiar with dynamic languages, would realize that all dynamic language implementations will need an initialization phase to create and properly setup the VM, this could take significant work, costing a lot of cycles. Our first idea comes from this: what if we can save the already initialized state, and reuse that state in later VM executions? The whole state of a CKB VM instance, is 33 registers(32 general purpose registers + PC register) and the memory states. If we can dump those into a separate binary, and recreate the same VM state later, we won&rsquo;t need to do the whole initialization step again and again.</p>
+
+<p>ckb-standalone-debugger actually provides such a dump feature. It adds a new syscall to the VM instance created by the debugger(notice this syscall is useless in production, and will probably never make it into production). When the syscall gets executed, the debugger instance would serialize all VM states, including all registers and memories into a custom-built executable. Later if we instantiate a new VM instance with this generated executable, it will restore all VM states, and the VM will continue to run as if it just returns from the syscall. This way we can do the necessary initialization steps offline via the debugger, then only deploy the generated executable to CKB, all later executions on the executable, can skip the costly initialization part, hence saving a huge amount of cycles.</p>
+
+<p>I have already prepared a duktape <a href="https://github.com/xxuejie/ckb-duktape/blob/d6241938247b402ec56c7af218acfc9049ac753d/c/dump_load0.c">instance</a> which performs the setup, then execute the dump syscall, we can now give this a test:</p>
+
+<pre><code>$ cd $TOP
+$ RUST_LOG=debug ./runner.rb ckb-duktape/build/dump_load0 ckb-duktape-template/build/duktape.js dump0.bin
+Executing: ckb-standalone-debugger/bins/target/release/ckb-debugger --tx-file tx.json --script-group-type lock -i 0 -e input -d dump0.bin
+DEBUG:&lt;unknown&gt;: script group: Byte32(0xb5656359cbcd52cfa68e163cdd217657f0cfc533c909d13a1fdd8032f6b4f1f0) DEBUG OUTPUT: 0x32e555f3ff8e135cece1351a6a2971518392c1e30375c1e006ad0ce8eac07947c219351b150b900e50a7039f1e448b844110927e5fd9bd30425806cb8ddff1fd970dd9a8
+Run result: Ok(0)
+Total cycles consumed: 20199104
+Transfer cycles: 67352, running cycles: 20131752
+
+$ RUST_LOG=debug ./runner.rb dump0.bin ckb-duktape-template/build/duktape.js
+Executing: ckb-standalone-debugger/bins/target/release/ckb-debugger --tx-file tx.json --script-group-type lock -i 0 -e input
+DEBUG:&lt;unknown&gt;: script group: Byte32(0x51959c6288a1cfba0d7f7dc8c5a90cf9a84bf5b58f1d5ed3b355497d119fba16) DEBUG OUTPUT: 0x32e555f3ff8e135cece1351a6a2971518392c1e30375c1e006ad0ce8eac07947c219351b150b900e50a7039f1e448b844110927e5fd9bd30425806cb8ddff1fd970dd9a8
+Run result: Ok(0)
+Total cycles consumed: 16249542
+Transfer cycles: 96998, running cycles: 16152544
+</code></pre>
+
+<p>The first command here executes the script as normals, but internally it <a href="https://github.com/xxuejie/ckb-duktape/blob/d6241938247b402ec56c7af218acfc9049ac753d/c/dump_load0.c#L14">calls</a> the dump syscall, resultling in a dumping of the VM state then into <code>dump0.bin</code> executable file. Later when we run CKB VM on <code>dump0.bin</code> directly, we can notice it performs the same action as the above duktape binary, but saves us close to 4 million cycles.</p>
+
+<h1 id="step-2-bytecode-over-source">Step 2: Bytecode Over Source</h1>
+
+<p>Previously, we&rsquo;ve been running duktape on CKB VM directly against JavaScript source, this means at runtime, duktape would first need to parse the JavaScript source code, then execute it. The parsing time exists in every single invocation of the same JavaScript file, which could also be a huge waste of cycles. Luckily, duktape provides a <a href="https://github.com/svaarala/duktape/blob/master/doc/bytecode.rst">bytecode</a> format: we can parse the JavaScript source to duktape bytecode format, and only loads and runs the bytecode at runtime. Let&rsquo;s try this now:</p>
+
+<pre><code>$ cd $TOP
+$ ckb-duktape/build/dump_bytecode ckb-duktape-template/build/duktape.js script.bin
+$ RUST_LOG=debug ./runner.rb ckb-duktape/build/dump_load0 script.bin dump0.bin
+Executing: ckb-standalone-debugger/bins/target/release/ckb-debugger --tx-file tx.json --script-group-type lock -i 0 -e input -d dump0.bin
+DEBUG:&lt;unknown&gt;: script group: Byte32(0xb5656359cbcd52cfa68e163cdd217657f0cfc533c909d13a1fdd8032f6b4f1f0) DEBUG OUTPUT: 0x32e555f3ff8e135cece1351a6a2971518392c1e30375c1e006ad0ce8eac07947c219351b150b900e50a7039f1e448b844110927e5fd9bd30425806cb8ddff1fd970dd9a8
+Run result: Ok(0)
+Total cycles consumed: 9239414
+Transfer cycles: 67352, running cycles: 9172062
+
+$ RUST_LOG=debug ./runner.rb dump0.bin script.bin
+Executing: ckb-standalone-debugger/bins/target/release/ckb-debugger --tx-file tx.json --script-group-type lock -i 0 -e input
+DEBUG:&lt;unknown&gt;: script group: Byte32(0x51959c6288a1cfba0d7f7dc8c5a90cf9a84bf5b58f1d5ed3b355497d119fba16) DEBUG OUTPUT: 0x32e555f3ff8e135cece1351a6a2971518392c1e30375c1e006ad0ce8eac07947c219351b150b900e50a7039f1e448b844110927e5fd9bd30425806cb8ddff1fd970dd9a8
+Run result: Ok(0)
+Total cycles consumed: 5289852
+Transfer cycles: 96998, running cycles: 5192854
+</code></pre>
+
+<p>The <a href="https://github.com/xxuejie/ckb-duktape/blob/d6241938247b402ec56c7af218acfc9049ac753d/c/dump_load0.c#L26-L37">dump_load0</a> binary actually supports both duktape bytecode and JavaScript source. It does a runtime check to see if the loaded data here is duktape bytecode or JavaScript source. Here we can see that by combining the previous 2 solutions, we can already shrink the cycle consumption from ~ 20 million to ~ 5 million.</p>
+
+<p>Note that duktape bytecode does come with tradeoffs. It never ensures version compatibility, so different versions of duktape, or even different builds of the same duktape version could use different bytecode format. In a normal environment, this could be a problem, but since here we also ship duktape binary as a smart contract, we can lock the version of duktape binary we are using, ensuring the bytecode always works. Another drawback, and a big surprise to many, is that the bytecode file is in fact usually larger than the original JavaScript source file:</p>
+
+<pre><code>$ cd $TOP
+$ ls -l script.bin
+-rw-rw-r-- 1 ubuntu 7810 Mar 19 05:28 script.bin
+$ ls -l ckb-duktape-template/build/duktape.js
+-rw-rw-r-- 1 ubuntu 3551 Mar 19 04:46 ckb-duktape-template/build/duktape.js
+</code></pre>
+
+<p>In our example, while the original minimize JavaScript file is about 3.5K, the generated bytecode file is closed to 8K. This brings a tradeoff depending on your use case: do you want smaller file, or less cycle consumption?</p>
+
+<h1 id="step-3-skip-cleanup-work">Step 3: Skip Cleanup Work</h1>
+
+<p>CKB VM works slightly different from other environment: it provides you with a fixed 4MB memory segment, and the whole segment will just be thrown away once the code finishes execution. This brings an interesting insight: in a normal environment, you definitely want to cleanup the resource you use before exiting, but in CKB VM environment, this is not necessary, since the whole memory segment will be destroyed all together. As long as you signal the correct response, cleanup steps are actually just a waste of cycles in CKB VM. Given this consideration, I&rsquo;ve provided <a href="https://github.com/xxuejie/ckb-duktape/blob/d6241938247b402ec56c7af218acfc9049ac753d/c/dump_load0_nocleanup.c">dump_load0_nocleanup</a> variation, which <a href="https://github.com/xxuejie/ckb-duktape/blob/d6241938247b402ec56c7af218acfc9049ac753d/c/dump_load0_nocleanup.c#L48-L49">does not perform</a> any cleanup work after running the script. Now it is the time to try this final version:</p>
+
+<pre><code>$ cd $TOP
+$ RUST_LOG=debug ./runner.rb ckb-duktape/build/dump_load0_nocleanup script.bin dump0.bin
+Executing: ckb-standalone-debugger/bins/target/release/ckb-debugger --tx-file tx.json --script-group-type lock -i 0 -e input -d dump0.bin
+DEBUG:&lt;unknown&gt;: script group: Byte32(0x06034ffb00fec553882c6a9c7614333a728828772d3c236a7f8fa6af60669538) DEBUG OUTPUT: 0x32e555f3ff8e135cece1351a6a2971518392c1e30375c1e006ad0ce8eac07947c219351b150b900e50a7039f1e448b844110927e5fd9bd30425806cb8ddff1fd970dd9a8
+Run result: Ok(0)
+Total cycles consumed: 7856033
+Transfer cycles: 67348, running cycles: 7788685
+
+$ RUST_LOG=debug ./runner.rb dump0.bin script.bin
+Executing: ckb-standalone-debugger/bins/target/release/ckb-debugger --tx-file tx.json --script-group-type lock -i 0 -e input
+DEBUG:&lt;unknown&gt;: script group: Byte32(0x0e948e69dd75f2d6676048569073afe4ec2b284144bbe33a6216b13171606d18) DEBUG OUTPUT: 0x32e555f3ff8e135cece1351a6a2971518392c1e30375c1e006ad0ce8eac07947c219351b150b900e50a7039f1e448b844110927e5fd9bd30425806cb8ddff1fd970dd9a8
+Run result: Ok(0)
+Total cycles consumed: 3903352
+Transfer cycles: 96994, running cycles: 3806358
+</code></pre>
+
+<p>With all the solutions combined, we managed to reduce the cycle consumption of a JavaScript based CKB smart contract from 20 million to less than 4 million. This is still far from the C version, which takes less than 5000 cycles. But in many cases, a higher level language like JavaScript will provide superiority over plain old C, and the cycle consumption here might already be good enough.</p>
+
+<h1 id="future">Future</h1>
+
+<p>The above are just 3 simple solutions you can levarage, there are very likely to be more way you can use to reduce cycles. One thing to remember, is that you don&rsquo;t have to cater for rules established in an everyday running program. As long as the script satisfies the verification needs on chain, you can employ any techniques to reduce the cycle consumption.</p>
+
+  </div>
+
+  <div id=links>
+    
+      <a class="basic-alignment left" href="https://xuejie.space/2020_03_16_lets_build_a_minimal_blockchain_what_is_a_blockchain/">&laquo; Let&#39;s Build a Minimal Blockchain 3: What Is A Blockchain?</a>
+    
+    
+  </div>
+</section>
+
+  
+</body>
+</html>
+
+
+
