@@ -47,24 +47,24 @@
 &lt;p&gt;How can we represent this in a UTXO based blockchain? One observation, is that typical account based blockchain represents the whole account state via a key-value store. We can embrace the same abstraction here:&lt;/p&gt;
 
 &lt;ul&gt;
-&lt;li&gt;A pre-defined number of cells are created for each account. Actually, you only need to define the number here, the absent of a cell could be interpreted as a dummy cell;&lt;/li&gt;
-&lt;li&gt;Each cell stores a part of the whole key space in the key-value store;&lt;/li&gt;
-&lt;li&gt;If a transaction needs to update some value, it first locates the cell containing the key for that value, includes the corresponding cell as transaction input, then provides a new cell containing updated data;&lt;/li&gt;
+&lt;li&gt;A pre-defined number of UTXOs are created for each account. Actually, you only need to define the number here, the absent of a UTXO could be interpreted as a dummy UTXO;&lt;/li&gt;
+&lt;li&gt;Each UTXO stores a part of the whole key space in the key-value store;&lt;/li&gt;
+&lt;li&gt;If a transaction needs to update some value, it first locates the UTXO containing the key for that value, includes the corresponding UTXO as transaction input, then provides a new UTXO containing updated data;&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;p&gt;An example for a transaction in this style is shown in the diagram below:&lt;/p&gt;
 
 &lt;p&gt;&lt;img src=&#34;https://xuejie.space/images/utxo_model_2.svg&#34; alt=&#34;UTXO Model Concrete&#34; /&gt;&lt;/p&gt;
 
-&lt;p&gt;Here the whole account state contains 4 cells, but since only 2 cells need to be updated, the transaction only contains those 2 cells.&lt;/p&gt;
+&lt;p&gt;Here the whole account state contains 4 UTXOs, but since only 2 UTXOs need to be updated, the transaction only contains those 2 UTXOs.&lt;/p&gt;
 
-&lt;p&gt;You might noticed that this looks a lot like the &lt;a href=&#34;https://en.wikipedia.org/wiki/B-tree&#34;&gt;B-tree&lt;/a&gt; data structure used in database and file systems. In a B-tree structure, you want to minimize the actual pages that are modified, which is exactly the same point for our UTXO based design: you want to include and modify as few cells as possible in the transaction. This means while what we have is a naive design, you could leverage the rich research ideas accumulated in the B-tree area to build better designs that provides better results.&lt;/p&gt;
+&lt;p&gt;You might noticed that this looks a lot like the &lt;a href=&#34;https://en.wikipedia.org/wiki/B-tree&#34;&gt;B-tree&lt;/a&gt; data structure used in database and file systems. In a B-tree structure, you want to minimize the actual pages that are modified, which is exactly the same point for our UTXO based design: you want to include and modify as few UTXOs as possible in the transaction. This means while what we have is a naive design, you could leverage the rich research ideas accumulated in the B-tree area to build better designs that provides better results.&lt;/p&gt;
 
 &lt;p&gt;If we think about the scheme here, it actually exploits no application specific knowledge, the only assumption is that account model uses a key-value store, which is already the case today. This means we can build a generator of account model on top of the UTXO model:&lt;/p&gt;
 
 &lt;ul&gt;
-&lt;li&gt;The generator answers read requests from dapp developers, it queries current live cells of the account, and extracts values for provided keys;&lt;/li&gt;
-&lt;li&gt;The generator also accepts account model style function calls, it runs the function with current live cells, and generates a transaction contains updated cells, relays the transaction to the blockchain for acceptance. For flexibility, we can introduction account model style virtual machines here, such as EVM, Move, etc;&lt;/li&gt;
+&lt;li&gt;The generator answers read requests from dapp developers, it queries current UTXOs of the account, and extracts values for provided keys;&lt;/li&gt;
+&lt;li&gt;The generator also accepts account model style function calls, it runs the function with current UTXOs, and generates a transaction contains updated UTXOs, relays the transaction to the blockchain for acceptance. For flexibility, we can introduction account model style virtual machines here, such as EVM, Move, etc;&lt;/li&gt;
 &lt;li&gt;An on-chain smart contract can then run the same code run by the generator, to validate the correct data has been generated. If a VM such as EVM or Move has been used, we can port the same VM to the on-chain smart contract, and execute the same thing here.&lt;/li&gt;
 &lt;/ul&gt;
 
