@@ -31,22 +31,22 @@ The blockchain then **executes** the transaction on chain, and updates the inter
 
 How can we represent this in a UTXO based blockchain? One observation, is that typical account based blockchain represents the whole account state via a key-value store. We can embrace the same abstraction here:
 
-* A pre-defined number of cells are created for each account. Actually, you only need to define the number here, the absent of a cell could be interpreted as a dummy cell;
-* Each cell stores a part of the whole key space in the key-value store;
-* If a transaction needs to update some value, it first locates the cell containing the key for that value, includes the corresponding cell as transaction input, then provides a new cell containing updated data;
+* A pre-defined number of UTXOs are created for each account. Actually, you only need to define the number here, the absent of a UTXO could be interpreted as a dummy UTXO;
+* Each UTXO stores a part of the whole key space in the key-value store;
+* If a transaction needs to update some value, it first locates the UTXO containing the key for that value, includes the corresponding UTXO as transaction input, then provides a new UTXO containing updated data;
 
 An example for a transaction in this style is shown in the diagram below:
 
 ![UTXO Model Concrete](/images/utxo_model_2.svg)
 
-Here the whole account state contains 4 cells, but since only 2 cells need to be updated, the transaction only contains those 2 cells.
+Here the whole account state contains 4 UTXOs, but since only 2 UTXOs need to be updated, the transaction only contains those 2 UTXOs.
 
-You might noticed that this looks a lot like the [B-tree](https://en.wikipedia.org/wiki/B-tree) data structure used in database and file systems. In a B-tree structure, you want to minimize the actual pages that are modified, which is exactly the same point for our UTXO based design: you want to include and modify as few cells as possible in the transaction. This means while what we have is a naive design, you could leverage the rich research ideas accumulated in the B-tree area to build better designs that provides better results.
+You might noticed that this looks a lot like the [B-tree](https://en.wikipedia.org/wiki/B-tree) data structure used in database and file systems. In a B-tree structure, you want to minimize the actual pages that are modified, which is exactly the same point for our UTXO based design: you want to include and modify as few UTXOs as possible in the transaction. This means while what we have is a naive design, you could leverage the rich research ideas accumulated in the B-tree area to build better designs that provides better results.
 
 If we think about the scheme here, it actually exploits no application specific knowledge, the only assumption is that account model uses a key-value store, which is already the case today. This means we can build a generator of account model on top of the UTXO model:
 
-* The generator answers read requests from dapp developers, it queries current live cells of the account, and extracts values for provided keys;
-* The generator also accepts account model style function calls, it runs the function with current live cells, and generates a transaction contains updated cells, relays the transaction to the blockchain for acceptance. For flexibility, we can introduction account model style virtual machines here, such as EVM, Move, etc;
+* The generator answers read requests from dapp developers, it queries current UTXOs of the account, and extracts values for provided keys;
+* The generator also accepts account model style function calls, it runs the function with current UTXOs, and generates a transaction contains updated UTXOs, relays the transaction to the blockchain for acceptance. For flexibility, we can introduction account model style virtual machines here, such as EVM, Move, etc;
 * An on-chain smart contract can then run the same code run by the generator, to validate the correct data has been generated. If a VM such as EVM or Move has been used, we can port the same VM to the on-chain smart contract, and execute the same thing here.
 
 Of course this new generator parts needs to be built to make UTXO based blockchain behave like account based blockchain. My point here, is that this is a total feasible route, meaning the design of a UTXO based blockchain, never really gets in the way of building account model style dapps.
