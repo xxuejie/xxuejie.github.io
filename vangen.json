@@ -1,0 +1,9 @@
+{
+  "domain": "xuejie.space",
+  "repositories": [
+    {
+      "prefix": "c/go-quill-escape-renderer",
+      "url": "https://git.sr.ht/~xxuejie/go-quill-escape-renderer"
+    }
+  ]
+}
