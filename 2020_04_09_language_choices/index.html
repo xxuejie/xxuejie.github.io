@@ -412,7 +412,7 @@
 
   
     <div id=sub-header>
-      April 2020 · 11 minute read
+      April 2020 · 10 minute read
     </div>
   
 
@@ -500,7 +500,7 @@
 <li>Leverages an <a href="https://github.com/Z3Prover/z3">SMT solver</a> to verify code execution</li>
 </ul>
 
-<p>This basically provides an immediate to use language that suits blockchain smart contract extremely well: on the lower level, a C compiler helps you generate code that is both small and efficient; on the higher level, a theorem prover helps you check code logic to make sure they make sense. And it gets more exciting: compiling to C means that ZetZ has a very decent way of calling C code. So if you want to go lower level than C, you can still leverage ZetZ, as long as your assembly exposes C ABI, which you should always do. Last but not least, this is not some sort of pure hobby project, it is developed together with a real <a href="https://github.com/devguardio/carrier">usage</a> in an IoT system with a lot of cryptographic code involved, much like how we would use it in blockchains.</p>
+<p>This basically provides an immediate to use language that suits blockchain smart contract extremely well: on the lower level, a C compiler helps you generate code that is both small and efficient; on the higher level, a theorem prover helps you check code logic to make sure they make sense. In addition, this is not some sort of pure hobby project, it is developed together with a real <a href="https://github.com/devguardio/carrier">usage</a> in an IoT system with a lot of cryptographic code involved, much like how we would use it in blockchains.</p>
 
 <p>Here our old carrot example in ZetZ:</p>
 
@@ -591,7 +591,7 @@ export fn main () -&gt; int {
 
 <p>On the other hand, the final generated code, when cleaned a bit, looks exactly like how we would write this by hand in C:</p>
 
-<pre><code>o#include &lt;stdbool.h&gt;
+<pre><code>#include &lt;stdbool.h&gt;
 #include &lt;stddef.h&gt;
 #include &lt;stdint.h&gt;
 
@@ -634,11 +634,11 @@ static int ckb_zz_demo_main_load_data(uint64_t const index,
 
 <p>No prover checking code is included in the final C code here, it is just how a plain C implementation would look like. We are not paying any runtime cost here.</p>
 
-<p>This example here only demostrates a small benefit of ZetZ, while the theorem prover in ZetZ can definitely do more sophisticated checking. This little language is still in its infancy phase, I don&rsquo;t know how the future would look like, but this is definitely something I&rsquo;d like to keep an eye on.</p>
+<p>This example here only demostrates a small benefit of ZetZ, while the theorem prover in ZetZ can definitely do more sophisticated checking. The language is still in its infancy phase, I don&rsquo;t know how the future would look like, but this is definitely something I&rsquo;d like to keep an eye on.</p>
 
 <h1 id="recap">Recap</h1>
 
-<p>I hope you won&rsquo;t treat me as a ZetZ zealot now. It is just one example, what I&rsquo;m trying to say here, is that if you have any particular language you love, or discover anything that might be useful for your dapp. There really is nothing that prevents you from porting that to CKB. We really want to put the freedom, back to all the awesome developers out there. And if you have built something that proves to be useful, our <a href="https://www.nervos.org/grants/">grant</a> program is awaiting for your submission.</p>
+<p>I hope you won&rsquo;t treat me as a ZetZ zealot now. It really is just one example I&rsquo;m playing with now. What I&rsquo;m trying to say here, is that if you have any particular language you love, or discover anything that might be useful for your dapp. There really is nothing that prevents you from porting that to CKB. We really want to put the freedom, back to all the awesome developers out there. And if you have built something that proves to be useful, our <a href="https://www.nervos.org/grants/">grant</a> program is awaiting for your submission.</p>
 
   </div>
 

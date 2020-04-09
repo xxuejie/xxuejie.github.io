@@ -99,7 +99,7 @@
 &lt;li&gt;Leverages an &lt;a href=&#34;https://github.com/Z3Prover/z3&#34;&gt;SMT solver&lt;/a&gt; to verify code execution&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;p&gt;This basically provides an immediate to use language that suits blockchain smart contract extremely well: on the lower level, a C compiler helps you generate code that is both small and efficient; on the higher level, a theorem prover helps you check code logic to make sure they make sense. And it gets more exciting: compiling to C means that ZetZ has a very decent way of calling C code. So if you want to go lower level than C, you can still leverage ZetZ, as long as your assembly exposes C ABI, which you should always do. Last but not least, this is not some sort of pure hobby project, it is developed together with a real &lt;a href=&#34;https://github.com/devguardio/carrier&#34;&gt;usage&lt;/a&gt; in an IoT system with a lot of cryptographic code involved, much like how we would use it in blockchains.&lt;/p&gt;
+&lt;p&gt;This basically provides an immediate to use language that suits blockchain smart contract extremely well: on the lower level, a C compiler helps you generate code that is both small and efficient; on the higher level, a theorem prover helps you check code logic to make sure they make sense. In addition, this is not some sort of pure hobby project, it is developed together with a real &lt;a href=&#34;https://github.com/devguardio/carrier&#34;&gt;usage&lt;/a&gt; in an IoT system with a lot of cryptographic code involved, much like how we would use it in blockchains.&lt;/p&gt;
 
 &lt;p&gt;Here our old carrot example in ZetZ:&lt;/p&gt;
 
@@ -190,7 +190,7 @@ export fn main () -&amp;gt; int {
 
 &lt;p&gt;On the other hand, the final generated code, when cleaned a bit, looks exactly like how we would write this by hand in C:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;o#include &amp;lt;stdbool.h&amp;gt;
+&lt;pre&gt;&lt;code&gt;#include &amp;lt;stdbool.h&amp;gt;
 #include &amp;lt;stddef.h&amp;gt;
 #include &amp;lt;stdint.h&amp;gt;
 
@@ -233,11 +233,11 @@ static int ckb_zz_demo_main_load_data(uint64_t const index,
 
 &lt;p&gt;No prover checking code is included in the final C code here, it is just how a plain C implementation would look like. We are not paying any runtime cost here.&lt;/p&gt;
 
-&lt;p&gt;This example here only demostrates a small benefit of ZetZ, while the theorem prover in ZetZ can definitely do more sophisticated checking. This little language is still in its infancy phase, I don&amp;rsquo;t know how the future would look like, but this is definitely something I&amp;rsquo;d like to keep an eye on.&lt;/p&gt;
+&lt;p&gt;This example here only demostrates a small benefit of ZetZ, while the theorem prover in ZetZ can definitely do more sophisticated checking. The language is still in its infancy phase, I don&amp;rsquo;t know how the future would look like, but this is definitely something I&amp;rsquo;d like to keep an eye on.&lt;/p&gt;
 
 &lt;h1 id=&#34;recap&#34;&gt;Recap&lt;/h1&gt;
 
-&lt;p&gt;I hope you won&amp;rsquo;t treat me as a ZetZ zealot now. It is just one example, what I&amp;rsquo;m trying to say here, is that if you have any particular language you love, or discover anything that might be useful for your dapp. There really is nothing that prevents you from porting that to CKB. We really want to put the freedom, back to all the awesome developers out there. And if you have built something that proves to be useful, our &lt;a href=&#34;https://www.nervos.org/grants/&#34;&gt;grant&lt;/a&gt; program is awaiting for your submission.&lt;/p&gt;
+&lt;p&gt;I hope you won&amp;rsquo;t treat me as a ZetZ zealot now. It really is just one example I&amp;rsquo;m playing with now. What I&amp;rsquo;m trying to say here, is that if you have any particular language you love, or discover anything that might be useful for your dapp. There really is nothing that prevents you from porting that to CKB. We really want to put the freedom, back to all the awesome developers out there. And if you have built something that proves to be useful, our &lt;a href=&#34;https://www.nervos.org/grants/&#34;&gt;grant&lt;/a&gt; program is awaiting for your submission.&lt;/p&gt;
 </description>
     </item>
     
