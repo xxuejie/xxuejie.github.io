@@ -4,12 +4,12 @@
     {
       "prefix": "c/go-quill-escape-renderer",
       "type": "git",
-      "url": "https://git.sr.ht/~xxuejie/go-quill-escape-renderer"
+      "url": "https://github.com/xxuejie/go-quill-escape-renderer"
     },
     {
       "prefix": "c/go-quill-editor",
       "type": "git",
-      "url": "https://git.sr.ht/~xxuejie/go-quill-editor"
+      "url": "https://github.com/xxuejie/go-quill-editor"
     }
   ]
 }
