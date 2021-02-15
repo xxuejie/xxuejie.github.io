@@ -1,6 +1,8 @@
 +++
 title = "About"
 date = "2019-01-29"
+private = true
+type = "no-links"
 +++
 
 I'm Xuejie Xiao, this is my new site for writing.
@@ -14,3 +16,5 @@ I also believe the power of simplicity. The only way to make reliable software f
 Before that, I worked for [Citrusbyte](https://citrusbyte.com/) where we did software consulting services for large enterprise organizations and startups, such as Apple, AT&T, Cast & Crew, etc. I was also once a PhD candidate at [Syracuse University](https://www.syracuse.edu/) focusing on high performance computing and cloud computing. Some of my work back then could be found at [here](https://ieeexplore.ieee.org/document/7004222/).
 
 I also spent years working with latest web technologies, such as [WebAssembly](https://webassembly.org/) and [emscripten](https://github.com/emscripten-core/emscripten). I created [webruby](https://github.com/xxuejie/webruby), an introduction on webruby could be found at [here](http://rubykaigi.org/2013/talk/S07/).
+
+I've maintained a more complete resume [here](/resume.html).
