@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+
+  <title>Xuejie Xiao's Resume</title>
+
+  <style type="text/css">
+    * { margin: 0; padding: 0; }
+    body { font: 16px Helvetica, Sans-Serif; line-height: 24px; }
+    .clear { clear: both; }
+    #page-wrap { width: 800px; margin: 40px auto 60px; }
+    #pic { float: right; margin: -30px 0 0 0; }
+    h1 { margin: 0 0 16px 0; padding: 0 0 16px 0; font-size: 42px; font-weight: bold; letter-spacing: -2px; border-bottom: 1px solid #999; }
+    h2 { font-size: 20px; margin: 0 0 6px 0; position: relative; }
+    h2 span { position: absolute; bottom: 0; right: 0; font-style: italic; font-family: Georgia, Serif; font-size: 16px; color: #999; font-weight: normal; }
+    p { margin: 0 0 16px 0; }
+    a { color: #999; text-decoration: none; border-bottom: 1px dotted #999; }
+    a:hover { border-bottom-style: solid; color: black; }
+    ul { margin: 0 0 32px 17px; }
+    #profile { width: 500px; float: left; }
+    #profile p { font-family: Georgia, Serif; font-style: italic; color: #666; }
+    dt { font-style: italic; font-weight: bold; font-size: 18px; text-align: right; padding: 0 26px 0 0; width: 150px; float: left; height: 100px; border-right: 1px solid #999;  }
+    dd { width: 600px; float: right; }
+    dd.clear { float: none; margin: 0; height: 15px; }
+  </style>
+</head>
+
+<body>
+  <div id="page-wrap">
+    <div id="contact-info" class="vcard">
+      <!-- Microformats! -->
+      <h1 class="fn">Xuejie Xiao</h1>
+      <p>
+        <a class="url" href="https://xuejie.space/">xuejie.space</a>
+        <br />
+        <a class="email" href="mailto:xxuejie@gmail.com">xxuejie@gmail.com</a>
+      </p>
+    </div>
+    <div id="profile">
+      <p>
+        I am a systems software engineer also with extensive field experience practicing <a href="https://speakerdeck.com/xxuejie/lesscode">simplicity driven design</a>. I can <a href="https://speakerdeck.com/xxuejie/towards-a-true-programmable-blockchain-world-an-introduction-to-ckb-vm">dive</a> into the fundamentals of computers for more observations, however, my strongest point lies in <b>integration</b>: I excel at piecing together individual and (somewhat) conflicting software components, so as to achieve the maximum power in a simple design.
+      </p>
+    </div>
+    <div class="clear"></div>
+
+    <dl>
+      <dd class="clear"></dd>
+
+      <dt>Skills</dt>
+      <dd>
+        <h2>Software Design</h2>
+        <p>Throughout my career I've been trained with <a href="https://www.youtube.com/watch?v=_ztlV76b2Gg">simplicity</a> <a href="https://www.youtube.com/watch?v=rI8tNMsozo0">driven</a> <a href="https://vimeo.com/108441214">design</a> deeply in my mind. I firmly believe simplicity is the most effective weapon against complicated computer systems, as well as ever-changing domain logics. I can bring the following values to a (typically Web) project:</p>
+        <ul>
+          <li>I can <a href="https://github.com/attm2x">build</a> and <a href="https://github.com/xxuejie/webruby">innovate</a> as project needs. Great software should be built in the simplest way that also makes the most sense feature-wise, not necessary the way where everyone else is doing.</li>
+          <li>I can balance the tradeoffs between features and a shipping deadline. Not all software have a rolling release design. Some will naturally have a deadline, and we should honour it.</li>
+        </ul>
+
+        <h2>Systems Programming</h2>
+        <p>I have extensive low level systems programming experience. I have built performant low level <a href="https://github.com/nervosnetwork/ckb-vm">virtual machine</a> whose bottleneck lies in modern CPU's micro-architecture, tweaked <a href="https://github.com/attm2x/m2x-arduino">embedded devices</a> with extremely low memory, modified Hadoop to unlock more potential performance.</p>
+
+        <h2>WebAssembly</h2>
+        <p>I've been working with WebAssembly related technologies from the very beginning, whether it is emscripten, LLVM, asm.js or the current WebAssembly. My journey in this area even <a href="https://github.com/xxuejie/webruby">started</a> before WebAssembly was a thing.</p>
+      </dd>
+      <dd class="clear"></dd>
+
+      <dt>Experience</dt>
+      <dd>
+        <h2>Nervos Network <span>Member of the Technical Staff / Remote / 2018 - Now</span></h2>
+        <p>Started as a Software Engineer working on many aspects of the <a href="https://github.com/nervosnetwork/ckb">Nervos CKB</a> permissionless blockchain, I am now leading the Nervos Developer Tools team, working to improve the whole ecosystem around Nervos CKB. Some of my work highlights include:</p>
+        <ul>
+          <li>Designed, implemented and now lead the team to improve <a href="https://github.com/nervosnetwork/ckb-vm">CKB VM</a>, the core virtual machine used in Nervos CKB. Unlike other blockchains, CKB VM leverages <a href="https://riscv.org/">RISC-V ISA</a> directly as the virtual machine's instruction set. Although RISC-V was originally designed for hardware, it also excels as a virtual machine's instruction set. To the best of our knowledge, CKB is the only available blockchain enabling shipping cryptographic algorithms inside a smart contract. Though designed initially for blockchain usage, CKB VM also has potentials in the cloud native space.</li>
+          <li>Lead the team building aML, a new smart contract programming language for Nervos CKB. The highlight of aML, is <b>formal verification</b>: not only is aML designed with first class, state of the art, source level formal verification in mind, the whole compiler for aML is also designed to be fully formally verified. Using Coq, we are collaborating with a leading research lab in the formal verification field, to bring the latest progress in the formal verification to aML.</li>
+          <li>Lead the team building a series of frameworks, libraries and tools to aid dapp development in the Nervos ecosystem, including <a href="https://github.com/nervosnetwork/capsule">capsule</a>, <a href="https://github.com/nervosnetwork/lumos">lumos</a>, <a href="https://github.com/nervosnetwork/tippy">tippy</a>, <a href="https://github.com/nervosnetwork/ckb-standalone-debugger">ckb-debugger</a> and more.</li>
+          <li>Led and now advise the team building <a href="https://github.com/nervosnetwork/godwoken">godwoken</a>, the first layer 2 solution on Nervos CKB. <a href="https://github.com/nervosnetwork/godwoken-polyjuice">Polyjuice</a> was built to provide Ethereum compatible layer on top of godwoken. For more details on godwoken and polyjuice, I've written 2 architectural documents: <a href="https://github.com/nervosnetwork/godwoken/blob/master/docs/life_of_a_godwoken_transaction.md">Life of a Godwoken Transaction</a>, and <a href="https://github.com/nervosnetwork/godwoken/blob/master/docs/life_of_a_polyjuice_transaction.md">Life of a Polyjuice Transaction</a>.</li>
+        </ul>
+
+        <h2>Citrusbyte(now Theorem) <span>Software Engineer / Remote / 2013 - 2018</span></h2>
+        <p>As a remote Software Engineer, I both worked and led teams on buliding assorted projects ranging from Web apps, embedded systems, as well as Linux kernel related technologies. Some of my work highlights include:</p>
+        <ul>
+          <li>Lead the technical team building a major internal project for <a href="https://www.apple.com/retail/">Apple Retail stores</a>. The project was once used by all Apple Stores globally, it was also featured in one of Apple's keynote event.</li>
+          <li>Built the initial version of <a href="https://www.theorem.co/results/cat">asset tracking platform</a> for Caterpillar's supply chain.</li>
+          <li>Helped built the device component of <a href="https://overwatchsec.com/">Overwatch</a> for thread analysis. <a href="https://wiki.archlinux.org/index.php/Kernel_module">Linux kernel module</a> technology was leveraged for performance considerations.</li>
+          <li>Helped built many of the client libraries used in the <a href="https://github.com/attm2x">AT&amp;T M2X</a> internet of things services.</li>
+        </ul>
+
+        <h2>Google <span>Software Engineer Intern / Shanghai / 2010 - 2011</span></h2>
+        <p>Worked in the AdWords team for over a year, I helped built a series of internal and external tools, including a conversion tool for importing advertising campaigns from <a href="https://www.sklik.cz/">Sklik</a> into Google AdWords, a visualization tool for presenting AdWords potential conversion results to advertisers, and a range encoding algorithm for compressing URLs on the fly by exploiting URL patterns.</p>
+
+        <h2>Open Source Work <span>Anywhere / 2011 - Now</span></h2>
+        <p>I've also contributed to open source projects from time to time. Since many of my professional work also result in open source projects, I will only include selected personal projects here:</p>
+        <ul>
+          <li><a href="https://github.com/xxuejie/diviner">diviner</a>: a <a href="https://apple.github.io/foundationdb/testing.html">FoundationDB</a> style simulation testing framework. I've written a complete post describing this project <a href="https://xuejie.space/2020_04_11_diviner_a_new_attempt_on_deterministic_testing/">here</a>.</li>
+          <li><a href="https://github.com/xxuejie/paguridae">paguridae</a>: a Web IDE inspired from <a href="http://acme.cat-v.org/">acme</a>, using simplicity driven design principles.</li>
+          <li><a href="https://github.com/xxuejie/ckb-boxer">ckb-boxer</a>: an attempt at building a minimal CKB distribution. I've also written a post describing the project <a href="https://xuejie.space/2020_03_16_lets_build_a_minimal_blockchain_what_is_a_blockchain/">here</a>.</li>
+          <li><a href="https://github.com/xxuejie/redix_sharding">redix_sharding</a>: an Elixir based Redis sharding library</li>
+          <li><a href="https://github.com/xxuejie/sohm">sohm</a> and <a href="https://github.com/xxuejie/sohm.lua">sohm.lua</a>: a scalable variant of the <a href="http://ohm.keyvalue.org/">Object-hash mapping library for Redis</a>. The lua version was written to leverage extreme performance provided via <a href="https://openresty.org/en/">OpenResty</a>. The sohm.lua library has been deployed in an environment where 200,000+ queries per second were recorded at peak time.</li>
+          <li><a href="https://github.com/xxuejie/webruby">webruby</a>: webruby brings mruby, a lightweight Ruby implementation to the browser, enabling one to run Ruby code in the browser environment. Note this project compiles mruby into <a href="https://en.wikipedia.org/wiki/Asm.js">asm.js</a>, which is the predecessor of WebAssembly. I've also been learning and trying WebAssembly since then to keep a knowledge of WebAssembly's nuts and bolts.</li>
+        </ul>
+      </dd>
+      <dd class="clear"></dd>
+
+      <dt>Education</dt>
+      <dd>
+        <h2>Syracuse University <span>PhD Fellowship Program(unfinished) / 2011 - 2013</span></h2>
+        <p><strong>Major:</strong> Electrical and Computer Engineering</p>
+        <div>Selected publications:</div>
+        <ul>
+          <li><a href="https://ieeexplore.ieee.org/document/7004222">A cross-job framework for MapReduce scheduling</a></li>
+          <li><a href="https://ieeexplore.ieee.org/document/6411516">Sensing as a service: A cloud computing system for mobile phone sensing</a></li>
+        </ul>
+
+        <h2>Tongji University <span>Bachelor / 2007 - 2011</span></h2>
+        <p><strong>Major:</strong> Software Engineering. Graduated 1<sup>st</sup> in class.</p>
+      </dd>
+      <dd class="clear"></dd>
+    </dl>
+    <div class="clear"></div>
+  </div>
+</body>
+</html>

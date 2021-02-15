@@ -417,50 +417,32 @@
   
 
   <div class="entry-content">
-    
-
-<p>Last post introduced current CKB&rsquo;s validation model. This post will get more fun, since we will show how to deploy script codes to CKB for real. I&rsquo;m hoping after this post, you should be able to explore the CKB world and work on new script codes as you wish.</p>
-
+    <p>Last post introduced current CKB&rsquo;s validation model. This post will get more fun, since we will show how to deploy script codes to CKB for real. I&rsquo;m hoping after this post, you should be able to explore the CKB world and work on new script codes as you wish.</p>
 <p>This post is written based on current CKB Lina mainnet version now.</p>
-
 <p>A warning here: this will be a long post, since I want to fill in enough for the more interesting topic next week. So you don&rsquo;t have to finish it at once if you don&rsquo;t have enough time. I&rsquo;ve tried to split it into individual sections, so you can try each one at a time.</p>
-
 <h1 id="wording">Wording</h1>
-
 <p>Before we continue, let&rsquo;s distinguish between 2 terms: script, and script code.</p>
-
 <p>In this post and hopefully the whole series, we will distinguish between script, and script code. Script code actually refers to the program you write and compile to use on CKB. Script, on the other hand, actually refers to the script data structure used in CKB, which is a little more than just the script code:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-rust" data-lang="rust"><span style="font-weight:bold">pub</span> <span style="font-weight:bold">struct</span> <span style="font-weight:bold">Script</span> {
     <span style="font-weight:bold">pub</span> code_hash: <span style="font-weight:bold">H256</span>,
     <span style="font-weight:bold">pub</span> hash_type: <span style="font-weight:bold">ScriptHashType</span>,
     <span style="font-weight:bold">pub</span> args: <span style="font-weight:bold">JsonBytes</span>,
 }
-</code></pre></div>
-<p>We can ignore <code>hash_type</code> for now, a future post will explain what it is and it&rsquo;s interesting usage. Later in this post, we will show that <code>code_hash</code> actually just identifies a script code, so for now we can just think of it as script code. What script also includes, is the <code>args</code> part, which distinguishes script from script code. <code>args</code> can be used here to provide additional arguments for a CKB script, for example, while people might all be using the same default lock script code, each of them might have their own pubkey hash, <code>args</code> is exact the place to hold pubkey hash. This way each user of CKB can have different lock script, while sharing the same lock script code.</p>
-
+</code></pre></div><p>We can ignore <code>hash_type</code> for now, a future post will explain what it is and it&rsquo;s interesting usage. Later in this post, we will show that <code>code_hash</code> actually just identifies a script code, so for now we can just think of it as script code. What script also includes, is the <code>args</code> part, which distinguishes script from script code. <code>args</code> can be used here to provide additional arguments for a CKB script, for example, while people might all be using the same default lock script code, each of them might have their own pubkey hash, <code>args</code> is exact the place to hold pubkey hash. This way each user of CKB can have different lock script, while sharing the same lock script code.</p>
 <p>Note that in most cases, script and script code can be used interchangably, but if you are confused at some places, it might be worthwhile to think of the difference between the 2.</p>
-
 <h1 id="a-minimal-ckb-script-code">A Minimal CKB Script Code</h1>
-
 <p>As you might have already heard, CKB is based on the open source RISC-V ISA. But what does that even mean? In my words, it means we are (sort of) embedding a real mini computer in CKB, instead of a virtual machine. The benefit of a real computer, is that you can write any logic you want in any language you want. The first few examples we show here will be written in C for simplicity(well I mean simplicity in the toolchain, not the <a href="http://blog.llvm.org/2011/05/what-every-c-programmer-should-know.html">language</a>), but later we will switch to JavaScript based script code, and hopefully show more languages in the series. On CKB there&rsquo;s endless possibilities.</p>
-
 <p>As we mentioned about, CKB VM is more like a real mini computer. CKB script code also looks like a normal Unix style executable program we run on a computer:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="">int</span> main(<span style="">int</span> argc, <span style="">char</span>* argv[])
 {
   <span style="font-weight:bold">return</span> 0;
-}</code></pre></div>
-<p>When compiled via a C compiler, this will become a script code that is runnable on CKB. In other words, CKB just take plain old Unix style executables(but in RISC-V architecture instead of the popular x86 architecture), and run it in a virtual machine environment. If the program returns with 0 as the return code, we consider the script succeeds, all non-zero return codes will be considered script faliures.</p>
-
+}
+</code></pre></div><p>When compiled via a C compiler, this will become a script code that is runnable on CKB. In other words, CKB just take plain old Unix style executables(but in RISC-V architecture instead of the popular x86 architecture), and run it in a virtual machine environment. If the program returns with 0 as the return code, we consider the script succeeds, all non-zero return codes will be considered script faliures.</p>
 <p>In the example above, we are showing a script code that always succeeds, since the return code will always be zero. Please don&rsquo;t use this as your lock script code, otherwise your token can be taken away by anyone.</p>
-
 <p>But the example above won&rsquo;t be interesting, here we will start with an interesting idea: personally I dislike carrot. I do know that carrot is great from a nutritional point of view, but I still want to avoid it due to the taste. Now what if I want to set a rule, that none of my cells on CKB has data that begin with <code>carrot</code>? Let&rsquo;s write a script code to ensure this.</p>
-
 <p>In order to ensure none of the cells can have <code>carrot</code> in cell data, we need a way to first read cell data in the script. CKB provides <code>syscalls</code> to help with this.</p>
-
 <p>To ensure the security of CKB script, each script has to run in an isolated environment that is totally separated from the main computer you are running CKB. This way it won&rsquo;t be able to access data it doesn&rsquo;t need, such as your private keys or passwords. However, for a script to be useful, there must be certain data it want to access, such as the cell a script guards, or a transaction a script validates. CKB provides <code>syscalls</code> to ensure this, syscalls are defined in RISC-V standard, they provide a way to access certain resources provided by the environment. In a normal situation, the environment here means the operating system, but in the case of CKB VM, the environment refers to the actual CKB process. With syscalls, a CKB script can access the whole transaction containing itself, including inputs, outputs, witnesses, and deps.</p>
-
 <p>The good news, is that we have encapsulated syscalls in an easy to use <a href="https://github.com/nervosnetwork/ckb-system-scripts/blob/66d7da8ec72dffaa7e9c55904833951eca2422a9/c/ckb_syscalls.h">header file</a>, you are very welcome to poke around this file to see how syscalls are implemented. The bottomline is you can just grab this header file and use the wrapped functions to make syscalls as you want.</p>
-
 <p>Now with the syscalls at hand, we can start with our carrot-forbidden script:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="">#include</span> <span style="">&lt;memory.h&gt;</span><span style="">
 </span><span style="">#include</span> <span style="">&#34;ckb_syscalls.h&#34;</span><span style="">
@@ -487,23 +469,17 @@
   }
 
   <span style="font-weight:bold">return</span> 0;
-}</code></pre></div>
-<p>Several points worth explaining here:</p>
-
+}
+</code></pre></div><p>Several points worth explaining here:</p>
 <ol>
 <li>We will use <code>len</code> field both as an input and output parameter, hence it is passed as a pointer here.</li>
 <li>When making a syscall, we need to provide the following: a buffer to hold the data provided by the syscall; a <code>len</code> field denoting both the buffer length, and available data length returned by the syscall; an offset into the input data buffer, and several parameters denoting the exact field we are fetching in the transaction. For more details, please refer to our <a href="https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0009-vm-syscalls/0009-vm-syscalls.md">RFC</a>.</li>
 <li>For maximum flexibility, CKB uses the return value of the syscall to represent data fetching status: 0(or <code>CKB_SUCCESS</code>) means success, 1(or <code>CKB_INDEX_OUT_OF_BOUND</code>) means you have finished fetching all indices in a kind, 2(or <code>CKB_ITEM_MISSING</code>) means an entity is not present, such as fetching a type script from a cell that doesn&rsquo;t have one.</li>
 </ol>
-
 <p>So to recap, this script would loop through all output cells in the transaction, load the first 6 bytes of each cell data and test if those bytes match <code>carrot</code>. If we found a match, the script would return <code>-1</code>, denoting an error status, if no match is found, the script exits with <code>0</code>, meaning execution success.</p>
-
 <p>To perform the loop, the script would keep an <code>index</code> variable, in each loop iteration, it would tries to make the syscall to fetch the cell denoted by current <code>index</code> value, if the syscall returns <code>CKB_INDEX_OUT_OF_BOUND</code>, it means the script has iterated through all the cells, hence it just exits the loop, otherwise, the loop would continue, the cell data is tested, then <code>index</code> variable is incremented for the next iteration.</p>
-
 <p>This concludes your first useful CKB script code! In the next section, we will see how we can deploy it to CKB and run it.</p>
-
 <h1 id="deploying-a-script-to-ckb">Deploying a Script to CKB</h1>
-
 <p>First, we need to compile the carrot source code written above. Since GCC already has upstream RISC-V support, you can of course use the official GCC to build your script code. Or you can use the <a href="https://hub.docker.com/r/nervos/ckb-riscv-gnu-toolchain">docker image</a> we have prepared to save the trouble of compiling GCC:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ ls
 carrot.c  ckb_consts.h  ckb_syscalls.h
@@ -513,39 +489,35 @@ root@dc2c0c209dcd:/code# riscv64-unknown-elf-gcc -Os carrot.c -o carrot
 root@dc2c0c209dcd:/code# exit
 exit
 $ ls
-carrot*  carrot.c  ckb_consts.h  ckb_syscalls.h</code></pre></div>
-<p>And that&rsquo;s it, CKB can use the compiled executable from GCC directly as scripts on chain, there&rsquo;s no way for further processing. We can now deploy it on chain. Note that I will use CKB&rsquo;s Ruby SDK since I used to be a Ruby programmer, and Ruby feels the most natural one(but not necessarily the best one) to me. Please refer to the official <a href="https://github.com/nervosnetwork/ckb-sdk-ruby/blob/develop/README.md">README</a> for how to set it up.</p>
-
+carrot*  carrot.c  ckb_consts.h  ckb_syscalls.h
+</code></pre></div><p>And that&rsquo;s it, CKB can use the compiled executable from GCC directly as scripts on chain, there&rsquo;s no way for further processing. We can now deploy it on chain. Note that I will use CKB&rsquo;s Ruby SDK since I used to be a Ruby programmer, and Ruby feels the most natural one(but not necessarily the best one) to me. Please refer to the official <a href="https://github.com/nervosnetwork/ckb-sdk-ruby/blob/develop/README.md">README</a> for how to set it up.</p>
 <p>To deploy the script to CKB, we can just create a new cell, with the script code as cell data part:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby">pry(main)&gt; data = File.read(<span style="font-style:italic">&#34;carrot&#34;</span>)
 pry(main)&gt; data.bytesize
 =&gt; 6864
-pry(main)&gt; carrot_tx_hash = wallet.send_capacity(wallet.address, CKB::Utils.byte_to_shannon(8000), CKB::Utils.bin_to_hex(data))</code></pre></div>
-<p>Here I simply create a new cell with enough capacity by sending tokens to myself. Now we can create the type script containing the carrot script code:</p>
+pry(main)&gt; carrot_tx_hash = wallet.send_capacity(wallet.address, CKB::Utils.byte_to_shannon(8000), CKB::Utils.bin_to_hex(data))
+</code></pre></div><p>Here I simply create a new cell with enough capacity by sending tokens to myself. Now we can create the type script containing the carrot script code:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby">pry(main)&gt; carrot_data_hash = CKB::Blake2b.hexdigest(data)
-pry(main)&gt; carrot_type_script = CKB::Types::Script.new(<span style="font-style:italic">code_hash</span>: carrot_data_hash, <span style="font-style:italic">args</span>: <span style="font-style:italic">&#34;0x&#34;</span>)</code></pre></div>
-<p>Recall the Script data structure:</p>
+pry(main)&gt; carrot_type_script = CKB::Types::Script.new(<span style="font-style:italic">code_hash</span>: carrot_data_hash, <span style="font-style:italic">args</span>: <span style="font-style:italic">&#34;0x&#34;</span>)
+</code></pre></div><p>Recall the Script data structure:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-rust" data-lang="rust"><span style="font-weight:bold">pub</span> <span style="font-weight:bold">struct</span> <span style="font-weight:bold">Script</span> {
     <span style="font-weight:bold">pub</span> code_hash: <span style="font-weight:bold">H256</span>,
     <span style="font-weight:bold">pub</span> hash_type: <span style="font-weight:bold">ScriptHashType</span>,
     <span style="font-weight:bold">pub</span> args: <span style="font-weight:bold">JsonBytes</span>,
 }
-</code></pre></div>
-<p>We can see that instead of embedding the script code directly in the script data structure, we are only including the code hash, which is a Blake2b hash of the actual script binary code. Since carrot script doesn&rsquo;t use an argument, we can use empty bytes for <code>args</code> part.</p>
-
+</code></pre></div><p>We can see that instead of embedding the script code directly in the script data structure, we are only including the code hash, which is a Blake2b hash of the actual script binary code. Since carrot script doesn&rsquo;t use an argument, we can use empty bytes for <code>args</code> part.</p>
 <p>Note I&rsquo;m still ignoring <code>hash_type</code> here, we will leave to a future post to see a different way of specifying code hash. For now, let&rsquo;s keep it simple here.</p>
-
 <p>To run the carrot script, we need to create a new transaction, and set carrot type script as the type script of one of the output cells:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby">pry(main)&gt; tx = wallet.generate_tx(wallet2.address, CKB::Utils.byte_to_shannon(100), <span style="font-style:italic">fee</span>: 5000)
-pry(main)&gt; tx.outputs[0].type = carrot_type_script.dup</code></pre></div>
-<p>There&rsquo;s one more step needed: in order for CKB to locate the carrot script, we need to reference the cell containing carrot script in one of transaction deps:</p>
+pry(main)&gt; tx.outputs[0].type = carrot_type_script.dup
+</code></pre></div><p>There&rsquo;s one more step needed: in order for CKB to locate the carrot script, we need to reference the cell containing carrot script in one of transaction deps:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby">pry(main)&gt; carrot_cell_dep = CKB::Types::CellDep.new(<span style="font-style:italic">out_point</span>: CKB::Types::OutPoint.new(<span style="font-style:italic">tx_hash</span>: carrot_tx_hash, <span style="font-style:italic">index</span>: 0))
-pry(main)&gt; tx.cell_deps &lt;&lt; carrot_cell_dep.dup</code></pre></div>
-<p>Now we are ready to sign and send the transaction:</p>
+pry(main)&gt; tx.cell_deps &lt;&lt; carrot_cell_dep.dup
+</code></pre></div><p>Now we are ready to sign and send the transaction:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby">[46] pry(main)&gt; tx = tx.sign(wallet.key, api.compute_transaction_hash(tx))
 [19] pry(main)&gt; api.send_transaction(tx)
-=&gt; <span style="font-style:italic">&#34;0xd7b0fea7c1527cde27cc4e7a2e055e494690a384db14cc35cd2e51ec6f078163&#34;</span></code></pre></div>
-<p>Since this transaction does not have any cell containing <code>carrot</code> in the cell data, the type script validates successfully. Now let&rsquo;s try a different transaction that does have a cell that begins with <code>carrot</code>:</p>
+=&gt; <span style="font-style:italic">&#34;0xd7b0fea7c1527cde27cc4e7a2e055e494690a384db14cc35cd2e51ec6f078163&#34;</span>
+</code></pre></div><p>Since this transaction does not have any cell containing <code>carrot</code> in the cell data, the type script validates successfully. Now let&rsquo;s try a different transaction that does have a cell that begins with <code>carrot</code>:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby">pry(main)&gt; tx2 = wallet.generate_tx(wallet2.address, CKB::Utils.byte_to_shannon(400), <span style="font-style:italic">fee</span>: 5000)
 pry(main)&gt; tx2.cell_deps.push(carrot_cell_dep.dup)
 pry(main)&gt; tx2.outputs[0].type = carrot_type_script.dup
@@ -553,11 +525,9 @@ pry(main)&gt; tx2.outputs_data[0] = CKB::Utils.bin_to_hex(<span style="font-styl
 pry(main)&gt; tx2 = tx2.sign(wallet.key)
 pry(main)&gt; api.send_transaction(tx2)
 CKB::<span style="font-style:italic">RPCError</span>: jsonrpc <span style="font-style:italic">error</span>: {<span style="font-style:italic">:code</span>=&gt;-3, <span style="font-style:italic">:message</span>=&gt;<span style="font-style:italic">&#34;InvalidTx(ScriptFailure(ValidationFailure(-1)))&#34;</span>}
-from <span style="font-style:italic">/home/u</span>buntu/code/ckb-sdk-ruby/lib/ckb/rpc.rb:164<span style="font-style:italic">:in</span> <span style="font-style:italic">`rpc_request&#39;</span></code></pre></div>
-<p>We can see our carrot script rejects a transaction that generates a cell with carrot. Now I can use this script to make sure all my cells are free from carrots!</p>
-
+from <span style="font-style:italic">/home/u</span>buntu/code/ckb-sdk-ruby/lib/ckb/rpc.rb:164<span style="font-style:italic">:in</span> <span style="font-style:italic">`rpc_request&#39;
+</span></code></pre></div><p>We can see our carrot script rejects a transaction that generates a cell with carrot. Now I can use this script to make sure all my cells are free from carrots!</p>
 <p>So to recap, to deploy and run a script as type script, what we need to do is:</p>
-
 <ol>
 <li>Compile the script to RISC-V executable binary</li>
 <li>Deploy the binary in a cell&rsquo;s data part</li>
@@ -565,30 +535,19 @@ from <span style="font-style:italic">/home/u</span>buntu/code/ckb-sdk-ruby/lib/c
 <li>Create a new transaction with the type script set in one of the generated cells</li>
 <li>Include the outpoint to the cell containing the script code as one of the transaction deps</li>
 </ol>
-
 <p>That&rsquo;s really all you need! If your script has run into problems, those are the points you need to check.</p>
-
 <p>Although we only talk about type scripts here, lock script works exactly the same way. The only quirk you need to keep in mind, is that when you create a cell with a specificed lock script, the lock script won&rsquo;t run here. It only runs when you are consuming the cell. So while type script can be used to create the logic that runs when you create the cell, lock script is used to create the logic that runs when you consume the cell. Given this consideration, please make sure your lock script is correct, otherwise you might be losing the tokens in the following scenarios:</p>
-
 <ul>
 <li>Your lock script has a bug that someone else can unlock your cell.</li>
 <li>Your lock script has a bug that no one(including you) can unlock your cell.</li>
 </ul>
-
 <p>One tip we can provide here, is always test your script as a type script attached to an output cell in your transaction, this way when error happens, you will know immediately, your tokens can stay safe.</p>
-
 <h1 id="introducing-duktape">Introducing Duktape</h1>
-
 <p>I&rsquo;m sure you feel the same way as I do now: it&rsquo;s good we can write contracts in C, but C always feels a bit tedious and, let&rsquo;s face it, dangerous. Is there a better way?</p>
-
 <p>Yes of course! We mentioned above CKB VM is essentially a mini computer, and there are tons of solutions we can explore. One thing we have prepared here, is that we can write CKB script codes in JavaScript. Yes you got it right, plain ES5(yes I know, but this is just one example, and you can use a transpiler) JavaScript.</p>
-
 <p>How this is possible? Since we have C compiler available, all we did is just take a JavaScript implementation for the embeded system, in our case, <a href="https://duktape.org/">duktape</a>, compile it from C to RISC-V binary, put it on chain, then boom, we can run JavaScript in CKB! Since we are working with a real mini computer here, there&rsquo;s no stopping us from embeding another VM as CKB script to CKB VM, and exploring this VM on top of VM path.</p>
-
 <p>And we can actually expand from this path, we can have JavaScript on CKB via duktape, we can also have Ruby on CKB via <a href="https://github.com/mruby/mruby">mruby</a>, we can even have Bitcoin Script or EVM on chain if we just compile their VM and put it on chain. This ensures CKB VM can both help us preserve legacy and build a diversified ecosystem. All languages should be and are treated equal on CKB, the freedom should be in the hands of blockchain contract developers.</p>
-
 <p>At this stage you might want to ask: yes this is possible, but won&rsquo;t VM on top of VM be slow? I believe it really depends on your use case to say if this is gonna be slow. I&rsquo;m a firm believer that benchmarks make no sense unless we put it in a real use case with standard hardware requirements. So wait to see if this is really gonna be an issue. In my opinion, higher languages are more likely to be used in type scripts to guard cell transformation, in this case, I doubt it&rsquo;s gonna be slow. Besides, we are also working on this field to optimize both CKB VM and the VMs on top of CKB VM to make it faster and faster :P</p>
-
 <p>To use duktape on CKB, first you need to compile duktape itself into a RISC-V executable binary:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ git clone https://github.com/xxuejie/ckb-duktape
 $ cd ckb-duktape
@@ -603,39 +562,33 @@ riscv64-unknown-elf-gcc build/entry.o build/duktape.o -o build/duktape -lm -Wl,-
 root@0d31cad7a539:/code# exit
 exit
 $ ls build/duktape
-build/duktape*</code></pre></div>
-<p>Like the carrot example, the first step here is to deploy duktape script code in a CKB cell:</p>
+build/duktape*
+</code></pre></div><p>Like the carrot example, the first step here is to deploy duktape script code in a CKB cell:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby">pry(main)&gt; duktape_data = File.read(<span style="font-style:italic">&#34;../ckb-duktape/build/duktape&#34;</span>)
 pry(main)&gt; duktape_data.bytesize
 =&gt; 269064
 pry(main)&gt; duktape_tx_hash = wallet.send_capacity(wallet.address, CKB::Utils.byte_to_shannon(280000), CKB::Utils.bin_to_hex(duktape_data))
 pry(main)&gt; duktape_data_hash = CKB::Blake2b.hexdigest(duktape_data)
-pry(main)&gt; duktape_cell_dep = CKB::Types::CellDep.new(<span style="font-style:italic">out_point</span>: CKB::Types::OutPoint.new(<span style="font-style:italic">tx_hash</span>: duktape_tx_hash, <span style="font-style:italic">index</span>: 0))</code></pre></div>
-<p>Unlike the carrot example, duktape script code now requires one argument: the JavaScript source you want to execute:</p>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby">pry(main)&gt; duktape_hello_type_script = CKB::Types::Script.new(<span style="font-style:italic">code_hash</span>: duktape_data_hash, <span style="font-style:italic">args</span>: CKB::Utils.bin_to_hex(<span style="font-style:italic">&#34;CKB.debug(</span><span style="font-weight:bold;font-style:italic">\&#34;</span><span style="font-style:italic">I&#39;m running in JS!</span><span style="font-weight:bold;font-style:italic">\&#34;</span><span style="font-style:italic">)&#34;</span>))</code></pre></div>
-<p>Notice that with a different argument, you can create a different duktape powered type script for different use case:</p>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby">pry(main)&gt; duktape_hello_type_script = CKB::Types::Script.new(<span style="font-style:italic">code_hash</span>: duktape_data_hash, <span style="font-style:italic">args</span>: CKB::Utils.bin_to_hex(<span style="font-style:italic">&#34;var a = 1;</span><span style="font-weight:bold;font-style:italic">\n</span><span style="font-style:italic">var b = a + 2;&#34;</span>))</code></pre></div>
-<p>This echos the differences mentioned above on script code vs script: here duktape serves as a script code providing a JavaScript engine, while different script leveraging duktape script code serves different functionalities on chain.</p>
-
+pry(main)&gt; duktape_cell_dep = CKB::Types::CellDep.new(<span style="font-style:italic">out_point</span>: CKB::Types::OutPoint.new(<span style="font-style:italic">tx_hash</span>: duktape_tx_hash, <span style="font-style:italic">index</span>: 0))
+</code></pre></div><p>Unlike the carrot example, duktape script code now requires one argument: the JavaScript source you want to execute:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby">pry(main)&gt; duktape_hello_type_script = CKB::Types::Script.new(<span style="font-style:italic">code_hash</span>: duktape_data_hash, <span style="font-style:italic">args</span>: CKB::Utils.bin_to_hex(<span style="font-style:italic">&#34;CKB.debug(</span><span style="font-weight:bold;font-style:italic">\&#34;</span><span style="font-style:italic">I&#39;m running in JS!</span><span style="font-weight:bold;font-style:italic">\&#34;</span><span style="font-style:italic">)&#34;</span>))
+</code></pre></div><p>Notice that with a different argument, you can create a different duktape powered type script for different use case:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby">pry(main)&gt; duktape_hello_type_script = CKB::Types::Script.new(<span style="font-style:italic">code_hash</span>: duktape_data_hash, <span style="font-style:italic">args</span>: CKB::Utils.bin_to_hex(<span style="font-style:italic">&#34;var a = 1;</span><span style="font-weight:bold;font-style:italic">\n</span><span style="font-style:italic">var b = a + 2;&#34;</span>))
+</code></pre></div><p>This echos the differences mentioned above on script code vs script: here duktape serves as a script code providing a JavaScript engine, while different script leveraging duktape script code serves different functionalities on chain.</p>
 <p>Now we can create a cell with the duktape type script attached:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby">pry(main)&gt; tx = wallet.generate_tx(wallet2.address, CKB::Utils.byte_to_shannon(200), <span style="font-style:italic">fee</span>: 600)
 pry(main)&gt; tx.cell_deps.push(duktape_cell_dep.dup)
 pry(main)&gt; tx.outputs[0].type = duktape_hello_type_script.dup
 pry(main)&gt; tx = tx.sign(wallet.key)
 pry(main)&gt; api.send_transaction(tx)
-=&gt; <span style="font-style:italic">&#34;0x2e4d3aab4284bc52fc6f07df66e7c8fc0e236916b8a8b8417abb2a2c60824028&#34;</span></code></pre></div>
-<p>We can see that the script executes successfully, and if you have <code>ckb-script</code> module&rsquo;s log level set to <code>debug</code> in your <code>ckb.toml</code> file, you can also notice the following log:</p>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">2019-07-15 05:59:13.551 +00:00 http.worker8 DEBUG ckb-script  script group: c35b9fed5fc0dd6eaef5a918cd7a4e4b77ea93398bece4d4572b67a474874641 DEBUG OUTPUT: I<span style="">&#39;</span>m running in JS!</code></pre></div>
-<p>Now you have successfully deploy a JavaScript engine on CKB, and run JavaScript based script on CKB! Feel free to try any JavaScript code you want here.</p>
-
+=&gt; <span style="font-style:italic">&#34;0x2e4d3aab4284bc52fc6f07df66e7c8fc0e236916b8a8b8417abb2a2c60824028&#34;</span>
+</code></pre></div><p>We can see that the script executes successfully, and if you have <code>ckb-script</code> module&rsquo;s log level set to <code>debug</code> in your <code>ckb.toml</code> file, you can also notice the following log:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">2019-07-15 05:59:13.551 +00:00 http.worker8 DEBUG ckb-script  script group: c35b9fed5fc0dd6eaef5a918cd7a4e4b77ea93398bece4d4572b67a474874641 DEBUG OUTPUT: I<span style="">&#39;</span>m running in JS!
+</code></pre></div><p>Now you have successfully deploy a JavaScript engine on CKB, and run JavaScript based script on CKB! Feel free to try any JavaScript code you want here.</p>
 <h1 id="a-thought-exercise">A Thought Exercise</h1>
-
 <p>Now you are familiar with CKB script basics, here&rsquo;s one thought exercise: in this post you&rsquo;ve seen what an always-success script looks like, but what about an always-failure script? How small an always-faliure script(and script code) can be?</p>
-
 <p>A hint: this is NOT a gcc flag-tweaking optimization contest, this is merely a thought exercise.</p>
-
 <h1 id="next">Next</h1>
-
 <p>I know this is a long post, I hope you have tried this and successfully deployed a script to CKB. In the next post, we will introduce an important topic: how to issue your own user defined tokens(UDT) on CKB. The best part of UDTs on CKB, is that each user can store their UDTs in their own cells, which is different from ERC20 tokens on Ethereum, where everyone&rsquo;s token will have to live in the token issuer&rsquo;s single address. All of this can be achieved by using type scripts alone. If you are interested please stay tuned :)</p>
 
   </div>

@@ -417,22 +417,13 @@
   
 
   <div class="entry-content">
-    
-
-<p>As of now, the cell validation model in CKB has been more or less stablized, hence I&rsquo;m starting a series of article introducing CKB script programming here. My goal here is to fill in all the missing implementation details one need to write CKB scripts after reading the whitepaper, so you can start exploring this beautiful wonderland CKB presents.</p>
-
+    <p>As of now, the cell validation model in CKB has been more or less stablized, hence I&rsquo;m starting a series of article introducing CKB script programming here. My goal here is to fill in all the missing implementation details one need to write CKB scripts after reading the whitepaper, so you can start exploring this beautiful wonderland CKB presents.</p>
 <p>You might noticed that I call the code running on CKB as <code>script</code>, not <code>smart contract</code>. This is because smart contract is quite a confusing term to me, and I want to use a different word here to indicate CKB&rsquo;s unique programmability. A script in CKB&rsquo;s sense need not be just a script we see in scripting languages such as Ruby, JS, it actually refers to the RISC-V format binary you run on CKB VM.</p>
-
 <p>This first post here, is dedicated to the brand <a href="https://github.com/nervosnetwork/ckb/pull/913">new verification model</a> introduced in CKB v0.14.0. It might sound boring but I promise you this is the last post without actual examples to play with :P</p>
-
 <p>Note even though I believe CKB&rsquo;s programming model is quite stable now, development is still happening so there might be changes. I will try my best to make sure this post is updated but if anything confuses you, this post is describing CKB&rsquo;s Lina mainnet version now.</p>
-
 <h1 id="overview">Overview</h1>
-
 <p>Below illustrates a real transaction on CKB:</p>
-
-<p><img src="https://xuejie.space/images/tx.svg" alt="Transaction Example" /></p>
-
+<p><img src="https://xuejie.space/images/tx.svg" alt="Transaction Example"></p>
 <p>There are a lot of things going on in this graph, and we will come back to this graph again in later posts. Today, we will just focus on 2 entities in the cell data structure: <code>lock</code> and <code>type</code>.</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-rust" data-lang="rust"><span style="font-weight:bold">pub</span> <span style="font-weight:bold">struct</span> <span style="font-weight:bold">CellOutput</span> {
     <span style="font-weight:bold">pub</span> capacity: <span style="font-weight:bold">Capacity</span>,
@@ -440,24 +431,16 @@
     <span style="">#[serde(rename = </span><span style="font-style:italic">&#34;type&#34;</span><span style="">)]</span>
     <span style="font-weight:bold">pub</span> type_: Option&lt;Script&gt;,
 }
-</code></pre></div>
-<p>From the data structure we can see that <code>lock</code> and <code>type</code> shared the same structure, later we can show that they are also executed in the same environment, the differences between them are just in a few tiny bits:</p>
-
+</code></pre></div><p>From the data structure we can see that <code>lock</code> and <code>type</code> shared the same structure, later we can show that they are also executed in the same environment, the differences between them are just in a few tiny bits:</p>
 <ul>
 <li><code>lock</code> is required, while <code>type</code> is optional</li>
 <li>Mentally, they are used to capture different use cases.</li>
 </ul>
-
 <p>We will first start with <code>type</code> script here.</p>
-
 <h1 id="type-script">Type Script</h1>
-
 <p>Note the name here is just a lucky accident, it is not related to the beloved <a href="https://www.typescriptlang.org/">programming language</a>.</p>
-
 <p>If you think about it, a transaction on CKB(or most UTXO-based blockchains) just transforms one set of cells(or UTXOs) to another set of cells. What&rsquo;s interesting, is the actual transformation here. That&rsquo;s where we start to design CKB&rsquo;s verification model: how can we build a model to better validate the cell transformations?</p>
-
 <p>That&rsquo;s where a <code>type</code> script comes in play: a type script is used to validate certain rules in the cell transformation phase. Some examples here include:</p>
-
 <ul>
 <li>Validating UDT(user defined token) balances to ensure no new token is invalidly issued.</li>
 <li>Ensuring a unique name is assigned to a cell that might be mutated. Note this is a fun one, please expect a future article dedicated entirely to this topic.</li>
@@ -465,47 +448,30 @@
 <li>A bitcoin VM can be compiled to RISC-V binary, which can transform CKB into an alternative bitcoin implementation :)</li>
 <li>Keep in mind that in addition to data, cell can be used to store code as well, hence a type script can also be used to run tests on the code in cell to ensure certain behavior.</li>
 </ul>
-
 <p>In a nutshell, type script can be used to capture any validation logic you need in the cell transformation. Combined with CKB&rsquo;s flexible virtual machine, I believe this will provide endless potentials.</p>
-
 <h1 id="lock-script">Lock Script</h1>
-
 <p>Type script captures the cell transformation logic, but there&rsquo;s still one thing missing from the picture: how can I guard my own cell from someone else? In other words, how can I ensure my tokens stay mine in an ever-changing world?</p>
-
 <p>This is why we designed the always required lock script. A cell can only be consumed when the lock script can be executed sucessfully. This is different from type script, which might be totally optional. A lock script is always there to guard the security of a cell.</p>
-
 <p>Typically, you would expect that a lock script contains a signature verification phase, like all the other blockchains do, but there are also brand new use cases unlocked by CKB:</p>
-
 <ul>
 <li>The actual signature algorithm is totally determined by the lock script, and you are free to use any lock script. That means you are free to incorporate any signature algorithms that suit your need. In the official CKB distribution we are including <a href="https://github.com/nervosnetwork/ckb-system-scripts/blob/66d7da8ec72dffaa7e9c55904833951eca2422a9/c/secp256k1_blake160_sighash_all.c">secp256k1 algorithm</a> as the default lock script. But you don&rsquo;t have to use this, if someone implements a lock script using schnorr signature, you are more than welcome to use that one.</li>
 <li>In addition to signature verification, a lock script can also include other rules to unlock the cell as well. For example, I can configure my lock script to pass if the transaction contains an output cell that uses my lock script, but has more capacity than my consumed cell. This way when someone sends me capacity, they can consume my existing cell and create a new cell for me. They don&rsquo;t have to create a new cell for me like bitcoin requires.</li>
 </ul>
-
 <p>In my personal opinion, the best part of CKB, is that a lock script created by the community is treated exactly the same way as the official default one. No priviledge is granted to the official scripts. Unlike some other blockchains, CKB provides the freedom to develop CKB scripts back to the whole community.</p>
-
 <h1 id="execution-model">Execution Model</h1>
-
 <p>Now let&rsquo;s see when lock and type scripts are executed.</p>
-
 <h2 id="back-to-the-example">Back to the Example</h2>
-
 <p>Here&rsquo;s the transaction we see earlier again:</p>
-
-<p><img src="https://xuejie.space/images/tx.svg" alt="Transaction Example" /></p>
-
+<p><img src="https://xuejie.space/images/tx.svg" alt="Transaction Example"></p>
 <p>For this example, the execution flow is as follows:</p>
-
 <ol>
 <li><code>Lock Script 1</code> is executed once.</li>
 <li><code>Lock Script 2</code> is executed once.</li>
 <li><code>Type Script 1</code> is executed once.</li>
 <li><code>Type Script 2</code> is executed once.</li>
 </ol>
-
 <p>In later posts we can see both lock and type scripts are executed in the same environment, and both have access to the whole transaction. If any of the script fails, the whole transaction fails. Only when all the scripts succeed, the transaction is considered validated.</p>
-
 <p>There&rsquo;re couple of points worth mentioning:</p>
-
 <ul>
 <li>Even though there are 2 input cells with <code>Lock Script 1</code>, it is only executed once, it&rsquo;s up to the actual lock script to locate all the input cells with the same lock script and validate both signature.</li>
 <li>Only lock scripts in input cells are executed in this transaction, for example, <code>Lock Script 3</code> is not executed here.</li>
@@ -513,19 +479,14 @@
 <li>Type scripts in both input and output cells are executed, which include <code>Type Script 1</code> and <code>Type Script 2</code>.</li>
 <li>Some cells do not have type scripts, in this case we just omit the execution.</li>
 </ul>
-
 <h2 id="rules">Rules</h2>
-
 <p>Now to summary the rules:</p>
-
 <ul>
 <li>Lock scripts in input cells are collected and deduped, each unique lock script is executed and only executed once.</li>
 <li>Type scripts in input and output cells(if existed) are collected together and deduped, each unique type script is executed and only executed once.</li>
 <li>If any script fails, the whole transaction validation fails.</li>
 </ul>
-
-<h1 id="what-s-next">What&rsquo;s Next</h1>
-
+<h1 id="whats-next">What&rsquo;s Next</h1>
 <p>Now that cell model is covered, we will look at how to actual write a CKB VM script in the next post. The default secp256k1 lock script will be examined to show the life of a CKB VM script.</p>
 
   </div>

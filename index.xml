@@ -9,13 +9,14 @@
         <atom:link href="https://xuejie.space/index.xml" rel="self" type="application/rss+xml" />
     
     
-    <item>
-      <title>Diviner: A New Attempt on Deterministic Testing</title>
-      <link>https://xuejie.space/2020_04_11_diviner_a_new_attempt_on_deterministic_testing/</link>
-      <pubDate>Sat, 11 Apr 2020 00:00:00 +0000</pubDate>
       
-      <guid>https://xuejie.space/2020_04_11_diviner_a_new_attempt_on_deterministic_testing/</guid>
-      <description>&lt;p&gt;I&amp;rsquo;ve long been fascinated by the problem of deterministic execution. We&amp;rsquo;ve stuck so long on the multi-threaded model. Most of us have encountered bugs that only appear with some probabilities. Even though you have prepared a fix, you won&amp;rsquo;t know for sure if it will occur again, all you can do is testing, testing and testing, hoping the problem won&amp;rsquo;t appear again. It is in every engineer&amp;rsquo;s dream, that we can deterministically debug and ensure that we can say with 100% certainty, that a problem has been eliminated.&lt;/p&gt;
+      <item>
+        <title>Diviner: A New Attempt on Deterministic Testing</title>
+        <link>https://xuejie.space/2020_04_11_diviner_a_new_attempt_on_deterministic_testing/</link>
+        <pubDate>Sat, 11 Apr 2020 00:00:00 +0000</pubDate>
+        
+        <guid>https://xuejie.space/2020_04_11_diviner_a_new_attempt_on_deterministic_testing/</guid>
+        <description>&lt;p&gt;I&amp;rsquo;ve long been fascinated by the problem of deterministic execution. We&amp;rsquo;ve stuck so long on the multi-threaded model. Most of us have encountered bugs that only appear with some probabilities. Even though you have prepared a fix, you won&amp;rsquo;t know for sure if it will occur again, all you can do is testing, testing and testing, hoping the problem won&amp;rsquo;t appear again. It is in every engineer&amp;rsquo;s dream, that we can deterministically debug and ensure that we can say with 100% certainty, that a problem has been eliminated.&lt;/p&gt;
 &lt;p&gt;For the past few months, I&amp;rsquo;ve been learning about &lt;a href=&#34;https://lamport.azurewebsites.net/tla/tla.html&#34;&gt;TLA+&lt;/a&gt;, I do firmly believe now TLA+ is an invaluable tool in building sophisticated, multi-threaded, performant (and maybe also distributed) systems. I do prefer to build design first in TLA+ before writing a single line of code for all my projects. But TLA+ can only help you think about the design, and fix any design flaws. There is still the other side of story: actually implement the system. We could have a design validated by TLA+, but what if the code you write is vulnerable to some concurrency bugs that happens with certain probability?&lt;/p&gt;
 &lt;p&gt;There are, of course, some attempts at the solution, such as &lt;a href=&#34;https://rr-project.org/&#34;&gt;rr&lt;/a&gt;. But one true gem in this area, is &lt;a href=&#34;https://www.foundationdb.org/&#34;&gt;FoundationDB&lt;/a&gt;. If you don&amp;rsquo;t know much about FoundationDB, specifically how they perform testing on it, I highly recommended the following 2 videos:&lt;/p&gt;
 &lt;ul&gt;
@@ -113,15 +114,17 @@ fn main() {
 &lt;/code&gt;&lt;/pre&gt;&lt;p&gt;This example showcases a typical newcomer mistakes: TCP/IP protocol is stream based, not packet based. While you might provide a buffer of 1KB, the protocol can respond you with any number of bytes, including only 1 byte of data in extreme scenarios. In a real testing, this is really hard to simulate, since you need to create an environment where TCP/IP is so congested, that it only has a very small congestion window. But with diviner, tweaking this in testing would be real simple. And the code you write, just uses TcpListener/TCPStream exactly like the same name structs from async-std. Yes you will have to use diviner to import them, but with inline functions and newtype patterns, performance will not be affected at all. Once you are willing to take this sacrifice, I believe you will discover a whole new world.&lt;/p&gt;
 &lt;p&gt;So that&amp;rsquo;s what excites me lately. Right now diviner is still in its early days, I will continue to work on diviner in my free time to add the missing parts(such as all the missing wrappers from async-std). If you are interested, feel free to give it a try, and let me know how you feel about it :P&lt;/p&gt;
 </description>
-    </item>
-    
-    <item>
-      <title>Introduction to CKB Script Programming 10: Language Choices</title>
-      <link>https://xuejie.space/2020_04_09_language_choices/</link>
-      <pubDate>Thu, 09 Apr 2020 00:00:00 +0000</pubDate>
+      </item>
       
-      <guid>https://xuejie.space/2020_04_09_language_choices/</guid>
-      <description>&lt;p&gt;When crafting CKB, we made the choice to use a generic VM, so it is not bound to any particular programming language. This model certainly has its pros, but it also comes with problems. A question we frequently receive is: what language should I use to program on Nervos CKB? Let&amp;rsquo;s try to answer this question here.&lt;/p&gt;
+    
+      
+      <item>
+        <title>Introduction to CKB Script Programming 10: Language Choices</title>
+        <link>https://xuejie.space/2020_04_09_language_choices/</link>
+        <pubDate>Thu, 09 Apr 2020 00:00:00 +0000</pubDate>
+        
+        <guid>https://xuejie.space/2020_04_09_language_choices/</guid>
+        <description>&lt;p&gt;When crafting CKB, we made the choice to use a generic VM, so it is not bound to any particular programming language. This model certainly has its pros, but it also comes with problems. A question we frequently receive is: what language should I use to program on Nervos CKB? Let&amp;rsquo;s try to answer this question here.&lt;/p&gt;
 &lt;p&gt;First of all, I have had the belief that each dapp developer should have the freedom to pick their own choice of languages. No blockchain creators know the nuts and bolts better than the dapp developer themselves. No single programming language provides solutions for all kinds of dapps that might sprout. We offer different programming language choices, you can pick based on your needs.&lt;/p&gt;
 &lt;p&gt;But at the same time, this is also an irresponsible answer! Telling a newcomer that you have many choices to choose from, is like telling them nothing. They will just be overwhelmed by the numerous choices. After all, all they want to do, is pick a language and start experimenting/building. This means while we do offer choices, we will also need to provide recommendations: what will we pick, if we just get started on building a new dapp on CKB?&lt;/p&gt;
 &lt;p&gt;To make a recommendation, we will first need answers to 2 simple questions:&lt;/p&gt;
@@ -297,15 +300,17 @@ static int ckb_zz_demo_main_load_data(uint64_t const index,
 &lt;h1 id=&#34;recap&#34;&gt;Recap&lt;/h1&gt;
 &lt;p&gt;I hope you won&amp;rsquo;t treat me as a ZetZ zealot now. It really is just one example I&amp;rsquo;m playing with now. What I&amp;rsquo;m trying to say here, is that if you have any particular language you love, or discover anything that might be useful for your dapp. There really is nothing that prevents you from porting that to CKB. We really want to put the freedom, back to all the awesome developers out there. And if you have built something that proves to be useful, our &lt;a href=&#34;https://www.nervos.org/grants/&#34;&gt;grant&lt;/a&gt; program is awaiting for your submission.&lt;/p&gt;
 </description>
-    </item>
-    
-    <item>
-      <title>What Do We Mean When We Say Account Model?</title>
-      <link>https://xuejie.space/2020_03_20_what_do_we_mean_when_we_say_account_model/</link>
-      <pubDate>Fri, 20 Mar 2020 00:00:00 +0000</pubDate>
+      </item>
       
-      <guid>https://xuejie.space/2020_03_20_what_do_we_mean_when_we_say_account_model/</guid>
-      <description>&lt;p&gt;It is widely believed in the blockchain world that account model has advantages over UTXO model in terms of usability, and I&amp;rsquo;ve been working on bridging the differences between UTXO model and account model in a &lt;a href=&#34;https://github.com/nervosnetwork/ckb&#34;&gt;blockchain&lt;/a&gt;. There is some &lt;a href=&#34;https://medium.com/nervosnetwork/https-medium-com-nervosnetwork-animagus-part-1-introduction-66fa8ce27ccd-cfb361a7d883&#34;&gt;initial attempt&lt;/a&gt; on the problem. But lately, I start to feel that UTXO model and account model are essentially the same thing, or if we rephrase using buzzwords, UTXO model is just a &lt;strong&gt;software defined&lt;/strong&gt; version of account model. If this puzzles you don&amp;rsquo;t worry, I will explain in more details below.&lt;/p&gt;
+    
+      
+      <item>
+        <title>What Do We Mean When We Say Account Model?</title>
+        <link>https://xuejie.space/2020_03_20_what_do_we_mean_when_we_say_account_model/</link>
+        <pubDate>Fri, 20 Mar 2020 00:00:00 +0000</pubDate>
+        
+        <guid>https://xuejie.space/2020_03_20_what_do_we_mean_when_we_say_account_model/</guid>
+        <description>&lt;p&gt;It is widely believed in the blockchain world that account model has advantages over UTXO model in terms of usability, and I&amp;rsquo;ve been working on bridging the differences between UTXO model and account model in a &lt;a href=&#34;https://github.com/nervosnetwork/ckb&#34;&gt;blockchain&lt;/a&gt;. There is some &lt;a href=&#34;https://medium.com/nervosnetwork/https-medium-com-nervosnetwork-animagus-part-1-introduction-66fa8ce27ccd-cfb361a7d883&#34;&gt;initial attempt&lt;/a&gt; on the problem. But lately, I start to feel that UTXO model and account model are essentially the same thing, or if we rephrase using buzzwords, UTXO model is just a &lt;strong&gt;software defined&lt;/strong&gt; version of account model. If this puzzles you don&amp;rsquo;t worry, I will explain in more details below.&lt;/p&gt;
 &lt;p&gt;To make things easier to understand, in this post I will only use the wording UTXO model. People who know us will know we generalize from the UTXO model into the cell model. The added advantages of cell model do not matter here. I&amp;rsquo;m gonna argue below that any UTXO model that is capable of storing data(such as CKB&amp;rsquo;s cell model, or even plain old Bitcoin&amp;rsquo;s UTXO model when using &lt;code&gt;OP_PUSHDATA&lt;/code&gt;), can be equivalent to the account model when it comes to programming model.&lt;/p&gt;
 &lt;h1 id=&#34;what-is-account-model&#34;&gt;What Is Account Model?&lt;/h1&gt;
 &lt;p&gt;In an account model based blockchain, transactions only state the action, or function call with parameters. The actual state, is computed and inferred from the blockchain, like the diagram below shows:&lt;/p&gt;
@@ -359,15 +364,17 @@ static int ckb_zz_demo_main_load_data(uint64_t const index,
 &lt;/ul&gt;
 &lt;p&gt;If all we see is one or two single case, it might just be an abnormality, but what we see is an industry-wise shift from more hardware, to more software. I&amp;rsquo;m not sure about you, but I would personally want to bet that all the bright minds in our industry are making the right choice here :P&lt;/p&gt;
 </description>
-    </item>
-    
-    <item>
-      <title>Introduction to CKB Script Programming 9: Cycle Reductions in Duktape Script</title>
-      <link>https://xuejie.space/2020_03_19_cycle_reduction_in_duktape/</link>
-      <pubDate>Thu, 19 Mar 2020 00:00:00 +0000</pubDate>
+      </item>
       
-      <guid>https://xuejie.space/2020_03_19_cycle_reduction_in_duktape/</guid>
-      <description>&lt;p&gt;As shown earlier, plain JavaScript can be used to build CKB scripts. But if you have tried this route before, one problem you would notice, is that JavaScript based scripts tend to consume much more cycles than a native version. While this is less of an issue in experimenting, it is very real in production environment: more cycles can naturally be reflected in more transaction fees. It&amp;rsquo;s obvious that the following solutions can be used to tackle this problem:&lt;/p&gt;
+    
+      
+      <item>
+        <title>Introduction to CKB Script Programming 9: Cycle Reductions in Duktape Script</title>
+        <link>https://xuejie.space/2020_03_19_cycle_reduction_in_duktape/</link>
+        <pubDate>Thu, 19 Mar 2020 00:00:00 +0000</pubDate>
+        
+        <guid>https://xuejie.space/2020_03_19_cycle_reduction_in_duktape/</guid>
+        <description>&lt;p&gt;As shown earlier, plain JavaScript can be used to build CKB scripts. But if you have tried this route before, one problem you would notice, is that JavaScript based scripts tend to consume much more cycles than a native version. While this is less of an issue in experimenting, it is very real in production environment: more cycles can naturally be reflected in more transaction fees. It&amp;rsquo;s obvious that the following solutions can be used to tackle this problem:&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;Rewrite a JavaScript in a native compiled language, such as C or Rust;&lt;/li&gt;
 &lt;li&gt;Use better algorithms that require less cycles;&lt;/li&gt;
@@ -716,15 +723,17 @@ Transfer cycles: 96994, running cycles: 3806358
 &lt;h1 id=&#34;future&#34;&gt;Future&lt;/h1&gt;
 &lt;p&gt;The above are just 3 simple solutions you can levarage, there are very likely to be more way you can use to reduce cycles. One thing to remember, is that you don&amp;rsquo;t have to cater for rules established in an everyday running program. As long as the script satisfies the verification needs on chain, you can employ any techniques to reduce the cycle consumption.&lt;/p&gt;
 </description>
-    </item>
-    
-    <item>
-      <title>Let&#39;s Build a Minimal Blockchain 3: What Is A Blockchain?</title>
-      <link>https://xuejie.space/2020_03_16_lets_build_a_minimal_blockchain_what_is_a_blockchain/</link>
-      <pubDate>Mon, 16 Mar 2020 00:00:00 +0000</pubDate>
+      </item>
       
-      <guid>https://xuejie.space/2020_03_16_lets_build_a_minimal_blockchain_what_is_a_blockchain/</guid>
-      <description>&lt;p&gt;If you have followed through this series, you would find the title quite misleading: I&amp;rsquo;m not gonna build the actual blockchain, I&amp;rsquo;m just dumping random ideas in the design of modern blockchains. Sadly this series is gonna be of contents like this for a while, at least till I have dumped all the ideas in my head, and I have got some time to do the actual coding part.&lt;/p&gt;
+    
+      
+      <item>
+        <title>Let&#39;s Build a Minimal Blockchain 3: What Is A Blockchain?</title>
+        <link>https://xuejie.space/2020_03_16_lets_build_a_minimal_blockchain_what_is_a_blockchain/</link>
+        <pubDate>Mon, 16 Mar 2020 00:00:00 +0000</pubDate>
+        
+        <guid>https://xuejie.space/2020_03_16_lets_build_a_minimal_blockchain_what_is_a_blockchain/</guid>
+        <description>&lt;p&gt;If you have followed through this series, you would find the title quite misleading: I&amp;rsquo;m not gonna build the actual blockchain, I&amp;rsquo;m just dumping random ideas in the design of modern blockchains. Sadly this series is gonna be of contents like this for a while, at least till I have dumped all the ideas in my head, and I have got some time to do the actual coding part.&lt;/p&gt;
 &lt;p&gt;Another issue of this series, is that so far it&amp;rsquo;s just full of ideas and no concrete examples. This can be changed easily, in this article we will have real examples to play with. But first let&amp;rsquo;s get to the question: what is a blockchain?&lt;/p&gt;
 &lt;p&gt;One obvious way to answer that, is whatever is published by the blockchain authors can be consider a blockchain. You can treat the Bitcoin binary released by Bitcoin developers as the Bitcoin blockchain, you can also think the CKB releases as the CKB blockchain. But is this the real answer? Let&amp;rsquo;s think deeper: what is the part that uniquely defines a blockchain? Foundamentally, what is the part that uniquely defines one blockchain, such as CKB, from other blockchains, such as Bitcoin, or Ethereum.&lt;/p&gt;
 &lt;p&gt;Personally, I feel the answer here, is the consensus protocol, in other words, the logic used to verify a block. If this part is changed, CKB will not be CKB anymore, Bitcoin will also not be Bitcoin. At the very core part, it really is the block accepting code, that truly defines a blockchain.&lt;/p&gt;
@@ -857,15 +866,17 @@ Boxer STDOUT: 0000TIPH0000000000000000
 &lt;h1 id=&#34;recap&#34;&gt;Recap&lt;/h1&gt;
 &lt;p&gt;I do believe we should go back to the basis: a blockchain should only be the core blockchain logic. Right now there are just too many things that will hinder your eyes, such as building a syncing protocol, building a transaction pool, tuning a multi-threaded infrastructure. The result of all of those, is that a developer might only be able to spend a tiny fraction of the time on the core logic of the blockchain, which IMHO, is not the best way to build a blockchain. We deserve something much better, I yearn for a world where a blockchain developer can focus the entire efforts on making sure the blockchain logic is flawless, instead of wasting efforts on surrounding components that are only essential, but not unique to the developer&amp;rsquo;s own innovated blockchain.&lt;/p&gt;
 </description>
-    </item>
-    
-    <item>
-      <title>Introduction to CKB Script Programming 8: Performant WASM</title>
-      <link>https://xuejie.space/2020_03_03_introduction_to_ckb_script_programming_performant_wasm/</link>
-      <pubDate>Mon, 02 Mar 2020 00:00:00 +0000</pubDate>
+      </item>
       
-      <guid>https://xuejie.space/2020_03_03_introduction_to_ckb_script_programming_performant_wasm/</guid>
-      <description>&lt;p&gt;In an &lt;a href=&#34;../2019_10_09_introduction_to_ckb_script_programming_wasm_on_ckb/&#34;&gt;earlier post&lt;/a&gt;, I&amp;rsquo;ve shown you that you can have WASM programming running on CKB, with a little caveat that the WASM programs might not be so performant. I also mentioned that there is a potential solution that could solve the problem. And now it&amp;rsquo;s the day! We now have a new &lt;a href=&#34;https://github.com/xxuejie/wavm-aot-generator&#34;&gt;project&lt;/a&gt; that could be used to generate performant WASM programs. Let&amp;rsquo;s see how it works in this post.&lt;/p&gt;
+    
+      
+      <item>
+        <title>Introduction to CKB Script Programming 8: Performant WASM</title>
+        <link>https://xuejie.space/2020_03_03_introduction_to_ckb_script_programming_performant_wasm/</link>
+        <pubDate>Mon, 02 Mar 2020 00:00:00 +0000</pubDate>
+        
+        <guid>https://xuejie.space/2020_03_03_introduction_to_ckb_script_programming_performant_wasm/</guid>
+        <description>&lt;p&gt;In an &lt;a href=&#34;../2019_10_09_introduction_to_ckb_script_programming_wasm_on_ckb/&#34;&gt;earlier post&lt;/a&gt;, I&amp;rsquo;ve shown you that you can have WASM programming running on CKB, with a little caveat that the WASM programs might not be so performant. I also mentioned that there is a potential solution that could solve the problem. And now it&amp;rsquo;s the day! We now have a new &lt;a href=&#34;https://github.com/xxuejie/wavm-aot-generator&#34;&gt;project&lt;/a&gt; that could be used to generate performant WASM programs. Let&amp;rsquo;s see how it works in this post.&lt;/p&gt;
 &lt;h1 id=&#34;background&#34;&gt;Background&lt;/h1&gt;
 &lt;p&gt;(If you are impatient, you can skip this section and jump directly to Examples)&lt;/p&gt;
 &lt;p&gt;In the previous post, we are translating the WebAssembly programs back to C code, then compile it from C code to RISC-V again. But this has many drawbacks:&lt;/p&gt;
@@ -1402,15 +1413,17 @@ Transfer cycles: 17728, running cycles: 2532
 &lt;h1 id=&#34;recap&#34;&gt;Recap&lt;/h1&gt;
 &lt;p&gt;Here&amp;rsquo;s one suggestion: if someone tells you his/her blockchain uses WebAssembly, do yourself a favor, and ask what specific spec his/her WebAssembly engine uses, and how he/she plan to tackle the problem when more features are added to the WebAssembly specification. WebAssembly is an evergrowing specification due to its Web roots, picking one specification and freeze there is never a good strategy for employing WebAssembly in a stack. There&amp;rsquo;s nothing wrong relying on WebAssembly in the blockchain world, but it matters if WebAssembly is used in the correct way. To me, CKB is one example that WebAssembly is used in the correct way with future issues considered. I do believe you will thank yourself years later, if you take the extra effort ensuring your choice of blockchain deploys WebAssembly the correct way.&lt;/p&gt;
 </description>
-    </item>
-    
-    <item>
-      <title>Introduction to CKB Script Programming 7: Advanced Duktape Examples</title>
-      <link>https://xuejie.space/2020_02_21_introduction_to_ckb_script_programming_advanced_duktape_examples/</link>
-      <pubDate>Fri, 21 Feb 2020 00:00:00 +0000</pubDate>
+      </item>
       
-      <guid>https://xuejie.space/2020_02_21_introduction_to_ckb_script_programming_advanced_duktape_examples/</guid>
-      <description>&lt;p&gt;I&amp;rsquo;ve introduced duktape before, shown how you can run JavaScript code on Nervos CKB. But up to this point, the code I&amp;rsquo;ve shown is all single piece of code with very simple logic. What if we need to parse CKB data structures? What if I need external libraries in my script? In this post we will create a duktape-powered CKB script with the following requirements:&lt;/p&gt;
+    
+      
+      <item>
+        <title>Introduction to CKB Script Programming 7: Advanced Duktape Examples</title>
+        <link>https://xuejie.space/2020_02_21_introduction_to_ckb_script_programming_advanced_duktape_examples/</link>
+        <pubDate>Fri, 21 Feb 2020 00:00:00 +0000</pubDate>
+        
+        <guid>https://xuejie.space/2020_02_21_introduction_to_ckb_script_programming_advanced_duktape_examples/</guid>
+        <description>&lt;p&gt;I&amp;rsquo;ve introduced duktape before, shown how you can run JavaScript code on Nervos CKB. But up to this point, the code I&amp;rsquo;ve shown is all single piece of code with very simple logic. What if we need to parse CKB data structures? What if I need external libraries in my script? In this post we will create a duktape-powered CKB script with the following requirements:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;External library dependency&lt;/li&gt;
 &lt;li&gt;Serialization/Deserialization of CKB data structures&lt;/li&gt;
@@ -2655,15 +2668,17 @@ Dry run failure result: {
 &lt;/ul&gt;
 &lt;p&gt;While I might still add more posts to this series if I noticed interesting stuff to write, I&amp;rsquo;m sure the existing 7 posts in this series, together with &lt;a href=&#34;https://justjjy.com/Build-CKB-contract-with-Rust-part-1&#34;&gt;many&lt;/a&gt; &lt;a href=&#34;https://justjjy.com/CKB-contract-in-Rust-part-2-Rewrite-contract-with-ckb&#34;&gt;other&lt;/a&gt; &lt;a href=&#34;https://docs.nervos.org/dev-guide/debugging-ckb-script.html&#34;&gt;awesome&lt;/a&gt; &lt;a href=&#34;https://mp.weixin.qq.com/s/9cP_Qik-AsdpiqL-q0ac4w&#34;&gt;posts&lt;/a&gt; by my colleagues, have well prepared you to build awesome things on CKB. We are all prepared to amazed by the beautiful things you build on CKB :)&lt;/p&gt;
 </description>
-    </item>
-    
-    <item>
-      <title>Let&#39;s Build a Minimal Blockchain 2: Ultimate Upgradability</title>
-      <link>https://xuejie.space/2020_02_08_lets_build_a_minimal_blockchain_ultimate_upgradability/</link>
-      <pubDate>Sat, 08 Feb 2020 00:00:00 +0000</pubDate>
+      </item>
       
-      <guid>https://xuejie.space/2020_02_08_lets_build_a_minimal_blockchain_ultimate_upgradability/</guid>
-      <description>&lt;p&gt;&lt;a href=&#34;../2019_10_21_lets_build_a_minimal_blockchain_dawn&#34;&gt;Last time&lt;/a&gt; I mentioned the very core of a blockchain: the block verification logic. This time, we will look at the bigger problem: everyone seems to be providing upgradable block verification logic, no matter it&amp;rsquo;s called &lt;code&gt;runtime&lt;/code&gt;, &lt;code&gt;module&lt;/code&gt; or something else. But there&amp;rsquo;s more to just block verification, how can we ensure the ultimate upgradability of a blockchain?&lt;/p&gt;
+    
+      
+      <item>
+        <title>Let&#39;s Build a Minimal Blockchain 2: Ultimate Upgradability</title>
+        <link>https://xuejie.space/2020_02_08_lets_build_a_minimal_blockchain_ultimate_upgradability/</link>
+        <pubDate>Sat, 08 Feb 2020 00:00:00 +0000</pubDate>
+        
+        <guid>https://xuejie.space/2020_02_08_lets_build_a_minimal_blockchain_ultimate_upgradability/</guid>
+        <description>&lt;p&gt;&lt;a href=&#34;../2019_10_21_lets_build_a_minimal_blockchain_dawn&#34;&gt;Last time&lt;/a&gt; I mentioned the very core of a blockchain: the block verification logic. This time, we will look at the bigger problem: everyone seems to be providing upgradable block verification logic, no matter it&amp;rsquo;s called &lt;code&gt;runtime&lt;/code&gt;, &lt;code&gt;module&lt;/code&gt; or something else. But there&amp;rsquo;s more to just block verification, how can we ensure the ultimate upgradability of a blockchain?&lt;/p&gt;
 &lt;h1 id=&#34;network-stack&#34;&gt;Network Stack&lt;/h1&gt;
 &lt;p&gt;The network stack in a blockchain is one component that typically receives the least amount of changes after launch. It is usually left there unchanged, following &amp;ldquo;if it ain&amp;rsquo;t broke, don&amp;rsquo;t fix it&amp;rdquo; principle. Some of the reason might be compatibility needs, other reasons might also include security, etc. And when there is a change needed, you might encounter release notes &lt;a href=&#34;https://bitcoin.org/en/alert/2018-09-21-required-upgrade&#34;&gt;like following&lt;/a&gt;:&lt;/p&gt;
 &lt;blockquote&gt;
@@ -2712,15 +2727,17 @@ Dry run failure result: {
 &lt;p&gt;And it&amp;rsquo;s actually not about forks, it&amp;rsquo;s just about minimizing human interventions. If I&amp;rsquo;m just a merchant using Bitcoin to accept payments, why should I care about forks? As long as bitcoin continuously works for me, I am not worried about how many forks it performs underneath. Right now people worries about forks since forks require them to upgrade their software at a certain time frame, if a blockchain supports transparent, seamless upgrades, I wonder if forks will still be so hard to perform.&lt;/p&gt;
 &lt;p&gt;Some might call this imaginary features, but we are in a very early phase of the field, and we are seeing people throw the old blockchains and start from new all the time. Who knows the stack we have today will work tomorrow? Personally I believe that is a future that is worth to explore more.&lt;/p&gt;
 </description>
-    </item>
-    
-    <item>
-      <title>Introduction to CKB Script Programming 6: Type ID</title>
-      <link>https://xuejie.space/2020_02_03_introduction_to_ckb_script_programming_type_id/</link>
-      <pubDate>Mon, 03 Feb 2020 00:00:00 +0000</pubDate>
+      </item>
       
-      <guid>https://xuejie.space/2020_02_03_introduction_to_ckb_script_programming_type_id/</guid>
-      <description>&lt;p&gt;You might noticed there&amp;rsquo;s a &lt;code&gt;hash_type&lt;/code&gt; field in CKB&amp;rsquo;s Script structure. For simplicity, we&amp;rsquo;ve been ignoring that till now. This post will provide an introduction to the &lt;code&gt;hash_type&lt;/code&gt; field, and the unique capability it can bring.&lt;/p&gt;
+    
+      
+      <item>
+        <title>Introduction to CKB Script Programming 6: Type ID</title>
+        <link>https://xuejie.space/2020_02_03_introduction_to_ckb_script_programming_type_id/</link>
+        <pubDate>Mon, 03 Feb 2020 00:00:00 +0000</pubDate>
+        
+        <guid>https://xuejie.space/2020_02_03_introduction_to_ckb_script_programming_type_id/</guid>
+        <description>&lt;p&gt;You might noticed there&amp;rsquo;s a &lt;code&gt;hash_type&lt;/code&gt; field in CKB&amp;rsquo;s Script structure. For simplicity, we&amp;rsquo;ve been ignoring that till now. This post will provide an introduction to the &lt;code&gt;hash_type&lt;/code&gt; field, and the unique capability it can bring.&lt;/p&gt;
 &lt;h1 id=&#34;problem&#34;&gt;Problem&lt;/h1&gt;
 &lt;p&gt;In the blockchain space, there&amp;rsquo;s a pair of issues that everyone has to pick sides:&lt;/p&gt;
 &lt;h3 id=&#34;upgradability&#34;&gt;Upgradability&lt;/h3&gt;
@@ -2879,15 +2896,17 @@ b. If the user tries to duplicate type script args as the first transaction inpu
 &lt;h1 id=&#34;conclusion&#34;&gt;Conclusion&lt;/h1&gt;
 &lt;p&gt;So that&amp;rsquo;s all I know about type ID at the moment :) It certainly has its drawbacks, but we do believe it can be proved very useful for certain users. For other users, this will be completely optional, and you are perfectly ignoring this feature at all. It&amp;rsquo;s my hope that this new feature rarely seen in other blockchains, can provide a starting point to boost more possibilities.&lt;/p&gt;
 </description>
-    </item>
-    
-    <item>
-      <title>Let&#39;s Build a Minimal Blockchain 1: Dawn</title>
-      <link>https://xuejie.space/2019_10_21_lets_build_a_minimal_blockchain_dawn/</link>
-      <pubDate>Mon, 21 Oct 2019 00:00:00 +0000</pubDate>
+      </item>
       
-      <guid>https://xuejie.space/2019_10_21_lets_build_a_minimal_blockchain_dawn/</guid>
-      <description>&lt;p&gt;This will be a different series from &lt;code&gt;Introduction to CKB Script Programming&lt;/code&gt;, so if you are more keen on CKB scripting, feel free to skip this one. But if you are interested in blockchain in general, this could also be an interesting one :)&lt;/p&gt;
+    
+      
+      <item>
+        <title>Let&#39;s Build a Minimal Blockchain 1: Dawn</title>
+        <link>https://xuejie.space/2019_10_21_lets_build_a_minimal_blockchain_dawn/</link>
+        <pubDate>Mon, 21 Oct 2019 00:00:00 +0000</pubDate>
+        
+        <guid>https://xuejie.space/2019_10_21_lets_build_a_minimal_blockchain_dawn/</guid>
+        <description>&lt;p&gt;This will be a different series from &lt;code&gt;Introduction to CKB Script Programming&lt;/code&gt;, so if you are more keen on CKB scripting, feel free to skip this one. But if you are interested in blockchain in general, this could also be an interesting one :)&lt;/p&gt;
 &lt;p&gt;So it all started from an inception: if we look at current generation of blockchains, they are all rather complicated. Bitcoin is quite complex, Ethereum is even more so. And while CKB is (arguably) simpler than Ethereum, it&amp;rsquo;s still way more complicated than Bitcoin(but in a good way!). Coming from a &lt;a href=&#34;https://www.youtube.com/watch?v=tXVr2E1vfmk&#34;&gt;different background&lt;/a&gt;, I couldn&amp;rsquo;t help but wonder: is this level of complexity necessary? Is blockchain just so different, or are we deep down the mud of &lt;a href=&#34;https://www.youtube.com/watch?v=rI8tNMsozo0&#34;&gt;accidental complexity&lt;/a&gt;? Regardless, I&amp;rsquo;d like to find out the answers.&lt;/p&gt;
 &lt;p&gt;While simplicity is a debatable question, there&amp;rsquo;re other parts of modern blockchain space that more likely need work. One particular problem, is monolithic. It&amp;rsquo;s very rare that a blockchain let&amp;rsquo;s you swap one part of it for a different implementation. For example, while &lt;a href=&#34;https://www.mail-archive.com/bitcoin-development@lists.sourceforge.net/msg03189.html&#34;&gt;alternative networks&lt;/a&gt; might be possible, they are still in the minority, some already abandoned. Most other blockchains do not even have a second syncing protocol. While one could argue syncing protocol could more or less related to the security nature of one blockchain(which I still have my doubts), let&amp;rsquo;s look at one other component: why do I need to run a full transaction pool on my node? I&amp;rsquo;m neither an exchange or mining nodes on my own, can&amp;rsquo;t I just have a node that runs only necessary components, and rely on external services when I do need to send a transaction? Even when I have a transaction pool, it merely just relays transactions to other nodes, the transactions need to reach a mining pool before it can be mined, so why bother wasting resources on one&amp;rsquo;s own machine?&lt;/p&gt;
 &lt;p&gt;Looking further, there&amp;rsquo;s additional problems that don&amp;rsquo;t get good answers: blockchains will be updated, whether you call it soft-forks or hard-forks, the inevitable result is that you have software that behaves differently based on the exact blocks you are processing. And slowly, your same codebase will be scattered with logics that behave differently across time, and it will be a pain maintaining such a codebase and all the knowledge in your head. Can modern software engineering &lt;a href=&#34;https://vimeo.com/108441214&#34;&gt;help&lt;/a&gt; with this?&lt;/p&gt;
@@ -2908,15 +2927,17 @@ b. If the user tries to duplicate type script args as the first transaction inpu
 &lt;p&gt;Notice I never mentioned whether this is a PoW or PoS blockchain, cuz that question really doesn&amp;rsquo;t make sense: first, while the title says &lt;code&gt;Build a Minimal Blockchain&lt;/code&gt;, this really is not about building a blockchain, it&amp;rsquo;s about building a set of tools that can make blockchains built with it simpler, more flexible and easily maintainable; second, since a program running in virtual machine handles blockchain verification, you are not limited to one side of the world! This could easily support an alternative implementation of permissionless PoW blockchains such as Bitcoin, Ethereum, or CKB; this could also be adapted to layer 2 PoS blockchains running together with Nervos CKB. It really is up to the programs to say what the current blockchain is.&lt;/p&gt;
 &lt;p&gt;So that&amp;rsquo;s it for the introductory post, I really don&amp;rsquo;t know how this idea will go, I could be wrong and this could total fail, but one thing I could be sure, is that this surely will be an interesting voyage, I just hope this won&amp;rsquo;t take that long as the &lt;a href=&#34;https://voyager.jpl.nasa.gov/mission/status/&#34;&gt;voyager&lt;/a&gt; :P&lt;/p&gt;
 </description>
-    </item>
-    
-    <item>
-      <title>Introduction to CKB Script Programming 5: Debugging</title>
-      <link>https://xuejie.space/2019_10_18_introduction_to_ckb_script_programming_debugging/</link>
-      <pubDate>Fri, 18 Oct 2019 00:00:00 +0000</pubDate>
+      </item>
       
-      <guid>https://xuejie.space/2019_10_18_introduction_to_ckb_script_programming_debugging/</guid>
-      <description>&lt;p&gt;Due to the fact that CKB script works at a much lower level than other smart contracts, the debugging story for CKB, has been quite a mysterious one. In this post, we will show how one can debug CKB scripts. As you will find out, debugging a CKB script is not so different from debugging your everyday program.&lt;/p&gt;
+    
+      
+      <item>
+        <title>Introduction to CKB Script Programming 5: Debugging</title>
+        <link>https://xuejie.space/2019_10_18_introduction_to_ckb_script_programming_debugging/</link>
+        <pubDate>Fri, 18 Oct 2019 00:00:00 +0000</pubDate>
+        
+        <guid>https://xuejie.space/2019_10_18_introduction_to_ckb_script_programming_debugging/</guid>
+        <description>&lt;p&gt;Due to the fact that CKB script works at a much lower level than other smart contracts, the debugging story for CKB, has been quite a mysterious one. In this post, we will show how one can debug CKB scripts. As you will find out, debugging a CKB script is not so different from debugging your everyday program.&lt;/p&gt;
 &lt;p&gt;This post is written based on current CKB Lina mainnet version now.&lt;/p&gt;
 &lt;h1 id=&#34;debugging-c-programs-with-gdb&#34;&gt;Debugging C programs with GDB&lt;/h1&gt;
 &lt;p&gt;The first solution to CKB script debugging, works with compiled languages such as C, Rust, etc. Perhaps you are used to writing C programs, and GDB is your best friend. You are wondering if debugging C programs with GDB is possible, and the answer, of course, is: yes, you can definitely debug your CKB script written in C via GDB! Let me show you how.&lt;/p&gt;
@@ -3119,15 +3140,17 @@ duk&amp;gt; buf2hex(capacity_field)
 &lt;h1 id=&#34;conclusion&#34;&gt;Conclusion&lt;/h1&gt;
 &lt;p&gt;Now we&amp;rsquo;ve introduced 2 types of debugging experience in CKB, feel free to play with either one you like(or actually both of them). I can&amp;rsquo;t wait to see all the amazing applications you can build with CKB :)&lt;/p&gt;
 </description>
-    </item>
-    
-    <item>
-      <title>Introduction to CKB Script Programming 4: WebAssembly on CKB</title>
-      <link>https://xuejie.space/2019_10_09_introduction_to_ckb_script_programming_wasm_on_ckb/</link>
-      <pubDate>Wed, 09 Oct 2019 00:00:00 +0000</pubDate>
+      </item>
       
-      <guid>https://xuejie.space/2019_10_09_introduction_to_ckb_script_programming_wasm_on_ckb/</guid>
-      <description>&lt;p&gt;Since we made the choice to build CKB&amp;rsquo;s virtual machine with RISC-V, we&amp;rsquo;ve been getting a question almost everyday: why don&amp;rsquo;t you build your virtual machine on WebAssembly like everyone else does?&lt;/p&gt;
+    
+      
+      <item>
+        <title>Introduction to CKB Script Programming 4: WebAssembly on CKB</title>
+        <link>https://xuejie.space/2019_10_09_introduction_to_ckb_script_programming_wasm_on_ckb/</link>
+        <pubDate>Wed, 09 Oct 2019 00:00:00 +0000</pubDate>
+        
+        <guid>https://xuejie.space/2019_10_09_introduction_to_ckb_script_programming_wasm_on_ckb/</guid>
+        <description>&lt;p&gt;Since we made the choice to build CKB&amp;rsquo;s virtual machine with RISC-V, we&amp;rsquo;ve been getting a question almost everyday: why don&amp;rsquo;t you build your virtual machine on WebAssembly like everyone else does?&lt;/p&gt;
 &lt;p&gt;There&amp;rsquo;re many reasons behind this choice, making it a perfect choice for another article or even a conference talk. But fundamentally there lies one important reason: building software is all about finding the right abstraction, and we believe RISC-V is a better abstraction than WebAssembly for public permissionless blockchain.&lt;/p&gt;
 &lt;p&gt;While WebAssembly is already a huge advancement over higher level programming langauges as well as the first generation blockchain virtual machines, RISC-V works at a much lower level than WebAssembly, making it a more suitable choice for public blockchains which are designed to run for decades to come.&lt;/p&gt;
 &lt;p&gt;But that still leaves one question unanswered: a significant portion of the blockchain industry is betting on WebAssembly, contributing an (arguably) better ecosystem building on WebAssembly powered dapps. How can CKB compete with that? As mentioned above, RISC-V is actually a lower level of abstraction than WebAssembly, we can port existing WebAssembly programs, and run them on CKB VM directly. This way, we can enjoy the flexibility and stability provided by RISC-V, while also embracing the WebAssembly ecosystem.&lt;/p&gt;
@@ -3300,15 +3323,17 @@ $ cat secp.wat | grep &amp;quot;(import&amp;quot;
 &lt;p&gt;There is already &lt;a href=&#34;https://github.com/wasmerio/wasmer/tree/master/lib/llvm-backend&#34;&gt;progress&lt;/a&gt; being done which translates a WebAssembly program via LLVM into native code. The performance obtained here, is really good. Since LLVM 9 &lt;a href=&#34;https://riscv.org/2019/09/llvm-9-releases-with-official-risc-v-target-support-asm-goto-clang-9-and-more-vincy-davis-packt-pub/&#34;&gt;officially supports&lt;/a&gt; RISC-V now, it&amp;rsquo;s perfectly possible to change the code so LLVM generates RISC-V assembly instead of x86_64 assembly. This way we can translate WebAssembly program via LLVM directly into a RISC-V program, enjoying all the advanced optimizations LLVM can performn on our code.&lt;/p&gt;
 &lt;p&gt;As a result, our current solution documented in this post shows this path is totally possible while achieving good enough performance for many existing cases(e.g., many type scripts can be written in Rust for safety, while the performance is not a big problem), this new LLVM solution can provide far better performance for the same workflow in the future. It&amp;rsquo;s just a matter of time for us to find the time to work on this.&lt;/p&gt;
 </description>
-    </item>
-    
-    <item>
-      <title>Introduction to CKB Script Programming 3: UDT</title>
-      <link>https://xuejie.space/2019_09_06_introduction_to_ckb_script_programming_udt/</link>
-      <pubDate>Fri, 06 Sep 2019 00:00:00 +0000</pubDate>
+      </item>
       
-      <guid>https://xuejie.space/2019_09_06_introduction_to_ckb_script_programming_udt/</guid>
-      <description>&lt;p&gt;CKB&amp;rsquo;s cell model and VM enables many new use cases. However that doesn&amp;rsquo;t mean we need to ditch existing ones. One common use in existing blockchains, is to issue new tokens with special purpose/meaning from the token issuer. In Ethereum, we call those ERC20 tokens, let&amp;rsquo;s see how we can build a similar concept in CKB. To distinguish from ERC20, we call the tokens issued in CKB &lt;code&gt;user defined token&lt;/code&gt;, or UDT for short.&lt;/p&gt;
+    
+      
+      <item>
+        <title>Introduction to CKB Script Programming 3: UDT</title>
+        <link>https://xuejie.space/2019_09_06_introduction_to_ckb_script_programming_udt/</link>
+        <pubDate>Fri, 06 Sep 2019 00:00:00 +0000</pubDate>
+        
+        <guid>https://xuejie.space/2019_09_06_introduction_to_ckb_script_programming_udt/</guid>
+        <description>&lt;p&gt;CKB&amp;rsquo;s cell model and VM enables many new use cases. However that doesn&amp;rsquo;t mean we need to ditch existing ones. One common use in existing blockchains, is to issue new tokens with special purpose/meaning from the token issuer. In Ethereum, we call those ERC20 tokens, let&amp;rsquo;s see how we can build a similar concept in CKB. To distinguish from ERC20, we call the tokens issued in CKB &lt;code&gt;user defined token&lt;/code&gt;, or UDT for short.&lt;/p&gt;
 &lt;p&gt;This post is written based on current CKB Lina mainnet version now.&lt;/p&gt;
 &lt;h1 id=&#34;data-model&#34;&gt;Data Model&lt;/h1&gt;
 &lt;p&gt;While Ethereum has a unique storage space for each contract account, CKB spreads data among multiple cells. A cell&amp;rsquo;s lock &amp;amp; type script then tells which account the cell belongs to, as well as how you can interact with the cell. The consequence of this, is that unlike ERC20 which stores all token users&amp;rsquo; balances in the ERC20 contract&amp;rsquo;s storage space, in CKB we will need a new design to store the balances of UDT users.&lt;/p&gt;
@@ -3555,15 +3580,17 @@ pry(main)&amp;gt; api.send_transaction(signed_tx)
 &lt;/ul&gt;
 &lt;p&gt;Notice those are just some examples, the actual ways of using CKB script are limitless here. We are more than happy to see cases where CKB dapp developers amaze us with interesting usage of CKB scripts.&lt;/p&gt;
 </description>
-    </item>
-    
-    <item>
-      <title>Introduction to CKB Script Programming 2: Script Basics</title>
-      <link>https://xuejie.space/2019_07_13_introduction_to_ckb_script_programming_script_basics/</link>
-      <pubDate>Sat, 13 Jul 2019 00:00:00 +0000</pubDate>
+      </item>
       
-      <guid>https://xuejie.space/2019_07_13_introduction_to_ckb_script_programming_script_basics/</guid>
-      <description>&lt;p&gt;Last post introduced current CKB&amp;rsquo;s validation model. This post will get more fun, since we will show how to deploy script codes to CKB for real. I&amp;rsquo;m hoping after this post, you should be able to explore the CKB world and work on new script codes as you wish.&lt;/p&gt;
+    
+      
+      <item>
+        <title>Introduction to CKB Script Programming 2: Script Basics</title>
+        <link>https://xuejie.space/2019_07_13_introduction_to_ckb_script_programming_script_basics/</link>
+        <pubDate>Sat, 13 Jul 2019 00:00:00 +0000</pubDate>
+        
+        <guid>https://xuejie.space/2019_07_13_introduction_to_ckb_script_programming_script_basics/</guid>
+        <description>&lt;p&gt;Last post introduced current CKB&amp;rsquo;s validation model. This post will get more fun, since we will show how to deploy script codes to CKB for real. I&amp;rsquo;m hoping after this post, you should be able to explore the CKB world and work on new script codes as you wish.&lt;/p&gt;
 &lt;p&gt;This post is written based on current CKB Lina mainnet version now.&lt;/p&gt;
 &lt;p&gt;A warning here: this will be a long post, since I want to fill in enough for the more interesting topic next week. So you don&amp;rsquo;t have to finish it at once if you don&amp;rsquo;t have enough time. I&amp;rsquo;ve tried to split it into individual sections, so you can try each one at a time.&lt;/p&gt;
 &lt;h1 id=&#34;wording&#34;&gt;Wording&lt;/h1&gt;
@@ -3737,15 +3764,17 @@ pry(main)&amp;gt; api.send_transaction(tx)
 &lt;h1 id=&#34;next&#34;&gt;Next&lt;/h1&gt;
 &lt;p&gt;I know this is a long post, I hope you have tried this and successfully deployed a script to CKB. In the next post, we will introduce an important topic: how to issue your own user defined tokens(UDT) on CKB. The best part of UDTs on CKB, is that each user can store their UDTs in their own cells, which is different from ERC20 tokens on Ethereum, where everyone&amp;rsquo;s token will have to live in the token issuer&amp;rsquo;s single address. All of this can be achieved by using type scripts alone. If you are interested please stay tuned :)&lt;/p&gt;
 </description>
-    </item>
-    
-    <item>
-      <title>Introduction to CKB Script Programming 1: Validation Model</title>
-      <link>https://xuejie.space/2019_07_05_introduction_to_ckb_script_programming_validation_model/</link>
-      <pubDate>Fri, 05 Jul 2019 00:00:00 +0000</pubDate>
+      </item>
       
-      <guid>https://xuejie.space/2019_07_05_introduction_to_ckb_script_programming_validation_model/</guid>
-      <description>&lt;p&gt;As of now, the cell validation model in CKB has been more or less stablized, hence I&amp;rsquo;m starting a series of article introducing CKB script programming here. My goal here is to fill in all the missing implementation details one need to write CKB scripts after reading the whitepaper, so you can start exploring this beautiful wonderland CKB presents.&lt;/p&gt;
+    
+      
+      <item>
+        <title>Introduction to CKB Script Programming 1: Validation Model</title>
+        <link>https://xuejie.space/2019_07_05_introduction_to_ckb_script_programming_validation_model/</link>
+        <pubDate>Fri, 05 Jul 2019 00:00:00 +0000</pubDate>
+        
+        <guid>https://xuejie.space/2019_07_05_introduction_to_ckb_script_programming_validation_model/</guid>
+        <description>&lt;p&gt;As of now, the cell validation model in CKB has been more or less stablized, hence I&amp;rsquo;m starting a series of article introducing CKB script programming here. My goal here is to fill in all the missing implementation details one need to write CKB scripts after reading the whitepaper, so you can start exploring this beautiful wonderland CKB presents.&lt;/p&gt;
 &lt;p&gt;You might noticed that I call the code running on CKB as &lt;code&gt;script&lt;/code&gt;, not &lt;code&gt;smart contract&lt;/code&gt;. This is because smart contract is quite a confusing term to me, and I want to use a different word here to indicate CKB&amp;rsquo;s unique programmability. A script in CKB&amp;rsquo;s sense need not be just a script we see in scripting languages such as Ruby, JS, it actually refers to the RISC-V format binary you run on CKB VM.&lt;/p&gt;
 &lt;p&gt;This first post here, is dedicated to the brand &lt;a href=&#34;https://github.com/nervosnetwork/ckb/pull/913&#34;&gt;new verification model&lt;/a&gt; introduced in CKB v0.14.0. It might sound boring but I promise you this is the last post without actual examples to play with :P&lt;/p&gt;
 &lt;p&gt;Note even though I believe CKB&amp;rsquo;s programming model is quite stable now, development is still happening so there might be changes. I will try my best to make sure this post is updated but if anything confuses you, this post is describing CKB&amp;rsquo;s Lina mainnet version now.&lt;/p&gt;
@@ -3817,22 +3846,10 @@ pry(main)&amp;gt; api.send_transaction(tx)
 &lt;h1 id=&#34;whats-next&#34;&gt;What&amp;rsquo;s Next&lt;/h1&gt;
 &lt;p&gt;Now that cell model is covered, we will look at how to actual write a CKB VM script in the next post. The default secp256k1 lock script will be examined to show the life of a CKB VM script.&lt;/p&gt;
 </description>
-    </item>
-    
-    <item>
-      <title>About</title>
-      <link>https://xuejie.space/about/</link>
-      <pubDate>Tue, 29 Jan 2019 00:00:00 +0000</pubDate>
+      </item>
       
-      <guid>https://xuejie.space/about/</guid>
-      <description>&lt;p&gt;I&amp;rsquo;m Xuejie Xiao, this is my new site for writing.&lt;/p&gt;
-&lt;p&gt;I&amp;rsquo;m currently a blockchain engineer at &lt;a href=&#34;https://www.cryptape.com/&#34;&gt;Cryptape&lt;/a&gt; working on &lt;a href=&#34;https://www.nervos.org/&#34;&gt;Nervos CKB&lt;/a&gt;. I&amp;rsquo;m the main developer on &lt;a href=&#34;https://github.com/nervosnetwork/ckb-vm&#34;&gt;CKB VM&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;Even though I&amp;rsquo;ve heard about Bitcoin for quite some time, I didn&amp;rsquo;t really have enough time to fully dive into the blockchain world till 2017. I&amp;rsquo;ve worked on wallets and mining pool, then found out my true interest lies in blockchain VM. I&amp;rsquo;ve been doing research on virtual machine technologies for blockchain for quite some time, and CKB VM is my latest contribution.&lt;/p&gt;
-&lt;p&gt;I also believe the power of simplicity. The only way to make reliable software for the future, should be designing software that are so simple that any bug is obvious. This world is already full of leaky abstraction, let&amp;rsquo;s try hard not to add another one.&lt;/p&gt;
-&lt;p&gt;Before that, I worked for &lt;a href=&#34;https://citrusbyte.com/&#34;&gt;Citrusbyte&lt;/a&gt; where we did software consulting services for large enterprise organizations and startups, such as Apple, AT&amp;amp;T, Cast &amp;amp; Crew, etc. I was also once a PhD candidate at &lt;a href=&#34;https://www.syracuse.edu/&#34;&gt;Syracuse University&lt;/a&gt; focusing on high performance computing and cloud computing. Some of my work back then could be found at &lt;a href=&#34;https://ieeexplore.ieee.org/document/7004222/&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;I also spent years working with latest web technologies, such as &lt;a href=&#34;https://webassembly.org/&#34;&gt;WebAssembly&lt;/a&gt; and &lt;a href=&#34;https://github.com/emscripten-core/emscripten&#34;&gt;emscripten&lt;/a&gt;. I created &lt;a href=&#34;https://github.com/xxuejie/webruby&#34;&gt;webruby&lt;/a&gt;, an introduction on webruby could be found at &lt;a href=&#34;http://rubykaigi.org/2013/talk/S07/&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
-</description>
-    </item>
+    
+      
     
   </channel>
 </rss>

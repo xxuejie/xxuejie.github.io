@@ -417,21 +417,14 @@
   
 
   <div class="entry-content">
-    
-
-<p>As shown earlier, plain JavaScript can be used to build CKB scripts. But if you have tried this route before, one problem you would notice, is that JavaScript based scripts tend to consume much more cycles than a native version. While this is less of an issue in experimenting, it is very real in production environment: more cycles can naturally be reflected in more transaction fees. It&rsquo;s obvious that the following solutions can be used to tackle this problem:</p>
-
+    <p>As shown earlier, plain JavaScript can be used to build CKB scripts. But if you have tried this route before, one problem you would notice, is that JavaScript based scripts tend to consume much more cycles than a native version. While this is less of an issue in experimenting, it is very real in production environment: more cycles can naturally be reflected in more transaction fees. It&rsquo;s obvious that the following solutions can be used to tackle this problem:</p>
 <ol>
 <li>Rewrite a JavaScript in a native compiled language, such as C or Rust;</li>
 <li>Use better algorithms that require less cycles;</li>
 </ol>
-
 <p>In this post, we would take a different path, and take a look at JavaScript scripts alone. Even though JavaScript can consume more cycles, it still allows fast iteraction, which might be critical in certain use cases. So the question I want to ask here is: if we decide to use JavaScript to build our CKB scripts, and we have already improved the algorithms and implementations to an optimal state, are there any other steps we can take to further optimize cycle reductions? Here we shall see some attempts at the problem.</p>
-
 <h1 id="script-to-use">Script To Use</h1>
-
 <p>We will build a simple script here that reads and prints current script args. To build the JavaScript script, we will first need the <a href="https://github.com/xxuejie/ckb-duktape-template">duktape template</a>:</p>
-
 <pre><code>$ export TOP=$(pwd)
 $ git clone https://github.com/xxuejie/ckb-duktape-template
 $ cd ckb-duktape-template
@@ -454,12 +447,8 @@ const args = script.getArgs().raw()
 CKB.debug(bytesToHex(args))
 EOF
 $ npm run build
-</code></pre>
-
-<p>Note this example also levearges the rebuilt <a href="https://github.com/xxuejie/moleculec-es">Molecule JavaScript plugin</a>. Compared to the previous one, it provides a better API, while at the same time saving huge code size and runtime cycles.</p>
-
+</code></pre><p>Note this example also levearges the rebuilt <a href="https://github.com/xxuejie/moleculec-es">Molecule JavaScript plugin</a>. Compared to the previous one, it provides a better API, while at the same time saving huge code size and runtime cycles.</p>
 <p>Let&rsquo;s get a baseline number first:</p>
-
 <pre><code>$ cd $TOP
 $ git clone --recursive https://github.com/xxuejie/ckb-duktape
 $ cd ckb-duktape
@@ -649,10 +638,7 @@ DEBUG:&lt;unknown&gt;: script group: Byte32(0xcf13fa84ff3a615dd496e9ad8647af0107
 Run result: Ok(0)
 Total cycles consumed: 20198757
 Transfer cycles: 67328, running cycles: 20131429
-</code></pre>
-
-<p>About 20 million cycles are needed for this simple script. As a comparison, we can also implement similar function in pure C:</p>
-
+</code></pre><p>About 20 million cycles are needed for this simple script. As a comparison, we can also implement similar function in pure C:</p>
 <pre><code>$ cd $TOP
 $ cat &lt;&lt; EOF &gt; c.c
 #include &quot;blockchain.h&quot;
@@ -715,18 +701,11 @@ DEBUG:&lt;unknown&gt;: script group: Byte32(0x9f637b251b36de8e6c8b48a1db2f2dcbb0
 Run result: Ok(0)
 Total cycles consumed: 5456
 Transfer cycles: 878, running cycles: 4578
-</code></pre>
-
-<p>As we shall see here, a similar C script takes only 4578 cycles, which is much less than the JavaScript scripts. Even though our JavaScript script might need consume so less cycles, we can still significantly reduce the cycle consumptions.</p>
-
+</code></pre><p>As we shall see here, a similar C script takes only 4578 cycles, which is much less than the JavaScript scripts. Even though our JavaScript script might need consume so less cycles, we can still significantly reduce the cycle consumptions.</p>
 <h1 id="step-1-skip-initialization">Step 1: Skip Initialization</h1>
-
 <p>Those who are familiar with dynamic languages, would realize that all dynamic language implementations will need an initialization phase to create and properly setup the VM, this could take significant work, costing a lot of cycles. Our first idea comes from this: what if we can save the already initialized state, and reuse that state in later VM executions? The whole state of a CKB VM instance, is 33 registers(32 general purpose registers + PC register) and the memory states. If we can dump those into a separate binary, and recreate the same VM state later, we won&rsquo;t need to do the whole initialization step again and again.</p>
-
 <p>ckb-standalone-debugger actually provides such a dump feature. It adds a new syscall to the VM instance created by the debugger(notice this syscall is useless in production, and will probably never make it into production). When the syscall gets executed, the debugger instance would serialize all VM states, including all registers and memories into a custom-built executable. Later if we instantiate a new VM instance with this generated executable, it will restore all VM states, and the VM will continue to run as if it just returns from the syscall. This way we can do the necessary initialization steps offline via the debugger, then only deploy the generated executable to CKB, all later executions on the executable, can skip the costly initialization part, hence saving a huge amount of cycles.</p>
-
 <p>I have already prepared a duktape <a href="https://github.com/xxuejie/ckb-duktape/blob/d6241938247b402ec56c7af218acfc9049ac753d/c/dump_load0.c">instance</a> which performs the setup, then execute the dump syscall, we can now give this a test:</p>
-
 <pre><code>$ cd $TOP
 $ RUST_LOG=debug ./runner.rb ckb-duktape/build/dump_load0 ckb-duktape-template/build/duktape.js dump0.bin
 Executing: ckb-standalone-debugger/bins/target/release/ckb-debugger --tx-file tx.json --script-group-type lock -i 0 -e input -d dump0.bin
@@ -741,14 +720,9 @@ DEBUG:&lt;unknown&gt;: script group: Byte32(0x51959c6288a1cfba0d7f7dc8c5a90cf9a8
 Run result: Ok(0)
 Total cycles consumed: 16249542
 Transfer cycles: 96998, running cycles: 16152544
-</code></pre>
-
-<p>The first command here executes the script as normals, but internally it <a href="https://github.com/xxuejie/ckb-duktape/blob/d6241938247b402ec56c7af218acfc9049ac753d/c/dump_load0.c#L14">calls</a> the dump syscall, resultling in a dumping of the VM state then into <code>dump0.bin</code> executable file. Later when we run CKB VM on <code>dump0.bin</code> directly, we can notice it performs the same action as the above duktape binary, but saves us close to 4 million cycles.</p>
-
+</code></pre><p>The first command here executes the script as normals, but internally it <a href="https://github.com/xxuejie/ckb-duktape/blob/d6241938247b402ec56c7af218acfc9049ac753d/c/dump_load0.c#L14">calls</a> the dump syscall, resultling in a dumping of the VM state then into <code>dump0.bin</code> executable file. Later when we run CKB VM on <code>dump0.bin</code> directly, we can notice it performs the same action as the above duktape binary, but saves us close to 4 million cycles.</p>
 <h1 id="step-2-bytecode-over-source">Step 2: Bytecode Over Source</h1>
-
 <p>Previously, we&rsquo;ve been running duktape on CKB VM directly against JavaScript source, this means at runtime, duktape would first need to parse the JavaScript source code, then execute it. The parsing time exists in every single invocation of the same JavaScript file, which could also be a huge waste of cycles. Luckily, duktape provides a <a href="https://github.com/svaarala/duktape/blob/master/doc/bytecode.rst">bytecode</a> format: we can parse the JavaScript source to duktape bytecode format, and only loads and runs the bytecode at runtime. Let&rsquo;s try this now:</p>
-
 <pre><code>$ cd $TOP
 $ ckb-duktape/build/dump_bytecode ckb-duktape-template/build/duktape.js script.bin
 $ RUST_LOG=debug ./runner.rb ckb-duktape/build/dump_load0 script.bin dump0.bin
@@ -764,25 +738,16 @@ DEBUG:&lt;unknown&gt;: script group: Byte32(0x51959c6288a1cfba0d7f7dc8c5a90cf9a8
 Run result: Ok(0)
 Total cycles consumed: 5289852
 Transfer cycles: 96998, running cycles: 5192854
-</code></pre>
-
-<p>The <a href="https://github.com/xxuejie/ckb-duktape/blob/d6241938247b402ec56c7af218acfc9049ac753d/c/dump_load0.c#L26-L37">dump_load0</a> binary actually supports both duktape bytecode and JavaScript source. It does a runtime check to see if the loaded data here is duktape bytecode or JavaScript source. Here we can see that by combining the previous 2 solutions, we can already shrink the cycle consumption from ~ 20 million to ~ 5 million.</p>
-
+</code></pre><p>The <a href="https://github.com/xxuejie/ckb-duktape/blob/d6241938247b402ec56c7af218acfc9049ac753d/c/dump_load0.c#L26-L37">dump_load0</a> binary actually supports both duktape bytecode and JavaScript source. It does a runtime check to see if the loaded data here is duktape bytecode or JavaScript source. Here we can see that by combining the previous 2 solutions, we can already shrink the cycle consumption from ~ 20 million to ~ 5 million.</p>
 <p>Note that duktape bytecode does come with tradeoffs. It never ensures version compatibility, so different versions of duktape, or even different builds of the same duktape version could use different bytecode format. In a normal environment, this could be a problem, but since here we also ship duktape binary as a smart contract, we can lock the version of duktape binary we are using, ensuring the bytecode always works. Another drawback, and a big surprise to many, is that the bytecode file is in fact usually larger than the original JavaScript source file:</p>
-
 <pre><code>$ cd $TOP
 $ ls -l script.bin
 -rw-rw-r-- 1 ubuntu 7810 Mar 19 05:28 script.bin
 $ ls -l ckb-duktape-template/build/duktape.js
 -rw-rw-r-- 1 ubuntu 3551 Mar 19 04:46 ckb-duktape-template/build/duktape.js
-</code></pre>
-
-<p>In our example, while the original minimize JavaScript file is about 3.5K, the generated bytecode file is closed to 8K. This brings a tradeoff depending on your use case: do you want smaller file, or less cycle consumption?</p>
-
+</code></pre><p>In our example, while the original minimize JavaScript file is about 3.5K, the generated bytecode file is closed to 8K. This brings a tradeoff depending on your use case: do you want smaller file, or less cycle consumption?</p>
 <h1 id="step-3-skip-cleanup-work">Step 3: Skip Cleanup Work</h1>
-
 <p>CKB VM works slightly different from other environment: it provides you with a fixed 4MB memory segment, and the whole segment will just be thrown away once the code finishes execution. This brings an interesting insight: in a normal environment, you definitely want to cleanup the resource you use before exiting, but in CKB VM environment, this is not necessary, since the whole memory segment will be destroyed all together. As long as you signal the correct response, cleanup steps are actually just a waste of cycles in CKB VM. Given this consideration, I&rsquo;ve provided <a href="https://github.com/xxuejie/ckb-duktape/blob/d6241938247b402ec56c7af218acfc9049ac753d/c/dump_load0_nocleanup.c">dump_load0_nocleanup</a> variation, which <a href="https://github.com/xxuejie/ckb-duktape/blob/d6241938247b402ec56c7af218acfc9049ac753d/c/dump_load0_nocleanup.c#L48-L49">does not perform</a> any cleanup work after running the script. Now it is the time to try this final version:</p>
-
 <pre><code>$ cd $TOP
 $ RUST_LOG=debug ./runner.rb ckb-duktape/build/dump_load0_nocleanup script.bin dump0.bin
 Executing: ckb-standalone-debugger/bins/target/release/ckb-debugger --tx-file tx.json --script-group-type lock -i 0 -e input -d dump0.bin
@@ -797,12 +762,8 @@ DEBUG:&lt;unknown&gt;: script group: Byte32(0x0e948e69dd75f2d6676048569073afe4ec
 Run result: Ok(0)
 Total cycles consumed: 3903352
 Transfer cycles: 96994, running cycles: 3806358
-</code></pre>
-
-<p>With all the solutions combined, we managed to reduce the cycle consumption of a JavaScript based CKB smart contract from 20 million to less than 4 million. This is still far from the C version, which takes less than 5000 cycles. But in many cases, a higher level language like JavaScript will provide superiority over plain old C, and the cycle consumption here might already be good enough.</p>
-
+</code></pre><p>With all the solutions combined, we managed to reduce the cycle consumption of a JavaScript based CKB smart contract from 20 million to less than 4 million. This is still far from the C version, which takes less than 5000 cycles. But in many cases, a higher level language like JavaScript will provide superiority over plain old C, and the cycle consumption here might already be good enough.</p>
 <h1 id="future">Future</h1>
-
 <p>The above are just 3 simple solutions you can levarage, there are very likely to be more way you can use to reduce cycles. One thing to remember, is that you don&rsquo;t have to cater for rules established in an everyday running program. As long as the script satisfies the verification needs on chain, you can employ any techniques to reduce the cycle consumption.</p>
 
   </div>
