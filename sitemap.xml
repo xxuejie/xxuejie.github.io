@@ -1,97 +1,59 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
-  
   <url>
     <loc>https://xuejie.space/2020_04_11_diviner_a_new_attempt_on_deterministic_testing/</loc>
     <lastmod>2020-04-11T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
+  </url><url>
     <loc>https://xuejie.space/2020_04_09_language_choices/</loc>
     <lastmod>2020-04-09T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
+  </url><url>
     <loc>https://xuejie.space/2020_03_20_what_do_we_mean_when_we_say_account_model/</loc>
     <lastmod>2020-03-20T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
+  </url><url>
     <loc>https://xuejie.space/2020_03_19_cycle_reduction_in_duktape/</loc>
     <lastmod>2020-03-19T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
+  </url><url>
     <loc>https://xuejie.space/2020_03_16_lets_build_a_minimal_blockchain_what_is_a_blockchain/</loc>
     <lastmod>2020-03-16T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
+  </url><url>
     <loc>https://xuejie.space/2020_03_03_introduction_to_ckb_script_programming_performant_wasm/</loc>
     <lastmod>2020-03-02T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
+  </url><url>
     <loc>https://xuejie.space/2020_02_21_introduction_to_ckb_script_programming_advanced_duktape_examples/</loc>
     <lastmod>2020-02-21T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
+  </url><url>
     <loc>https://xuejie.space/2020_02_08_lets_build_a_minimal_blockchain_ultimate_upgradability/</loc>
     <lastmod>2020-02-08T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
+  </url><url>
     <loc>https://xuejie.space/2020_02_03_introduction_to_ckb_script_programming_type_id/</loc>
     <lastmod>2020-02-03T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
+  </url><url>
     <loc>https://xuejie.space/2019_10_21_lets_build_a_minimal_blockchain_dawn/</loc>
     <lastmod>2019-10-21T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
+  </url><url>
     <loc>https://xuejie.space/2019_10_18_introduction_to_ckb_script_programming_debugging/</loc>
     <lastmod>2019-10-18T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
+  </url><url>
     <loc>https://xuejie.space/2019_10_09_introduction_to_ckb_script_programming_wasm_on_ckb/</loc>
     <lastmod>2019-10-09T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
+  </url><url>
     <loc>https://xuejie.space/2019_09_06_introduction_to_ckb_script_programming_udt/</loc>
     <lastmod>2019-09-06T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
+  </url><url>
     <loc>https://xuejie.space/2019_07_13_introduction_to_ckb_script_programming_script_basics/</loc>
     <lastmod>2019-07-13T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
+  </url><url>
     <loc>https://xuejie.space/2019_07_05_introduction_to_ckb_script_programming_validation_model/</loc>
     <lastmod>2019-07-05T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
+  </url><url>
     <loc>https://xuejie.space/about/</loc>
     <lastmod>2019-01-29T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
+  </url><url>
     <loc>https://xuejie.space/categories/</loc>
-  </url>
-  
-  <url>
+  </url><url>
     <loc>https://xuejie.space/</loc>
-  </url>
-  
-  <url>
+  </url><url>
     <loc>https://xuejie.space/tags/</loc>
   </url>
-  
 </urlset>
