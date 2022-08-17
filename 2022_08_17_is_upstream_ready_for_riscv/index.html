@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="MobileOptimized" content="320">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
+    
+
+    
+      <link href='https://fonts.googleapis.com/css?family=Open+Sans:400|Old+Standard+TT:400&display=swap' rel='stylesheet' type='text/css'>
+    
+
+    <link rel="icon" type="image/png" href="https://xuejie.space/favicon_16x16.png" sizes="16x16">
+    <link rel="icon" type="image/png" href="https://xuejie.space/favicon_32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="https://xuejie.space/favicon_128x128.png" sizes="128x128">
+
+    <title>
+      
+      
+         Is Upstream Ready for RISC-V? 
+      
+    </title>
+    <link rel="canonical" href="https://xuejie.space/2022_08_17_is_upstream_ready_for_riscv/">
+
+    <style>
+  * {
+    border:0;
+    font:inherit;
+    font-size:100%;
+    vertical-align:baseline;
+    margin:0;
+    padding:0;
+    color: black;
+    text-decoration-skip: ink;
+  }
+
+  body {
+    font-family:'Open Sans', 'Myriad Pro', Myriad, sans-serif;
+    font-size:17px;
+    line-height:160%;
+    color:#1d1313;
+    max-width:700px;
+    margin:auto;
+  }
+
+  p {
+    margin: 20px 0;
+  }
+
+  a img {
+    border:none;
+  }
+
+  img {
+    margin: 10px auto 10px auto;
+    max-width: 100%;
+    display: block;
+  }
+
+  .left-justify {
+    float: left;
+  }
+
+  .right-justify {
+    float:right;
+  }
+
+  pre, code {
+    font: 12px Consolas, "Liberation Mono", Menlo, Courier, monospace;
+    background-color: #f7f7f7;
+  }
+
+  code {
+    font-size: 12px;
+    padding: 4px;
+  }
+
+  pre {
+    margin-top: 0;
+    margin-bottom: 16px;
+    word-wrap: normal;
+    padding: 16px;
+    overflow: auto;
+    font-size: 85%;
+    line-height: 1.45;
+  }
+
+  pre>code {
+    padding: 0;
+    margin: 0;
+    font-size: 100%;
+    word-break: normal;
+    white-space: pre;
+    background: transparent;
+    border: 0;
+  }
+
+  pre code {
+    display: inline;
+    max-width: auto;
+    padding: 0;
+    margin: 0;
+    overflow: visible;
+    line-height: inherit;
+    word-wrap: normal;
+    background-color: transparent;
+    border: 0;
+  }
+
+  pre code::before,
+  pre code::after {
+    content: normal;
+  }
+
+  em,q,em,dfn {
+    font-style:italic;
+  }
+
+  .sans,html .gist .gist-file .gist-meta {
+    font-family:"Open Sans","Myriad Pro",Myriad,sans-serif;
+  }
+
+  .mono,pre,code,tt,p code,li code {
+    font-family:Menlo,Monaco,"Andale Mono","lucida console","Courier New",monospace;
+  }
+
+  .heading,.serif,h1,h2,h3 {
+    font-family:"Old Standard TT",serif;
+  }
+
+  strong {
+    font-weight:600;
+  }
+
+  q:before {
+    content:"\201C";
+  }
+
+  q:after {
+    content:"\201D";
+  }
+
+  del,s {
+    text-decoration:line-through;
+  }
+
+  blockquote {
+    font-family:"Old Standard TT",serif;
+    text-align:center;
+    padding:50px;
+  }
+
+  blockquote p {
+    display:inline-block;
+    font-style:italic;
+  }
+
+  blockquote:before,blockquote:after {
+    font-family:"Old Standard TT",serif;
+    content:'\201C';
+    font-size:35px;
+    color:#403c3b;
+  }
+
+  blockquote:after {
+    content:'\201D';
+  }
+
+  hr {
+    width:40%;
+    height: 1px;
+    background:#403c3b;
+    margin: 25px auto;
+  }
+
+  h1 {
+    font-size:35px;
+  }
+
+  h2 {
+    font-size:28px;
+  }
+
+  h3 {
+    font-size:22px;
+    margin-top:18px;
+  }
+
+  h1 a,h2 a,h3 a {
+    text-decoration:none;
+  }
+
+  h1,h2 {
+    margin-top:28px;
+  }
+
+  #sub-header, time {
+    color:#403c3b;
+    font-size:13px;
+  }
+
+  #sub-header {
+    margin: 0 4px;
+  }
+
+  #nav h1 a {
+    font-size:35px;
+    color:#1d1313;
+    line-height:120%;
+  }
+
+  .posts_listing a,#nav a {
+    text-decoration: none;
+  }
+
+  li {
+    margin-left: 20px;
+  }
+
+  ul li {
+    margin-left: 5px;
+  }
+
+  ul li {
+    list-style-type: none;
+  }
+  ul li:before {
+    content:"\00BB \0020";
+  }
+
+  #nav ul li:before, .posts_listing li:before {
+    content:'';
+    margin-right:0;
+  }
+
+  #content {
+    text-align:left;
+    width:100%;
+    font-size:15px;
+    padding:60px 0 80px;
+  }
+
+  #content h1,#content h2 {
+    margin-bottom:5px;
+  }
+
+  #content h2 {
+    font-size:25px;
+  }
+
+  #content .entry-content {
+    margin-top:15px;
+  }
+
+  #content time {
+    margin-left:3px;
+  }
+
+  #content h1 {
+    font-size:30px;
+  }
+
+  .highlight {
+    margin: 10px 0;
+  }
+
+  .posts_listing {
+    margin:0 0 50px;
+  }
+
+  .posts_listing li {
+    margin:0 0 25px 15px;
+  }
+
+  .posts_listing li a:hover,#nav a:hover {
+    text-decoration: underline;
+  }
+
+  #nav {
+    text-align:center;
+    position:static;
+    margin-top:60px;
+  }
+
+  #nav ul {
+    display: table;
+    margin: 8px auto 0 auto;
+  }
+
+  #nav li {
+    list-style-type:none;
+    display:table-cell;
+    font-size:15px;
+    padding: 0 20px;
+  }
+
+  #links {
+    margin: 50px 0 0 0;
+  }
+
+  #links :nth-child(2) {
+    float:right;
+  }
+
+  #not-found {
+    text-align: center;
+  }
+
+  #not-found a {
+    font-family:"Old Standard TT",serif;
+    font-size: 200px;
+    text-decoration: none;
+    display: inline-block;
+    padding-top: 225px;
+  }
+
+  @media (max-width: 750px) {
+    body {
+      padding-left:20px;
+      padding-right:20px;
+    }
+
+    #nav h1 a {
+      font-size:28px;
+    }
+
+    #nav li {
+      font-size:13px;
+      padding: 0 15px;
+    }
+
+    #content {
+      margin-top:0;
+      padding-top:50px;
+      font-size:14px;
+    }
+
+    #content h1 {
+      font-size:25px;
+    }
+
+    #content h2 {
+      font-size:22px;
+    }
+
+    .posts_listing li div {
+      font-size:12px;
+    }
+  }
+
+  @media (max-width: 400px) {
+    body {
+      padding-left:20px;
+      padding-right:20px;
+    }
+
+    #nav h1 a {
+      font-size:22px;
+    }
+
+    #nav li {
+      font-size:12px;
+      padding: 0 10px;
+    }
+
+    #content {
+      margin-top:0;
+      padding-top:20px;
+      font-size:12px;
+    }
+
+    #content h1 {
+      font-size:20px;
+    }
+
+    #content h2 {
+      font-size:18px;
+    }
+
+    .posts_listing li div{
+      font-size:12px;
+    }
+  }
+</style>
+
+
+    
+  </head>
+
+  <body>
+    <section id=nav>
+      <h1><a href="https://xuejie.space/">Less is More</a></h1>
+      <ul>
+        
+          <li><a href="https://xuejie.space/about">About</a></li>
+        
+          <li><a href="https://github.com/xxuejie">GitHub</a></li>
+        
+          <li><a href="https://xuejie.space/index.xml">RSS</a></li>
+        
+          <li><a href="https://twitter.com/xxuejie">Twitter</a></li>
+        
+      </ul>
+    </section>
+
+
+<section id=content>
+  <h1> Is Upstream Ready for RISC-V? </h1>
+
+  
+    <div id=sub-header>
+      August 2022 · 11 minute read
+    </div>
+  
+
+  <div class="entry-content">
+    <p>When RISC-V was first introduced to the Nervos ecosystem, a <a href="https://hub.docker.com/r/nervos/ckb-riscv-gnu-toolchain">patched</a> toolchain had to be used since upstream gcc/clang does not provide enough support for RISC-V. However, one argument supporting RISC-V in a blockchain, was exactly to embrace a wide open source community, where Nervos can both enjoy the contributions by the whole community, as well as contribute back code built when working on the Nervos ecosystem.</p>
+<p>Fast forward a few years, the question remains: as of August 2022, is upstream gcc, clang, etc. ready to support RISC-V development? It&rsquo;s now time to find out.</p>
+<p>For simplicity, all the code within this post is tested on a x86_64 machine running Ubuntu 22.04 (Jammy Jellyfish).</p>
+<p>To ensure this post is as ubiquitous as possible, RISC-V programs for both Linux environments, and CKB environments will be covered. To verify both environments, 2 different runners will be needed:</p>
+<pre><code>$ sudo apt-get install qemu-user-static
+$ # install Rust following notes at https://rustup.rs/
+$ cargo install --example ckb-vm-runner --git https://github.com/nervosnetwork/ckb-vm --features asm ckb-vm
+</code></pre><h1 id="gcc">GCC</h1>
+<p>Latest ubuntu already provides gcc package for cross-compiling RISC-V programs:</p>
+<pre><code>$ sudo apt-get install gcc-12-riscv64-linux-gnu
+</code></pre><p>In terms of toolchains, RISC-V can still be considered to be a relatively new architecture. Using new versions of compilers can definitely help avoid bugs, while also enjoying new optimizations, we shall see such as use case later.</p>
+<p>Now we can try building a simple program to the RISC-V architecture:</p>
+<pre><code>$ cat &lt;&lt; EOF &gt; fib.c
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+int fib(int n) {
+  if (n &lt;= 1) return n;
+  return fib(n - 1) + fib(n - 2);
+}
+
+int main(int argc, char* argv[]) {
+  if (argc &lt; 2) {
+    return -1;
+  }
+
+  int result = fib(atoi(argv[1]));
+  printf(&quot;Result: %d\n&quot;, result);
+  return result + 3;
+}
+EOF
+$ riscv64-linux-gnu-gcc-12 -O3 fib.c -o fib_gcc
+$ qemu-riscv64-static fib_gcc 10
+qemu-riscv64-static: Could not open '/lib/ld-linux-riscv64-lp64d.so.1': No such file or directory
+</code></pre><p>Oops, compiling works, but we cannot find the dynamic linking loader required by glibc. Note this file in in fact already on our system:</p>
+<pre><code>$ file /usr/riscv64-linux-gnu/lib/ld-linux-riscv64-lp64d.so.1
+/usr/riscv64-linux-gnu/lib/ld-linux-riscv64-lp64d.so.1: ELF 64-bit LSB shared object, UCB RISC-V, RVC, double-float ABI, version 1 (SYSV), dynamically linked, BuildID[sha1]=c779d6eb2d438e3178484f37976cbc8794232379, stripped
+</code></pre><p>Due to the fact that the host machine is using <code>x86_64</code> architecture, the file is actually put with a prefix <code>/usr/riscv64-linux-gnu</code>. Luckily, we can patch the ELF to fix this:</p>
+<pre><code>$ sudo apt-get install patchelf
+$ patchelf --set-interpreter /usr/riscv64-linux-gnu/lib/ld-linux-riscv64-lp64d.so.1 fib_gcc
+$ qemu-riscv64-static fib_gcc 10
+fib_gcc: error while loading shared libraries: libc.so.6: cannot open shared object file: No such file or directory
+</code></pre><p>Running the program again yields a different error generated by the dynamic linking loader, which requires us to help it find the correct library path:</p>
+<pre><code>$ LD_LIBRARY_PATH=/usr/riscv64-linux-gnu/lib qemu-riscv64-static fib_gcc 10
+Result: 55
+$ echo $?
+58
+</code></pre><p>The program now runs successfully with the fib result printed to console, and the correct return code returned.</p>
+<p>One convenient trick here: when a binary of different architecture is used, qemu will be launched automatically:</p>
+<pre><code>$ LD_LIBRARY_PATH=/usr/riscv64-linux-gnu/lib ./fib_gcc 10
+Result: 55
+$ echo $?
+58
+</code></pre><p>Another way of solving the dynamic linking problem, is that we can generate a static linked program instead:</p>
+<pre><code>$ riscv64-linux-gnu-gcc-12 -static -O3 fib.c -o fib_gcc_static
+$ qemu-riscv64-static fib_gcc_static 10
+Result: 55
+$ echo $?
+58
+</code></pre><p>This way there&rsquo;s no need to patch the ELF, nor the need to provide <code>LD_LIBRARY_PATH</code>, it really depends on the use case to tell which is a better option.</p>
+<h1 id="llvm">LLVM</h1>
+<p>First, follow the steps <a href="https://apt.llvm.org/">here</a> to install LLVM 14, which is the latest stable version when I wrote this post. Or if you are the impatient type, following the following simple steps:</p>
+<pre><code>$ wget https://apt.llvm.org/llvm.sh
+$ chmod +x llvm.sh
+$ sudo ./llvm.sh 14 all
+</code></pre><p>Now we can build the same program above using clang:</p>
+<pre><code>$ /usr/lib/llvm-14/bin/clang -target riscv64-linux-gnu -O3 fib.c -o fib_clang
+$ qemu-riscv64-static fib_clang 10
+qemu-riscv64-static: Could not open '/lib/ld-linux-riscv64-lp64d.so.1': No such file or directory
+$ patchelf --set-interpreter /usr/riscv64-linux-gnu/lib/ld-linux-riscv64-lp64d.so.1 fib_clang
+$ LD_LIBRARY_PATH=/usr/riscv64-linux-gnu/lib qemu-riscv64-static fib_clang 10
+Result: 55
+$ echo $?
+58
+</code></pre><p>Similarly, static linking also works:</p>
+<pre><code>$ /usr/lib/llvm-14/bin/clang -static -target riscv64-linux-gnu -O3 fib.c -o fib_clang_static
+$ qemu-riscv64-static fib_clang_static 10
+Result: 55
+$ echo $?
+58
+</code></pre><p>For the moment, there are still some differences between code generated via gcc vs code generated via clang. Later we shall see an example of the differences.</p>
+<h1 id="rust">Rust</h1>
+<p>Developers have been using Rust to build RISC-V programs on CKB for quite some time. Even though <a href="https://github.com/nervosnetwork/capsule">capsule</a> is powered via docker, the underlying docker image actually use stock Rust already. Here we can show the exact same fibonacci example above written in Rust:</p>
+<pre><code>$ cargo new rust-riscv-demo
+$ cd rust-riscv-demo
+$ mkdir .cargo
+$ cat &lt;&lt; EOF &gt; .cargo/config
+[target.riscv64gc-unknown-linux-gnu]
+linker = &quot;riscv64-linux-gnu-gcc-12&quot;
+rustflags = [&quot;-C&quot;, &quot;link-args=-L/usr/lib/gcc-cross/riscv64-linux-gnu/12&quot;]
+EOF
+$ cat &lt;&lt; EOF &gt; rust-toolchain
+nightly-2022-08-15
+EOF
+$ cat &lt;&lt; EOF &gt; src/main.rs
+fn fib(n: i32) -&gt; i32 {
+    if n &lt;= 1 {
+        return n;
+    }
+    fib(n - 1) + fib(n - 2)
+}
+
+fn main() {
+    let n = std::env::args().nth(1).expect(&quot;input args&quot;);
+    let n = i32::from_str_radix(&amp;n, 10).expect(&quot;parsing&quot;);
+    let result = fib(n);
+    println!(&quot;Result: {}&quot;, result);
+    std::process::exit(result + 3);
+}
+EOF
+$ rustup target add riscv64gc-unknown-linux-gnu
+$ cargo build --release --target riscv64gc-unknown-linux-gnu
+$ patchelf --set-interpreter /usr/riscv64-linux-gnu/lib/ld-linux-riscv64-lp64d.so.1 target/riscv64gc-unknown-linux-gnu/release/rust-riscv-demo
+$ LD_LIBRARY_PATH=/usr/riscv64-linux-gnu/lib qemu-riscv64-static target/riscv64gc-unknown-linux-gnu/release/rust-riscv-demo 10
+Result: 55
+$ echo $?
+58
+</code></pre><h1 id="gotchas">Gotchas</h1>
+<p>Like pretty much everything you have read, the above steps have been simplified from certain details. Here&rsquo;re some gotchas one needs to be attention.</p>
+<h2 id="ckb-flavored-libc">CKB flavored libc</h2>
+<p>If you try to run the above binaries directly under CKB&rsquo;s environment, errors will be triggered:</p>
+<pre><code>$ ckb-vm-runner fib_gcc_static fib_gcc_static 10
+asm exit=Err(MemOutOfBound) cycles=135 r[a1]=0
+Error: MemOutOfBound
+</code></pre><p>While CKB strictly implements the RISC-V standard specification, CKB actually has different runtime environment from Linux. One can think of CKB as a different operating system that also runs on the RISC-V CPU. You might notice the phrase <code>linux-gnu</code> keeps appearing in the above steps where we build a RISC-V program for qemu. This configuration sets the compiled RISC-V program targetting the Linux environment. CKB, however, will require a different configuration.</p>
+<p>Specifically, there are 3 things that are different from a Linux environment:</p>
+<ul>
+<li>Programs running in CKB has exactly 4MB of memory to use. This is what triggers the above <code>MemOutOfBound</code> error: glibc running on Linux typically has more than 4MB of memory to spare, not to mention the fact that MMU can maintain the illusion of having more than 4MB of memory even for resource limited machines.</li>
+<li>CKB&rsquo;s runtime enviroment does not implement a <a href="https://en.wikipedia.org/wiki/Memory_management_unit">MMU</a>. Meaning the program on CKB has to deal with physical memory directly.</li>
+<li>CKB uses a totally different set of <a href="https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0009-vm-syscalls/0009-vm-syscalls.md">syscalls</a> from a typical Linux OS. This explains why plain old <code>printf</code> won&rsquo;t work for CKB programs, as well as why typical malloc in libc won&rsquo;t function for CKB environments.</li>
+</ul>
+<p>As a result of the above differences, libc has to be <a href="https://github.com/nervosnetwork/riscv-newlib">patched</a> to work with CKB&rsquo;s runtime environment. Previously this was packed together when a full toolchain is shipped. Now the question is slightly different: with an upstream compiler, how can we switch to a libc that CKB can work with?</p>
+<p>A viable path here, is that we can build the patched libc using upstream gcc, then configure upstream gcc to link a program against the patched libc, so was to run it on CKB. There is still non-upstream part involved but it&rsquo;s already a start, and one does not have to build a custom version of gcc anymore, which can take a huge amount of time.</p>
+<p>First thing here is to build the patched libc:</p>
+<pre><code>$ sudo apt-get install gcc-riscv64-unknown-elf
+$ git clone https://github.com/nervosnetwork/riscv-newlib
+$ cd riscv-newlib
+$ mkdir dist
+$ ./configure --host=x86_64-pc-linux-gnu --target=riscv64-unknown-elf --prefix `pwd`/dist \
+  --enable-newlib-io-long-long --enable-newlib-io-c99-formats \
+  CFLAGS_FOR_TARGET=&quot;-g -O2 -D_POSIX_MODE -DCKB_NO_MMU -D__riscv_soft_float -D__riscv_float_abi_soft&quot; \
+  CXXFLAGS_FOR_TARGET=&quot;-g -O2 -D_POSIX_MODE -DCKB_NO_MMU -D__riscv_soft_float -D__riscv_float_abi_soft&quot;
+$ make
+$ make install
+$ cd ..
+</code></pre><p>Notice here <code>gcc-riscv64-unknown-elf</code> package is used instead, here the gcc to be used is <code>riscv64-unknown-elf-gcc</code> instead of <code>riscv64-linux-gnu-gcc-12</code>. One way to think about this, is that running on CKB resembles more like running on a baremetal embedded chip, instead of Linux powered runtime environment where GNU libraries are available to use.</p>
+<p>Now is the time to build a simple C program, against the patch libc so as to run on CKB:</p>
+<pre><code>$ cat &lt;&lt; EOF &gt; fib_ckb.c
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &quot;ckb_syscalls.h&quot;
+
+int fib(int n) {
+  if (n &lt;= 1) return n;
+  return fib(n - 1) + fib(n - 2);
+}
+
+int main(int argc, char* argv[]) {
+  if (argc &lt; 2) {
+    return -1;
+  }
+
+  int result = fib(atoi(argv[1]));
+  char* buf = (char*) malloc(1024);
+  snprintf(buf, 1024, &quot;Result: %d&quot;, result);
+  ckb_debug(buf);
+  free(buf);
+  return result + 3;
+}
+EOF
+$ curl -LO https://raw.githubusercontent.com/nervosnetwork/ckb-c-stdlib/20578dfb092b3b3761df755395e20ec142a83d6e/ckb_consts.h
+$ curl -LO https://raw.githubusercontent.com/nervosnetwork/ckb-c-stdlib/20578dfb092b3b3761df755395e20ec142a83d6e/ckb_syscall_apis.h
+$ curl -LO https://raw.githubusercontent.com/nervosnetwork/ckb-c-stdlib/20578dfb092b3b3761df755395e20ec142a83d6e/ckb_syscalls.h
+$ riscv64-unknown-elf-gcc -march=rv64imac -mabi=lp64 -nostdlib -static \
+  riscv-newlib/dist/riscv64-unknown-elf/lib/rv64imac/lp64/crt0.o -O3 fib_ckb.c -o fib_ckb \
+  -I riscv-newlib/dist/riscv64-unknown-elf/include \
+  -L riscv-newlib/dist/riscv64-unknown-elf/lib/rv64imac/lp64 \
+  -lc -lm -lgcc -lgloss
+$ ckb-vm-runner fib_ckb fib_ckb 10
+&quot;Result: 55&quot;
+asm exit=Ok(58) cycles=6302 r[a1]=0
+</code></pre><p>While this simple program should not require a call to malloc, it is designed this way to test that the compiler is indeed setup for CKB. In case something goes wrong, this program should generate a different output:</p>
+<pre><code>$ # now the program is compiled using upstream gcc &amp; libc,
+$ # which will require a proper sbrk syscall that is not supported on CKB.
+$ riscv64-unknown-elf-gcc -O3 fib_ckb.c -o fib_ckb_error
+$ ckb-vm-runner fib_ckb_error fib_ckb_error 10
+asm exit=Err(InvalidEcall(214)) cycles=4319 r[a1]=1072
+Error: InvalidEcall(214)
+</code></pre><p>A similar method can also be used to compile the program using clang against the patched libc:</p>
+<pre><code>$ /usr/lib/llvm-14/bin/clang -target riscv64-unknown-elf \
+  -march=rv64imac -mabi=lp64 -nostdlib -static \
+  riscv-newlib/dist/riscv64-unknown-elf/lib/rv64imac/lp64/crt0.o -O3 fib_ckb.c -o fib_ckb_clang \
+  -I riscv-newlib/dist/riscv64-unknown-elf/include \
+  -L riscv-newlib/dist/riscv64-unknown-elf/lib/rv64imac/lp64 \
+  -L /usr/lib/gcc/riscv64-unknown-elf/10.2.0/rv64imac/lp64 \
+  -lc -lm -lgcc -lgloss
+$ ckb-vm-runner fib_ckb_clang fib_ckb_clang 10
+&quot;Result: 55&quot;
+asm exit=Ok(58) cycles=6924 r[a1]=0
+
+</code></pre><h2 id="ckb-flavored-rust-skeleton">CKB flavored Rust skeleton</h2>
+<p>Rust, on the other hand, allows one to tweak allocators directly. A demo has been prepared at <a href="https://github.com/xxuejie/rust-riscv-ckb-demo">here</a> for you to try it out:</p>
+<pre><code>$ sudo apt-get install gcc-riscv64-unknown-elf
+$ git clone https://github.com/xxuejie/rust-riscv-ckb-demo
+$ cd rust-riscv-ckb-demo
+$ rustup target add riscv64imac-unknown-none-elf
+$ export export PATH=$PATH:`pwd`/bin
+$ cargo build --release --target riscv64imac-unknown-none-elf
+$ ckb-vm-runner target/riscv64imac-unknown-none-elf/release/rust-riscv-ckb-demo rust-riscv-ckb-demo 10
+&quot;Result: 55&quot;
+asm exit=Ok(58) cycles=10507 r[a1]=631200
+</code></pre><h2 id="linker-relaxation">Linker Relaxation</h2>
+<p>3 binaries have been generated from earlier steps:</p>
+<ul>
+<li><code>fib_gcc</code> has been compiled via GCC 12</li>
+<li><code>fib_clang</code> has been compiled via LLVM 14</li>
+<li><code>rust-riscv-demo/target/riscv64gc-unknown-linux-gnu/release/rust-riscv-demo</code> has been compiled via Rust Nightly version <code>1.65.0-nightly (801821d15 2022-08-14)</code></li>
+</ul>
+<p>Let&rsquo;s de-assemble 3 binaries here:</p>
+<pre><code>$ riscv64-linux-gnu-objdump -d fib_gcc &gt; fib_gcc_dump.txt
+$ riscv64-linux-gnu-objdump -d fib_clang &gt; fib_clang_dump.txt
+$ riscv64-linux-gnu-objdump -d rust-riscv-demo/target/riscv64gc-unknown-linux-gnu/release/rust-riscv-demo &gt; rust-riscv-demo_dump.txt
+</code></pre><p>Using <code>fib</code> as the keyword to do a little searching in each of the dump file, you might find something similar to the following segments:</p>
+<p>In <code>fib_gcc_dump.txt</code>, lines similar to the following can be found:</p>
+<pre><code>658:   8522                    mv      a0,s0
+65a:   11a000ef                jal     ra,774 &lt;fib&gt;
+65e:   0125093b                addw    s2,a0,s2
+662:   3479                    addiw   s0,s0,-2
+664:   854a                    mv      a0,s2
+666:   ff3419e3                bne     s0,s3,658 &lt;main+0x58&gt;
+</code></pre><p>In <code>fib_clang_dump.txt</code>, lines similar to the following can found:</p>
+<pre><code>71a:   2501                    sext.w  a0,a0
+71c:   00000097                auipc   ra,0x0
+720:   f9c080e7                jalr    -100(ra) # 6b8 &lt;fib&gt;
+724:   842a                    mv      s0,a0
+726:   00000517                auipc   a0,0x0
+72a:   02650513                addi    a0,a0,38 # 74c &lt;_IO_stdin_used+0x4&gt;
+</code></pre><p>In <code>rust-riscv-demo_dump.txt</code>, code similar to the following can be found:</p>
+<pre><code>6ed0:       9101                    srli    a0,a0,0x20
+6ed2:       00000097                auipc   ra,0x0
+6ed6:       f06080e7                jalr    -250(ra) # 6dd8 &lt;_ZN15rust_riscv_demo3fib17hbf741befdf5e94f2E&gt;
+6eda:       00038597                auipc   a1,0x38
+6ede:       4065b583                ld      a1,1030(a1) # 3f2e0 &lt;_GLOBAL_OFFSET_TABLE_+0xc0&gt;
+6ee2:       c22a                    sw      a0,4(sp)
+6ee4:       0048                    addi    a0,sp,4
+</code></pre><p>All of those asssembly code involve a call to the <code>fib</code> function, what&rsquo;s different is: the code generated by gcc requires only a single <code>jal</code> instruction, while the code generated by clang and Rust involves 2 instructions: an <code>auipc</code> filling in the upper part of ra, and a <code>jalr</code> providing the remaining offset part.</p>
+<p>Diving a little into RISC-V assembly, we will find out that <code>jal</code> is capable of expressing a jump range from -1MB to +1MB, which is more than capable of expressing the call in a single instruction as in the clang and Rust case. But why do they bother to do that in a more complicated way?</p>
+<p>It turns out there is an optimization named <a href="https://www.sifive.com/blog/all-aboard-part-3-linker-relaxation-in-riscv-toolchain">linker relaxation</a>, which grants RISC-V assembly code enough flexibility, but also enables performance optimization in the compiler. GCC has implemented this optimization for quite some time, but it&rsquo;s only fairly recently when this optimization has been <a href="https://reviews.llvm.org/D127611">merged</a> in LLVM.</p>
+<p>This change has not yet been include in LLVM 14, the latest stable version. However it can be verified that LLVM 15 will include this change:</p>
+<pre><code>$ wget https://apt.llvm.org/llvm.sh
+$ chmod +x llvm.sh
+$ sudo ./llvm.sh 15 all
+$ /usr/lib/llvm-15/bin/clang -target riscv64-linux-gnu -O3 fib.c -o fib_clang15
+$ riscv64-linux-gnu-objdump -d fib_clang15 &gt; fib_clang15_dump.txt
+</code></pre><p>Digging into <code>fib_clang15_dump.txt</code>, lines similar to the following can be found:</p>
+<pre><code>70c:   ed5ff0ef                jal     ra,5e0 &lt;strtol@plt&gt;
+710:   2501                    sext.w  a0,a0
+712:   fa7ff0ef                jal     ra,6b8 &lt;fib&gt;
+716:   842a                    mv      s0,a0
+718:   00000517                auipc   a0,0x0
+71c:   02050513                addi    a0,a0,32 # 738 &lt;_IO_stdin_used+0x4&gt;
+</code></pre><p>This shows that linker relaxation has been applied to the code.</p>
+<p>While the nightly version of Rust used here does contain the LLVM commit for linker relaxation, it is not enabled by default, a little tweaking is required:</p>
+<pre><code>$ cd rust-riscv-demo
+$ cat &lt;&lt; EOF &gt; .cargo/config
+[target.riscv64gc-unknown-linux-gnu]
+linker = &quot;riscv64-linux-gnu-gcc-12&quot;
+rustflags = [&quot;-C&quot;, &quot;link-args=-L/usr/lib/gcc-cross/riscv64-linux-gnu/12&quot;,
+             &quot;-C&quot;, &quot;target-feature=+relax&quot; ]
+EOF
+$ cargo build --release --target riscv64gc-unknown-linux-gnu
+$ cd ..
+$ riscv64-linux-gnu-objdump -d rust-riscv-demo/target/riscv64gc-unknown-linux-gnu/release/rust-riscv-demo &gt; rust-riscv-demo_relaxed_dump.txt
+</code></pre><p>Digging into <code>rust-riscv-demo_relaxed_dump.txt</code>, it&rsquo;s obvious that the optimization has indeed been applied:</p>
+<pre><code>6e94:       9101                    srli    a0,a0,0x20
+6e96:       f27ff0ef                jal     ra,6dbc &lt;_ZN15rust_riscv_demo3fib17hbf741befdf5e94f2E&gt;
+6e9a:       00038597                auipc   a1,0x38
+6e9e:       4465b583                ld      a1,1094(a1) # 3f2e0 &lt;_GLOBAL_OFFSET_TABLE_+0xc0&gt;
+6ea2:       c22a                    sw      a0,4(sp)
+6ea4:       0048                    addi    a0,sp,4
+</code></pre><p>Note that linker relaxation is not without its controversy, see this <a href="https://maskray.me/blog/2021-03-14-the-dark-side-of-riscv-linker-relaxation">post</a> to learn more about it.</p>
+<h1 id="conclusion">Conclusion</h1>
+<p>As we have seen from the above discussion, there are indeed still rough edges, but building and running a RISC-V program using upstream compilers has been much more smooth than it was like years ago. Personally, I believe this is now the time to start working on RISC-V programs using upstream toolchains. Custom patched toolchain has fulfilled its purpose beautifully, and shall now be retired for good.</p>
+
+  </div>
+
+  <div id=links>
+    
+      <a class="basic-alignment left" href="https://xuejie.space/2020_04_11_diviner_a_new_attempt_on_deterministic_testing/">&laquo; Diviner: A New Attempt on Deterministic Testing</a>
+    
+    
+  </div>
+</section>
+
+  
+</body>
+</html>
+
+
+
