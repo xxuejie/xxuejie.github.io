@@ -182,6 +182,8 @@ $ echo $?
 
 Like pretty much everything you have read, the above steps have been simplified from certain details. Here're some gotchas one needs to be attention.
 
+If you are mainly interested in RISC-V running in the Linux environment, and not so interested in CKB, feel free to jump ahead to [linker relaxation](#linker-relaxation) section.
+
 ## CKB flavored libc
 
 If you try to run the above binaries directly under CKB's environment, errors will be triggered:
