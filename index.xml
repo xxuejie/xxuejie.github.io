@@ -135,6 +135,7 @@ $ echo $?
 58
 &lt;/code&gt;&lt;/pre&gt;&lt;h1 id=&#34;gotchas&#34;&gt;Gotchas&lt;/h1&gt;
 &lt;p&gt;Like pretty much everything you have read, the above steps have been simplified from certain details. Here&amp;rsquo;re some gotchas one needs to be attention.&lt;/p&gt;
+&lt;p&gt;If you are mainly interested in RISC-V running in the Linux environment, and not so interested in CKB, feel free to jump ahead to &lt;a href=&#34;#linker-relaxation&#34;&gt;linker relaxation&lt;/a&gt; section.&lt;/p&gt;
 &lt;h2 id=&#34;ckb-flavored-libc&#34;&gt;CKB flavored libc&lt;/h2&gt;
 &lt;p&gt;If you try to run the above binaries directly under CKB&amp;rsquo;s environment, errors will be triggered:&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;$ ckb-vm-runner fib_gcc_static fib_gcc_static 10

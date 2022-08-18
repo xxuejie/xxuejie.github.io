@@ -412,7 +412,7 @@
 
   
     <div id=sub-header>
-      August 2022 · 11 minute read
+      August 2022 · 12 minute read
     </div>
   
 
@@ -536,6 +536,7 @@ $ echo $?
 58
 </code></pre><h1 id="gotchas">Gotchas</h1>
 <p>Like pretty much everything you have read, the above steps have been simplified from certain details. Here&rsquo;re some gotchas one needs to be attention.</p>
+<p>If you are mainly interested in RISC-V running in the Linux environment, and not so interested in CKB, feel free to jump ahead to <a href="#linker-relaxation">linker relaxation</a> section.</p>
 <h2 id="ckb-flavored-libc">CKB flavored libc</h2>
 <p>If you try to run the above binaries directly under CKB&rsquo;s environment, errors will be triggered:</p>
 <pre><code>$ ckb-vm-runner fib_gcc_static fib_gcc_static 10
