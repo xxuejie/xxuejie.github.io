@@ -6,14 +6,17 @@ date = "2022-09-08"
 It's long been a fascinating journey optimizing [CKB-VM](https://github.com/nervosnetwork/ckb-vm). For example, here's the runtime gathered when running [secp256k1](https://github.com/xxuejie/ckb-vm-bench-scripts/blob/1a3d3c7141ba96674d655269bb61e76100508a4d/c/secp256k1_bench.c) verification on CKB-VM:
 
 ```
-|                                  | µs    | Ratio  |
-|----------------------------------|-------|--------|
-| CKB-VM (Rust interpreter)        | 12034 | 316.68 |
-| CKB-VM (Assembly interpreter)    |  2417 | 63.61  |
-| CKB-VM (Old AOT)                 |  1741 | 45.82  |
-| Wasmtime 0.40.1 with wasi-sdk 16 |   228 | 6.0    |
-| Native                           |    38 | 1.0    |
+|                               | µs    | Ratio  |
+|-------------------------------|-------|--------|
+| CKB-VM (Rust interpreter)     | 12034 | 316.68 |
+| CKB-VM (Assembly interpreter) |  2417 | 63.61  |
+| CKB-VM (Old AOT)              |  1741 | 45.82  |
+| Wasmtime 0.40.1               |   228 | 6.0    |
+| WAVM nightly/2022-05-14       |   185 | 4.87   |
+| Native                        |    38 | 1.0    |
 ```
+
+For wasm tests, we compile the same secp256k1 test program above using [WASI_SDK](https://github.com/WebAssembly/wasi-sdk) 16.
 
 CKB now uses the assembly interpreter in production, which takes roughly 63 times the runtime of the native version to run the same code.
 
