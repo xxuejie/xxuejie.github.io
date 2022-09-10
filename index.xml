@@ -66,12 +66,22 @@ Time to run program: 886.551225ms
 &lt;li&gt;Install a binary to run RISC-V programs via CKB-VM&amp;rsquo;s new &lt;a href=&#34;https://github.com/xxuejie/ckb-vm-contrib/tree/main/src/llvm_aot&#34;&gt;LLVM based AOT engine&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;Use the LLVM AOT engine to run the secp256k1 verification code&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;Log shows that it takes about 886.55 milliseconds to do 10000 secp256k1 verifications. If we do the math, this means the new LLVM AOT engine can do 1 secp256k1 verification in 88.655 microseconds, Which is merely 2.2x of native speed! This is even more interesting if we do a comparison on all the numbers shown above:&lt;/p&gt;
+&lt;p&gt;Log shows that it takes about 886.55 milliseconds to do 10000 secp256k1 verifications. If we do the math, this means the new LLVM AOT engine can do 1 secp256k1 verification in 88.655 microseconds, Which is merely &lt;strong&gt;2.34x&lt;/strong&gt; of native speed! Now we can complete the benchmark:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;|                               | µs    | Ratio  |
+|-------------------------------|-------|--------|
+| CKB-VM (Rust interpreter)     | 12034 | 316.68 |
+| CKB-VM (Assembly interpreter) |  2417 | 63.61  |
+| CKB-VM (Old AOT)              |  1741 | 45.82  |
+| Wasmtime 0.40.1               |   228 | 6.0    |
+| WAVM nightly/2022-05-14       |   185 | 4.87   |
+| CKB-VM (LLVM AOT engine)      |    89 | 2.34   |
+| Native                        |    38 | 1.0    |
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;This is even more interesting when we focus on all the variations of CKB-VM:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;Assembly interpreter runs plain RV64IMC code in 63x the runtime of native x64 programs compiled from the same code.&lt;/li&gt;
 &lt;li&gt;Old AOT(to distinguish between the two, I will refer the &lt;a href=&#34;https://github.com/nervosnetwork/ckb-vm/tree/4575b0b423b726f3e98b8093481d1d0bfc9efbe7/src/machine/aot&#34;&gt;previous AOT engine&lt;/a&gt; powered by dynasm as &lt;code&gt;old AOT&lt;/code&gt;, and the new AOT engine powered by LLVM as &lt;code&gt;LLVM AOT&lt;/code&gt;) engine runs plain RV64IMC code in 45x the runtime of native x64 programs compiled from the same code.&lt;/li&gt;
 &lt;li&gt;By vectorizing code using RISC-V V extension, CKB-VM runs V enabled code in 10x the runtime of native x64 programs for the same algorithm.&lt;/li&gt;
-&lt;li&gt;New LLVM AOT engine runs plain RV64IMC code in 2.2x the runtime of native x64 programs compiled from the same code.&lt;/li&gt;
+&lt;li&gt;New LLVM AOT engine runs plain RV64IMC code in 2.34x the runtime of native x64 programs compiled from the same code.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;I&amp;rsquo;m sure you will wonder how this is achieved, this post will talk in more details about the new LLVM AOT engine, including its design, unfinished work, and possible use cases I envision.&lt;/p&gt;
 &lt;p&gt;Warning: this is gonna be a loooooooooong article. I do want to keep everything together as a reference(a good excuse for being lazy :P), but feel free to jump to individual sections as you like:&lt;/p&gt;
