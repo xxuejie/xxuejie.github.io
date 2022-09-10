@@ -69,12 +69,26 @@ In the above section, we do the following things:
 * Install a binary to run RISC-V programs via CKB-VM's new [LLVM based AOT engine](https://github.com/xxuejie/ckb-vm-contrib/tree/main/src/llvm_aot)
 * Use the LLVM AOT engine to run the secp256k1 verification code
 
-Log shows that it takes about 886.55 milliseconds to do 10000 secp256k1 verifications. If we do the math, this means the new LLVM AOT engine can do 1 secp256k1 verification in 88.655 microseconds, Which is merely 2.2x of native speed! This is even more interesting if we do a comparison on all the numbers shown above:
+Log shows that it takes about 886.55 milliseconds to do 10000 secp256k1 verifications. If we do the math, this means the new LLVM AOT engine can do 1 secp256k1 verification in 88.655 microseconds, Which is merely **2.34x** of native speed! Now we can complete the benchmark:
+
+```
+|                               | µs    | Ratio  |
+|-------------------------------|-------|--------|
+| CKB-VM (Rust interpreter)     | 12034 | 316.68 |
+| CKB-VM (Assembly interpreter) |  2417 | 63.61  |
+| CKB-VM (Old AOT)              |  1741 | 45.82  |
+| Wasmtime 0.40.1               |   228 | 6.0    |
+| WAVM nightly/2022-05-14       |   185 | 4.87   |
+| CKB-VM (LLVM AOT engine)      |    89 | 2.34   |
+| Native                        |    38 | 1.0    |
+```
+
+This is even more interesting when we focus on all the variations of CKB-VM:
 
 * Assembly interpreter runs plain RV64IMC code in 63x the runtime of native x64 programs compiled from the same code.
 * Old AOT(to distinguish between the two, I will refer the [previous AOT engine](https://github.com/nervosnetwork/ckb-vm/tree/4575b0b423b726f3e98b8093481d1d0bfc9efbe7/src/machine/aot) powered by dynasm as `old AOT`, and the new AOT engine powered by LLVM as `LLVM AOT`) engine runs plain RV64IMC code in 45x the runtime of native x64 programs compiled from the same code.
 * By vectorizing code using RISC-V V extension, CKB-VM runs V enabled code in 10x the runtime of native x64 programs for the same algorithm.
-* New LLVM AOT engine runs plain RV64IMC code in 2.2x the runtime of native x64 programs compiled from the same code.
+* New LLVM AOT engine runs plain RV64IMC code in 2.34x the runtime of native x64 programs compiled from the same code.
 
 I'm sure you will wonder how this is achieved, this post will talk in more details about the new LLVM AOT engine, including its design, unfinished work, and possible use cases I envision.
 
