@@ -418,14 +418,16 @@
 
   <div class="entry-content">
     <p>It&rsquo;s long been a fascinating journey optimizing <a href="https://github.com/nervosnetwork/ckb-vm">CKB-VM</a>. For example, here&rsquo;s the runtime gathered when running <a href="https://github.com/xxuejie/ckb-vm-bench-scripts/blob/1a3d3c7141ba96674d655269bb61e76100508a4d/c/secp256k1_bench.c">secp256k1</a> verification on CKB-VM:</p>
-<pre><code>|                                  | µs    | Ratio  |
-|----------------------------------|-------|--------|
-| CKB-VM (Rust interpreter)        | 12034 | 316.68 |
-| CKB-VM (Assembly interpreter)    |  2417 | 63.61  |
-| CKB-VM (Old AOT)                 |  1741 | 45.82  |
-| Wasmtime 0.40.1 with wasi-sdk 16 |   228 | 6.0    |
-| Native                           |    38 | 1.0    |
-</code></pre><p>CKB now uses the assembly interpreter in production, which takes roughly 63 times the runtime of the native version to run the same code.</p>
+<pre><code>|                               | µs    | Ratio  |
+|-------------------------------|-------|--------|
+| CKB-VM (Rust interpreter)     | 12034 | 316.68 |
+| CKB-VM (Assembly interpreter) |  2417 | 63.61  |
+| CKB-VM (Old AOT)              |  1741 | 45.82  |
+| Wasmtime 0.40.1               |   228 | 6.0    |
+| WAVM nightly/2022-05-14       |   185 | 4.87   |
+| Native                        |    38 | 1.0    |
+</code></pre><p>For wasm tests, we compile the same secp256k1 test program above using <a href="https://github.com/WebAssembly/wasi-sdk">WASI_SDK</a> 16.</p>
+<p>CKB now uses the assembly interpreter in production, which takes roughly 63 times the runtime of the native version to run the same code.</p>
 <p>While the number above is good enough for its initial use case, the optimization work does not stop here. In an <a href="https://github.com/xxuejie/ckb-vm/tree/rvv-crypto">experimental</a> <a href="https://github.com/xxuejie/rvv-prototype/tree/rvv-crypto/bn128-example/src/rvv_crypto">branch</a>, CKB-VM, with <a href="https://github.com/riscv/riscv-v-spec">RISC-V V extension</a> enabled, can achieve the following benchmark results performing <a href="https://eips.ethereum.org/EIPS/eip-197">alt_bn128 pairing check</a> used in <a href="https://github.com/ethereum/go-ethereum/blob/8363f79f8fd735d6264e7549e7f861467fbf6c78/core/vm/contracts_test.go#L262">ethereum</a>.</p>
 <pre><code>| test              | CKB-VM (ns)  | Native (ns) | Slowdown Ratio |
 |-------------------|--------------|-------------|----------------|

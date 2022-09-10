@@ -17,14 +17,16 @@
         
         <guid>https://xuejie.space/2022_09_08_a_journey_to_the_limit/</guid>
         <description>&lt;p&gt;It&amp;rsquo;s long been a fascinating journey optimizing &lt;a href=&#34;https://github.com/nervosnetwork/ckb-vm&#34;&gt;CKB-VM&lt;/a&gt;. For example, here&amp;rsquo;s the runtime gathered when running &lt;a href=&#34;https://github.com/xxuejie/ckb-vm-bench-scripts/blob/1a3d3c7141ba96674d655269bb61e76100508a4d/c/secp256k1_bench.c&#34;&gt;secp256k1&lt;/a&gt; verification on CKB-VM:&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;|                                  | µs    | Ratio  |
-|----------------------------------|-------|--------|
-| CKB-VM (Rust interpreter)        | 12034 | 316.68 |
-| CKB-VM (Assembly interpreter)    |  2417 | 63.61  |
-| CKB-VM (Old AOT)                 |  1741 | 45.82  |
-| Wasmtime 0.40.1 with wasi-sdk 16 |   228 | 6.0    |
-| Native                           |    38 | 1.0    |
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;CKB now uses the assembly interpreter in production, which takes roughly 63 times the runtime of the native version to run the same code.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;|                               | µs    | Ratio  |
+|-------------------------------|-------|--------|
+| CKB-VM (Rust interpreter)     | 12034 | 316.68 |
+| CKB-VM (Assembly interpreter) |  2417 | 63.61  |
+| CKB-VM (Old AOT)              |  1741 | 45.82  |
+| Wasmtime 0.40.1               |   228 | 6.0    |
+| WAVM nightly/2022-05-14       |   185 | 4.87   |
+| Native                        |    38 | 1.0    |
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;For wasm tests, we compile the same secp256k1 test program above using &lt;a href=&#34;https://github.com/WebAssembly/wasi-sdk&#34;&gt;WASI_SDK&lt;/a&gt; 16.&lt;/p&gt;
+&lt;p&gt;CKB now uses the assembly interpreter in production, which takes roughly 63 times the runtime of the native version to run the same code.&lt;/p&gt;
 &lt;p&gt;While the number above is good enough for its initial use case, the optimization work does not stop here. In an &lt;a href=&#34;https://github.com/xxuejie/ckb-vm/tree/rvv-crypto&#34;&gt;experimental&lt;/a&gt; &lt;a href=&#34;https://github.com/xxuejie/rvv-prototype/tree/rvv-crypto/bn128-example/src/rvv_crypto&#34;&gt;branch&lt;/a&gt;, CKB-VM, with &lt;a href=&#34;https://github.com/riscv/riscv-v-spec&#34;&gt;RISC-V V extension&lt;/a&gt; enabled, can achieve the following benchmark results performing &lt;a href=&#34;https://eips.ethereum.org/EIPS/eip-197&#34;&gt;alt_bn128 pairing check&lt;/a&gt; used in &lt;a href=&#34;https://github.com/ethereum/go-ethereum/blob/8363f79f8fd735d6264e7549e7f861467fbf6c78/core/vm/contracts_test.go#L262&#34;&gt;ethereum&lt;/a&gt;.&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;| test              | CKB-VM (ns)  | Native (ns) | Slowdown Ratio |
 |-------------------|--------------|-------------|----------------|
