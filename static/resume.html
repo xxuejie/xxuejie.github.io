@@ -46,37 +46,21 @@
     <dl>
       <dd class="clear"></dd>
 
-      <dt>Skills</dt>
-      <dd>
-        <h2>Software Design</h2>
-        <p>Throughout my career I've practiced with <a href="https://www.youtube.com/watch?v=9BGkJ4jDJdc">simplicity driven design</a>. I firmly believe simplicity is the most effective weapon against complicated computer systems, as well as ever-changing domain logics.</p>
-
-        <h2>Systems Programming</h2>
-        <p>I have extensive low level systems programming experience. I have built performant low level <a href="https://github.com/nervosnetwork/ckb-vm">virtual machine</a> whose bottleneck lies in modern CPU's micro-architecture, tweaked <a href="https://github.com/sparkfun/m2x-arduino">software</a> for embedded devices with extremely low memory, <a href="https://ieeexplore.ieee.org/document/7004222/">modified Hadoop</a> to unlock more potential performance.</p>
-
-        <h2>WebAssembly</h2>
-        <p>I've been working with WebAssembly related technologies from <a href="https://github.com/xxuejie/webruby">the very beginning</a>, whether it is emscripten, LLVM, asm.js or the current WebAssembly. I've also been <a href="https://github.com/xxuejie/instant-riscv">up to date</a> with latest developments in the WASM world.</p>
-
-        <h2>Polyglot Programming</h2>
-        <p>Throughout my career I've been dealing with many different technologies. I'm proficient in C, Rust, Go, Ruby, JavaScript, low level assemblies on x86-64, aarch64 and RISC-V. I've also have experience (but to a lesser extent) in C++, Java, Erlang/Elixir, Lua, Python, Coq, C#, etc.</p>
-      </dd>
-      <dd class="clear"></dd>
-
       <dt>Experience</dt>
       <dd>
         <h2>Cryptape <span>Chief Technology Officer / Remote / 2018 - 2021</span></h2>
         <p>Started as a Software Engineer working on many aspects of the <a href="https://github.com/nervosnetwork/ckb">Nervos CKB</a> permissionless blockchain, I grew to lead the whole Cryptape technical team, working to improve the whole ecosystem around Nervos CKB. Some of my work highlights include:</p>
         <ul>
-          <li>Designed, implemented and led the team to improve <a href="https://github.com/nervosnetwork/ckb-vm">CKB VM</a>, the core virtual machine used in Nervos CKB. Unlike other blockchains, CKB VM leverages <a href="https://riscv.org/">RISC-V ISA</a> directly as the virtual machine's instruction set. Although RISC-V was originally designed for hardware, it also excels as a virtual machine's instruction set. To the best of our knowledge, CKB is the only available blockchain enabling shipping cryptographic algorithms inside a smart contract. Though designed initially for blockchain usage, CKB VM also has potentials in the cloud native space.</li>
+          <li>Designed, implemented and led the team to improve <a href="https://github.com/nervosnetwork/ckb-vm">CKB VM</a>, the core virtual machine used in Nervos CKB. CKB VM leverages <a href="https://riscv.org/">RISC-V ISA</a> directly as the virtual machine's instruction set, making it also suitable for more uses cases other than blockchains. It can achieve ~10x of native code performance using an interpreter, or ~2.34x of native code performance via an LLVM-powered AOT engine. To the best of our knowledge, CKB is the only available blockchain that ships cryptographic algorithms inside smart contracts, instead of hardcoding them.</li>
           <li>Led the team building aML, a new smart contract programming language for Nervos CKB. The highlight of aML, is <b>formal verification</b>: not only is aML designed with first class, state of the art, source level formal verification in mind, the whole compiler for aML is also designed to be fully formally verified. Using Coq, we are collaborating with a leading research lab in the formal verification field, to bring the latest progress in the formal verification to aML.</li>
           <li>Led the team building a series of frameworks, libraries and tools to aid dapp development in the Nervos ecosystem, including <a href="https://github.com/nervosnetwork/capsule">capsule</a>, <a href="https://github.com/nervosnetwork/lumos">lumos</a>, <a href="https://github.com/nervosnetwork/tippy">tippy</a>, <a href="https://github.com/nervosnetwork/ckb-standalone-debugger">ckb-debugger</a> and more.</li>
-          <li>Led the team building <a href="https://github.com/nervosnetwork/godwoken">godwoken</a>, the first layer 2 solution on Nervos CKB. <a href="https://github.com/nervosnetwork/godwoken-polyjuice">Polyjuice</a> was built to provide Ethereum compatible layer on top of godwoken. For more details on godwoken and polyjuice, I've written 2 architectural documents: <a href="https://github.com/nervosnetwork/godwoken/blob/master/docs/life_of_a_godwoken_transaction.md">Life of a Godwoken Transaction</a>, and <a href="https://github.com/nervosnetwork/godwoken/blob/master/docs/life_of_a_polyjuice_transaction.md">Life of a Polyjuice Transaction</a>.</li>
+          <li>Led the team building <a href="https://github.com/nervosnetwork/godwoken">godwoken</a>, the first layer 2 solution on Nervos CKB. <a href="https://github.com/nervosnetwork/godwoken-polyjuice">Polyjuice</a> was built to provide Ethereum compatible layer on top of godwoken. For more details on godwoken and polyjuice, I've written 2 architectural documents: <a href="https://github.com/nervosnetwork/godwoken/blob/develop/docs/life_of_a_godwoken_transaction.md">Life of a Godwoken Transaction</a>, and <a href="https://github.com/nervosnetwork/godwoken/blob/develop/docs/life_of_a_polyjuice_transaction.md">Life of a Polyjuice Transaction</a>.</li>
         </ul>
 
         <h2>Citrusbyte(now TheoremOne) <span>Software Engineer / Remote / 2013 - 2018</span></h2>
         <p>As a remote Software Engineer, I both worked and led teams on buliding assorted projects ranging from Web apps, embedded systems, as well as Linux kernel related technologies. Some of my work highlights include:</p>
         <ul>
-          <li>Lead the technical team building a major internal project for the retail department of one industry leading consume electronics company. The project was once used by all the retail stores of the company globally, which was also featured in one of its global marketing events.</li>
+          <li>Led the technical team building a major internal project for the retail department of one industry leading consume electronics company. The project was once used by all the retail stores of the company globally, which was also featured in one of its global marketing events.</li>
           <li>Built the initial backend of <a href="https://www.theoremone.co/results/caterpillar">asset tracking platform</a> for Caterpillar's supply chain.</li>
           <li>Helped build the device component of <a href="https://overwatchsec.com/">Overwatch</a> for threat and intrusion analysis. <a href="https://wiki.archlinux.org/index.php/Kernel_module">Linux kernel module</a> technology was leveraged for performance considerations.</li>
           <li>Helped build many of the client libraries used in the <a href="https://www.theoremone.co/results/att-iot-platform">AT&amp;T M2X</a> internet of things services.</li>
@@ -95,6 +79,22 @@
           <li><a href="https://github.com/xxuejie/sohm">sohm</a> and <a href="https://github.com/xxuejie/sohm.lua">sohm.lua</a>: a scalable variant of the <a href="http://ohm.keyvalue.org/">Object-hash mapping library for Redis</a>. The lua version was written to leverage extreme performance provided via <a href="https://openresty.org/en/">OpenResty</a>. The sohm.lua library has been deployed in an environment where 200,000+ queries per second were recorded at peak time.</li>
           <li><a href="https://github.com/xxuejie/webruby">webruby</a>: webruby brings mruby, a lightweight Ruby implementation to the browser, enabling one to run Ruby code in the browser environment. Note this project compiles mruby into <a href="https://en.wikipedia.org/wiki/Asm.js">asm.js</a>, which is the predecessor of WebAssembly. I've also been learning and trying WebAssembly since then to keep a knowledge of WebAssembly's nuts and bolts.</li>
         </ul>
+      </dd>
+      <dd class="clear"></dd>
+
+      <dt>Skills</dt>
+      <dd>
+        <h2>Software Design</h2>
+        <p>Throughout my career I've practiced with <a href="https://www.youtube.com/watch?v=9BGkJ4jDJdc">simplicity driven design</a>. I firmly believe simplicity is the most effective weapon against complicated computer systems, as well as ever-changing domain logics.</p>
+
+        <h2>Systems Programming</h2>
+        <p>I have extensive low level systems programming experience. I have built performant low level <a href="https://github.com/nervosnetwork/ckb-vm">virtual machine</a> whose bottleneck lies in modern CPU's micro-architecture, tweaked <a href="https://github.com/sparkfun/m2x-arduino">software</a> for embedded devices with extremely low memory, <a href="https://ieeexplore.ieee.org/document/7004222/">modified Hadoop</a> to unlock more potential performance.</p>
+
+        <h2>WebAssembly</h2>
+        <p>I've been working with WebAssembly related technologies from <a href="https://github.com/xxuejie/webruby">the very beginning</a>, whether it is emscripten, LLVM, asm.js or the current WebAssembly. I've also been <a href="https://github.com/xxuejie/instant-riscv">up to date</a> with latest developments in the WASM world.</p>
+
+        <h2>Polyglot Programming</h2>
+        <p>Throughout my career I've been dealing with many different technologies. I'm proficient in C, Rust, Go, Ruby, JavaScript, low level assemblies on x86-64, aarch64 and RISC-V. I've also have experience (but to a lesser extent) in C++, Java, Erlang/Elixir, Lua, Python, Coq, C#, etc.</p>
       </dd>
       <dd class="clear"></dd>
 
