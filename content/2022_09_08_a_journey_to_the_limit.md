@@ -90,7 +90,7 @@ This is even more interesting when we focus on all the variations of CKB-VM:
 * By vectorizing code using RISC-V V extension, CKB-VM runs V enabled code in 10x the runtime of native x64 programs for the same algorithm.
 * New LLVM AOT engine runs plain RV64IMC code in 2.34x the runtime of native x64 programs compiled from the same code.
 
-I'm sure you will wonder how this is achieved, this post will talk in more details about the new LLVM AOT engine, including its design, unfinished work, and possible use cases I envision.
+I'm sure you will wonder how this is achieved, this post will talk in more details about the new LLVM AOT engine, including its design and unfinished work for the future.
 
 Warning: this is gonna be a loooooooooong article. I do want to keep everything together as a reference(a good excuse for being lazy :P), but feel free to jump to individual sections as you like:
 
