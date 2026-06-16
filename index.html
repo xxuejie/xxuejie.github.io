@@ -1,578 +1,444 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-	<meta name="generator" content="Hugo 0.82.0" />
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <meta name="HandheldFriendly" content="True">
-    <meta name="MobileOptimized" content="320">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="referrer" content="no-referrer">
-    
+<html lang="en-US">
 
-    
-      <link href='https://fonts.googleapis.com/css?family=Open+Sans:400|Old+Standard+TT:400&display=swap' rel='stylesheet' type='text/css'>
-    
+<head>
+	<meta name="generator" content="Hugo 0.162.1">
+  <meta http-equiv="X-Clacks-Overhead" content="GNU Terry Pratchett" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Less is more</title>
+<meta name="title" content="Less is more" />
+<meta name="description" content="" />
+<meta name="keywords" content="" />
 
-    <link rel="icon" type="image/png" href="https://xuejie.space/favicon_16x16.png" sizes="16x16">
-    <link rel="icon" type="image/png" href="https://xuejie.space/favicon_32x32.png" sizes="32x32">
-    <link rel="icon" type="image/png" href="https://xuejie.space/favicon_128x128.png" sizes="128x128">
 
-    <title>
-      
-      
-         Less is more 
-      
-    </title>
-    <link rel="canonical" href="https://xuejie.space/">
+<meta property="og:url" content="https://xuejie.space/">
+	<meta property="og:site_name" content="Less is more">
+	<meta property="og:title" content="Less is more">
+	<meta property="og:locale" content="en_US">
+	<meta property="og:type" content="website">
 
-    <style>
-  * {
-    border:0;
-    font:inherit;
-    font-size:100%;
-    vertical-align:baseline;
-    margin:0;
-    padding:0;
-    color: black;
-    text-decoration-skip: ink;
+
+
+
+	<meta name="twitter:card" content="summary">
+	<meta name="twitter:title" content="Less is more">
+
+
+
+
+	<meta itemprop="name" content="Less is more">
+	<meta itemprop="datePublished" content="2026-06-16T00:00:00+00:00">
+	<meta itemprop="dateModified" content="2026-06-16T00:00:00+00:00">
+<meta name="referrer" content="no-referrer-when-downgrade" />
+
+  <link rel="alternate" type="application/rss+xml" href="https://xuejie.space/index.xml" title="Less is more" />
+  <style>
+  :root {
+    --width: 720px;
+    --font-main: Verdana, sans-serif;
+    --font-secondary: Verdana, sans-serif;
+    --font-scale: 1em;
+    --background-color: #fff;
+    --heading-color: #222;
+    --text-color: #444;
+    --link-color: #3273dc;
+    --visited-color: #8b6fcb;
+    --blockquote-color: #222;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --background-color: #01242e;
+      --heading-color: #eee;
+      --text-color: #ddd;
+      --link-color: #8cc2dd;
+      --visited-color: #8b6fcb;
+      --blockquote-color: #ccc;
+    }
   }
 
   body {
-    font-family:'Open Sans', 'Myriad Pro', Myriad, sans-serif;
-    font-size:17px;
-    line-height:160%;
-    color:#1d1313;
-    max-width:700px;
-    margin:auto;
+    font-family: var(--font-secondary);
+    font-size: var(--font-scale);
+    margin: auto;
+    padding: 20px;
+    max-width: var(--width);
+    text-align: left;
+    background-color: var(--background-color);
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    line-height: 1.5;
+    color: var(--text-color);
   }
 
-  p {
-    margin: 20px 0;
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-main);
+    color: var(--heading-color);
   }
 
-  a img {
-    border:none;
-  }
-
-  img {
-    margin: 10px auto 10px auto;
-    max-width: 100%;
-    display: block;
-  }
-
-  .left-justify {
-    float: left;
-  }
-
-  .right-justify {
-    float:right;
-  }
-
-  pre, code {
-    font: 12px Consolas, "Liberation Mono", Menlo, Courier, monospace;
-    background-color: #f7f7f7;
-  }
-
-  code {
-    font-size: 12px;
-    padding: 4px;
-  }
-
-  pre {
-    margin-top: 0;
-    margin-bottom: 16px;
-    word-wrap: normal;
-    padding: 16px;
-    overflow: auto;
-    font-size: 85%;
-    line-height: 1.45;
-  }
-
-  pre>code {
-    padding: 0;
-    margin: 0;
-    font-size: 100%;
-    word-break: normal;
-    white-space: pre;
-    background: transparent;
-    border: 0;
-  }
-
-  pre code {
-    display: inline;
-    max-width: auto;
-    padding: 0;
-    margin: 0;
-    overflow: visible;
-    line-height: inherit;
-    word-wrap: normal;
-    background-color: transparent;
-    border: 0;
-  }
-
-  pre code::before,
-  pre code::after {
-    content: normal;
-  }
-
-  em,q,em,dfn {
-    font-style:italic;
-  }
-
-  .sans,html .gist .gist-file .gist-meta {
-    font-family:"Open Sans","Myriad Pro",Myriad,sans-serif;
-  }
-
-  .mono,pre,code,tt,p code,li code {
-    font-family:Menlo,Monaco,"Andale Mono","lucida console","Courier New",monospace;
-  }
-
-  .heading,.serif,h1,h2,h3 {
-    font-family:"Old Standard TT",serif;
-  }
-
-  strong {
-    font-weight:600;
-  }
-
-  q:before {
-    content:"\201C";
-  }
-
-  q:after {
-    content:"\201D";
-  }
-
-  del,s {
-    text-decoration:line-through;
-  }
-
-  blockquote {
-    font-family:"Old Standard TT",serif;
-    text-align:center;
-    padding:50px;
-  }
-
-  blockquote p {
-    display:inline-block;
-    font-style:italic;
-  }
-
-  blockquote:before,blockquote:after {
-    font-family:"Old Standard TT",serif;
-    content:'\201C';
-    font-size:35px;
-    color:#403c3b;
-  }
-
-  blockquote:after {
-    content:'\201D';
-  }
-
-  hr {
-    width:40%;
-    height: 1px;
-    background:#403c3b;
-    margin: 25px auto;
-  }
-
-  h1 {
-    font-size:35px;
-  }
-
-  h2 {
-    font-size:28px;
-  }
-
-  h3 {
-    font-size:22px;
-    margin-top:18px;
-  }
-
-  h1 a,h2 a,h3 a {
-    text-decoration:none;
-  }
-
-  h1,h2 {
-    margin-top:28px;
-  }
-
-  #sub-header, time {
-    color:#403c3b;
-    font-size:13px;
-  }
-
-  #sub-header {
-    margin: 0 4px;
-  }
-
-  #nav h1 a {
-    font-size:35px;
-    color:#1d1313;
-    line-height:120%;
-  }
-
-  .posts_listing a,#nav a {
+  a {
+    color: var(--link-color);
+    cursor: pointer;
     text-decoration: none;
   }
 
-  li {
-    margin-left: 20px;
-  }
-
-  ul li {
-    margin-left: 5px;
-  }
-
-  ul li {
-    list-style-type: none;
-  }
-  ul li:before {
-    content:"\00BB \0020";
-  }
-
-  #nav ul li:before, .posts_listing li:before {
-    content:'';
-    margin-right:0;
-  }
-
-  #content {
-    text-align:left;
-    width:100%;
-    font-size:15px;
-    padding:60px 0 80px;
-  }
-
-  #content h1,#content h2 {
-    margin-bottom:5px;
-  }
-
-  #content h2 {
-    font-size:25px;
-  }
-
-  #content .entry-content {
-    margin-top:15px;
-  }
-
-  #content time {
-    margin-left:3px;
-  }
-
-  #content h1 {
-    font-size:30px;
-  }
-
-  .highlight {
-    margin: 10px 0;
-  }
-
-  .posts_listing {
-    margin:0 0 50px;
-  }
-
-  .posts_listing li {
-    margin:0 0 25px 15px;
-  }
-
-  .posts_listing li a:hover,#nav a:hover {
+  a:hover {
     text-decoration: underline;
   }
 
-  #nav {
-    text-align:center;
-    position:static;
-    margin-top:60px;
+  nav a {
+    margin-right: 8px;
   }
 
-  #nav ul {
-    display: table;
-    margin: 8px auto 0 auto;
+  strong,
+  b {
+    color: var(--heading-color);
   }
 
-  #nav li {
-    list-style-type:none;
-    display:table-cell;
-    font-size:15px;
-    padding: 0 20px;
+  button {
+    margin: 0;
+    cursor: pointer;
   }
 
-  #links {
-    margin: 50px 0 0 0;
+  time {
+    font-family: monospace;
+    font-style: normal;
+    font-size: 15px;
   }
 
-  #links :nth-child(2) {
-    float:right;
+  main {
+    line-height: 1.6;
   }
 
-  #not-found {
+  table {
+    width: 100%;
+  }
+
+  hr {
+    border: 0;
+    border-top: 1px dashed;
+  }
+
+  img {
+    max-width: 100%;
+  }
+
+  code {
+    font-family: monospace;
+    padding: 2px;
+    border-radius: 3px;
+  }
+
+  blockquote {
+    border-left: 1px solid #999;
+    color: var(--blockquote-color);
+    padding-left: 20px;
+    font-style: italic;
+  }
+
+  footer {
+    padding: 25px 0;
     text-align: center;
   }
 
-  #not-found a {
-    font-family:"Old Standard TT",serif;
-    font-size: 200px;
+  .title:hover {
     text-decoration: none;
-    display: inline-block;
-    padding-top: 225px;
   }
 
-  @media (max-width: 750px) {
-    body {
-      padding-left:20px;
-      padding-right:20px;
-    }
-
-    #nav h1 a {
-      font-size:28px;
-    }
-
-    #nav li {
-      font-size:13px;
-      padding: 0 15px;
-    }
-
-    #content {
-      margin-top:0;
-      padding-top:50px;
-      font-size:14px;
-    }
-
-    #content h1 {
-      font-size:25px;
-    }
-
-    #content h2 {
-      font-size:22px;
-    }
-
-    .posts_listing li div {
-      font-size:12px;
-    }
+  .title h1 {
+    font-size: 1.5em;
   }
 
-  @media (max-width: 400px) {
-    body {
-      padding-left:20px;
-      padding-right:20px;
-    }
-
-    #nav h1 a {
-      font-size:22px;
-    }
-
-    #nav li {
-      font-size:12px;
-      padding: 0 10px;
-    }
-
-    #content {
-      margin-top:0;
-      padding-top:20px;
-      font-size:12px;
-    }
-
-    #content h1 {
-      font-size:20px;
-    }
-
-    #content h2 {
-      font-size:18px;
-    }
-
-    .posts_listing li div{
-      font-size:12px;
-    }
+  .inline {
+    width: auto !important;
   }
+
+  .highlight,
+  .code {
+    border-radius: 3px;
+    margin-block-start: 1em;
+    margin-block-end: 1em;
+    overflow-x: auto;
+  }
+
+  .highlight pre,
+  .code pre {
+    min-width: 100%;
+    width: max-content;
+  }
+
+   
+  ul.blog-posts {
+    list-style-type: none;
+    padding: unset;
+  }
+
+  ul.blog-posts li {
+    display: flex;
+  }
+
+  ul.blog-posts li span {
+    flex: 0 0 130px;
+  }
+
+  ul.blog-posts li a:visited {
+    color: var(--visited-color);
+  }
+
 </style>
 
+</head>
 
-    
-        <atom:link href="https://xuejie.space/index.xml" rel="self" type="application/rss+xml" />
-    
-  </head>
+<body>
+  <header><a href="https://xuejie.space/" class="title">
+  <h2>Less is more</h2>
+</a>
+<nav>
+<a href="https://xuejie.space/resume.html">Resume</a>
 
-  <body>
-    <section id=nav>
-      <h1><a href="https://xuejie.space/">Less is More</a></h1>
-      <ul>
-        
-          <li><a href="https://xuejie.space/about">About</a></li>
-        
-          <li><a href="https://github.com/xxuejie">GitHub</a></li>
-        
-          <li><a href="https://xuejie.space/index.xml">RSS</a></li>
-        
-          <li><a href="https://twitter.com/xxuejie">Twitter</a></li>
-        
-      </ul>
-    </section>
+<a href="https://twitter.com/xxuejie">Twitter</a>
 
+<a href="https://github.com/xxuejie">GitHub</a>
 
-<section id=content>
-  <ul class=posts_listing>
+<a href="https://xuejie.space/index.xml">RSS</a>
+
+</nav>
+</header>
+  <main>
+<content>
+  
+  <ul class="blog-posts">
     
-      
-        <li>
-          <h2><a href="https://xuejie.space/2022_09_08_a_journey_to_the_limit/">A Journey to the Absolute Limit: CKB-VM&#39;s LLVM AOT engine</a></h2>
-          <div id=date>
-            <time>September 2022</time>
-          </div>
-        </li>
-      
+    <li>
+      <span>
+        <i>
+          <time datetime='2026-06-16'>
+            16 Jun, 2026
+          </time>
+        </i>
+      </span>
+      <a href="https://xuejie.space/2026_06_16_teeworlds_on_ckb/">Teeworlds on CKB</a>
+    </li>
     
-      
-        <li>
-          <h2><a href="https://xuejie.space/2022_08_17_is_upstream_ready_for_riscv/">Is Upstream Ready for RISC-V?</a></h2>
-          <div id=date>
-            <time>August 2022</time>
-          </div>
-        </li>
-      
+    <li>
+      <span>
+        <i>
+          <time datetime='2022-09-08'>
+            08 Sep, 2022
+          </time>
+        </i>
+      </span>
+      <a href="https://xuejie.space/2022_09_08_a_journey_to_the_limit/">A Journey to the Absolute Limit: CKB-VM&#39;s LLVM AOT engine</a>
+    </li>
     
-      
-        <li>
-          <h2><a href="https://xuejie.space/2020_04_11_diviner_a_new_attempt_on_deterministic_testing/">Diviner: A New Attempt on Deterministic Testing</a></h2>
-          <div id=date>
-            <time>April 2020</time>
-          </div>
-        </li>
-      
+    <li>
+      <span>
+        <i>
+          <time datetime='2022-08-16'>
+            16 Aug, 2022
+          </time>
+        </i>
+      </span>
+      <a href="https://xuejie.space/2022_08_17_is_upstream_ready_for_riscv/">Is Upstream Ready for RISC-V?</a>
+    </li>
     
-      
-        <li>
-          <h2><a href="https://xuejie.space/2020_04_09_language_choices/">Introduction to CKB Script Programming 10: Language Choices</a></h2>
-          <div id=date>
-            <time>April 2020</time>
-          </div>
-        </li>
-      
+    <li>
+      <span>
+        <i>
+          <time datetime='2020-04-11'>
+            11 Apr, 2020
+          </time>
+        </i>
+      </span>
+      <a href="https://xuejie.space/2020_04_11_diviner_a_new_attempt_on_deterministic_testing/">Diviner: A New Attempt on Deterministic Testing</a>
+    </li>
     
-      
-        <li>
-          <h2><a href="https://xuejie.space/2020_03_20_what_do_we_mean_when_we_say_account_model/">What Do We Mean When We Say Account Model?</a></h2>
-          <div id=date>
-            <time>March 2020</time>
-          </div>
-        </li>
-      
+    <li>
+      <span>
+        <i>
+          <time datetime='2020-04-09'>
+            09 Apr, 2020
+          </time>
+        </i>
+      </span>
+      <a href="https://xuejie.space/2020_04_09_language_choices/">Introduction to CKB Script Programming 10: Language Choices</a>
+    </li>
     
-      
-        <li>
-          <h2><a href="https://xuejie.space/2020_03_19_cycle_reduction_in_duktape/">Introduction to CKB Script Programming 9: Cycle Reductions in Duktape Script</a></h2>
-          <div id=date>
-            <time>March 2020</time>
-          </div>
-        </li>
-      
+    <li>
+      <span>
+        <i>
+          <time datetime='2020-03-20'>
+            20 Mar, 2020
+          </time>
+        </i>
+      </span>
+      <a href="https://xuejie.space/2020_03_20_what_do_we_mean_when_we_say_account_model/">What Do We Mean When We Say Account Model?</a>
+    </li>
     
-      
-        <li>
-          <h2><a href="https://xuejie.space/2020_03_16_lets_build_a_minimal_blockchain_what_is_a_blockchain/">Let&#39;s Build a Minimal Blockchain 3: What Is A Blockchain?</a></h2>
-          <div id=date>
-            <time>March 2020</time>
-          </div>
-        </li>
-      
+    <li>
+      <span>
+        <i>
+          <time datetime='2020-03-19'>
+            19 Mar, 2020
+          </time>
+        </i>
+      </span>
+      <a href="https://xuejie.space/2020_03_19_cycle_reduction_in_duktape/">Introduction to CKB Script Programming 9: Cycle Reductions in Duktape Script</a>
+    </li>
     
-      
-        <li>
-          <h2><a href="https://xuejie.space/2020_03_03_introduction_to_ckb_script_programming_performant_wasm/">Introduction to CKB Script Programming 8: Performant WASM</a></h2>
-          <div id=date>
-            <time>March 2020</time>
-          </div>
-        </li>
-      
+    <li>
+      <span>
+        <i>
+          <time datetime='2020-03-16'>
+            16 Mar, 2020
+          </time>
+        </i>
+      </span>
+      <a href="https://xuejie.space/2020_03_16_lets_build_a_minimal_blockchain_what_is_a_blockchain/">Let&#39;s Build a Minimal Blockchain 3: What Is A Blockchain?</a>
+    </li>
     
-      
-        <li>
-          <h2><a href="https://xuejie.space/2020_02_21_introduction_to_ckb_script_programming_advanced_duktape_examples/">Introduction to CKB Script Programming 7: Advanced Duktape Examples</a></h2>
-          <div id=date>
-            <time>February 2020</time>
-          </div>
-        </li>
-      
+    <li>
+      <span>
+        <i>
+          <time datetime='2020-03-02'>
+            02 Mar, 2020
+          </time>
+        </i>
+      </span>
+      <a href="https://xuejie.space/2020_03_03_introduction_to_ckb_script_programming_performant_wasm/">Introduction to CKB Script Programming 8: Performant WASM</a>
+    </li>
     
-      
-        <li>
-          <h2><a href="https://xuejie.space/2020_02_08_lets_build_a_minimal_blockchain_ultimate_upgradability/">Let&#39;s Build a Minimal Blockchain 2: Ultimate Upgradability</a></h2>
-          <div id=date>
-            <time>February 2020</time>
-          </div>
-        </li>
-      
+    <li>
+      <span>
+        <i>
+          <time datetime='2020-02-21'>
+            21 Feb, 2020
+          </time>
+        </i>
+      </span>
+      <a href="https://xuejie.space/2020_02_21_introduction_to_ckb_script_programming_advanced_duktape_examples/">Introduction to CKB Script Programming 7: Advanced Duktape Examples</a>
+    </li>
     
-      
-        <li>
-          <h2><a href="https://xuejie.space/2020_02_03_introduction_to_ckb_script_programming_type_id/">Introduction to CKB Script Programming 6: Type ID</a></h2>
-          <div id=date>
-            <time>February 2020</time>
-          </div>
-        </li>
-      
+    <li>
+      <span>
+        <i>
+          <time datetime='2020-02-08'>
+            08 Feb, 2020
+          </time>
+        </i>
+      </span>
+      <a href="https://xuejie.space/2020_02_08_lets_build_a_minimal_blockchain_ultimate_upgradability/">Let&#39;s Build a Minimal Blockchain 2: Ultimate Upgradability</a>
+    </li>
     
-      
-        <li>
-          <h2><a href="https://xuejie.space/2019_10_21_lets_build_a_minimal_blockchain_dawn/">Let&#39;s Build a Minimal Blockchain 1: Dawn</a></h2>
-          <div id=date>
-            <time>October 2019</time>
-          </div>
-        </li>
-      
+    <li>
+      <span>
+        <i>
+          <time datetime='2020-02-03'>
+            03 Feb, 2020
+          </time>
+        </i>
+      </span>
+      <a href="https://xuejie.space/2020_02_03_introduction_to_ckb_script_programming_type_id/">Introduction to CKB Script Programming 6: Type ID</a>
+    </li>
     
-      
-        <li>
-          <h2><a href="https://xuejie.space/2019_10_18_introduction_to_ckb_script_programming_debugging/">Introduction to CKB Script Programming 5: Debugging</a></h2>
-          <div id=date>
-            <time>October 2019</time>
-          </div>
-        </li>
-      
+    <li>
+      <span>
+        <i>
+          <time datetime='2019-10-21'>
+            21 Oct, 2019
+          </time>
+        </i>
+      </span>
+      <a href="https://xuejie.space/2019_10_21_lets_build_a_minimal_blockchain_dawn/">Let&#39;s Build a Minimal Blockchain 1: Dawn</a>
+    </li>
     
-      
-        <li>
-          <h2><a href="https://xuejie.space/2019_10_09_introduction_to_ckb_script_programming_wasm_on_ckb/">Introduction to CKB Script Programming 4: WebAssembly on CKB</a></h2>
-          <div id=date>
-            <time>October 2019</time>
-          </div>
-        </li>
-      
+    <li>
+      <span>
+        <i>
+          <time datetime='2019-10-18'>
+            18 Oct, 2019
+          </time>
+        </i>
+      </span>
+      <a href="https://xuejie.space/2019_10_18_introduction_to_ckb_script_programming_debugging/">Introduction to CKB Script Programming 5: Debugging</a>
+    </li>
     
-      
-        <li>
-          <h2><a href="https://xuejie.space/2019_09_06_introduction_to_ckb_script_programming_udt/">Introduction to CKB Script Programming 3: UDT</a></h2>
-          <div id=date>
-            <time>September 2019</time>
-          </div>
-        </li>
-      
+    <li>
+      <span>
+        <i>
+          <time datetime='2019-10-09'>
+            09 Oct, 2019
+          </time>
+        </i>
+      </span>
+      <a href="https://xuejie.space/2019_10_09_introduction_to_ckb_script_programming_wasm_on_ckb/">Introduction to CKB Script Programming 4: WebAssembly on CKB</a>
+    </li>
     
-      
-        <li>
-          <h2><a href="https://xuejie.space/2019_07_13_introduction_to_ckb_script_programming_script_basics/">Introduction to CKB Script Programming 2: Script Basics</a></h2>
-          <div id=date>
-            <time>July 2019</time>
-          </div>
-        </li>
-      
+    <li>
+      <span>
+        <i>
+          <time datetime='2019-09-06'>
+            06 Sep, 2019
+          </time>
+        </i>
+      </span>
+      <a href="https://xuejie.space/2019_09_06_introduction_to_ckb_script_programming_udt/">Introduction to CKB Script Programming 3: UDT</a>
+    </li>
     
-      
-        <li>
-          <h2><a href="https://xuejie.space/2019_07_05_introduction_to_ckb_script_programming_validation_model/">Introduction to CKB Script Programming 1: Validation Model</a></h2>
-          <div id=date>
-            <time>July 2019</time>
-          </div>
-        </li>
-      
+    <li>
+      <span>
+        <i>
+          <time datetime='2019-07-13'>
+            13 Jul, 2019
+          </time>
+        </i>
+      </span>
+      <a href="https://xuejie.space/2019_07_13_introduction_to_ckb_script_programming_script_basics/">Introduction to CKB Script Programming 2: Script Basics</a>
+    </li>
     
-      
+    <li>
+      <span>
+        <i>
+          <time datetime='2019-07-05'>
+            05 Jul, 2019
+          </time>
+        </i>
+      </span>
+      <a href="https://xuejie.space/2019_07_05_introduction_to_ckb_script_programming_validation_model/">Introduction to CKB Script Programming 1: Validation Model</a>
+    </li>
+    
+    <li>
+      <span>
+        <i>
+          <time datetime='2019-01-29'>
+            29 Jan, 2019
+          </time>
+        </i>
+      </span>
+      <a href="https://xuejie.space/about/">About</a>
+    </li>
     
   </ul>
-</section>
+  
+  <small>
+    <div>
+      
+    </div>
+  </small>
+  
+</content>
+
+  </main>
+  <footer>Made with <a href="https://github.com/janraasch/hugo-bearblog/">Hugo ʕ•ᴥ•ʔ Bear</a>
+</footer>
 
   
 </body>
+
 </html>
-
-

@@ -1,6 +1,8 @@
 <!DOCTYPE html>
+<html lang="en">
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
 
   <title>Xuejie Xiao's Resume</title>
 
@@ -38,7 +40,7 @@
     </div>
     <div id="profile">
       <p>
-        I am a <a href="https://speakerdeck.com/xxuejie/towards-a-true-programmable-blockchain-world-an-introduction-to-ckb-vm">system</a> software engineer also with extensive field experience practicing <a href="https://www.youtube.com/watch?v=9BGkJ4jDJdc">simplicity driven design</a>.
+        I'm a systems engineer working on <a href="https://github.com/nervosnetwork/ckb-vm">RISC-V blockchain VMs</a>, <a href="https://github.com/succinctlabs/sp1/pulls?q=is%3Apr+author%3Awakabat+perf">zkVMs</a>, <a href="https://github.com/wasmerio/wasmer/pulls?q=is%3Apr+author%3Awakabat">compilers</a>, and the <a href="https://xuejie.space/2022_09_08_a_journey_to_the_limit/">bytes underneath</a>.
       </p>
     </div>
     <div class="clear"></div>
@@ -48,59 +50,72 @@
 
       <dt>Experience</dt>
       <dd>
-        <h2>Cryptape <span>Chief Technology Officer / Remote / 2018 - 2021</span></h2>
-        <p>Started as a Software Engineer working on many aspects of the <a href="https://github.com/nervosnetwork/ckb">Nervos CKB</a> permissionless blockchain, I grew to lead the whole Cryptape technical team, working to improve the whole ecosystem around Nervos CKB. Some of my work highlights include:</p>
+        <h2>Succinct <span>Senior Software Engineer / Remote / 2025 - 2026</span></h2>
+        <p>Started on a consulting contract working on SP1's Arbitrum integration, later converted to full-time Senior Software Engineer. Departed in a company-wide reduction.</p>
         <ul>
-          <li>Designed, implemented and led the team to improve <a href="https://github.com/nervosnetwork/ckb-vm">CKB VM</a>, the core virtual machine used in Nervos CKB. CKB VM leverages <a href="https://riscv.org/">RISC-V ISA</a> directly as the virtual machine's instruction set, making it also suitable for more uses cases other than blockchains. It can achieve ~10x of native code performance using an interpreter, or ~2.34x of native code performance via an LLVM-powered AOT engine. To the best of our knowledge, CKB is the only available blockchain that ships cryptographic algorithms inside smart contracts, instead of hardcoding them.</li>
-          <li>Led the team building aML, a new smart contract programming language for Nervos CKB. The highlight of aML, is <b>formal verification</b>: not only is aML designed with first class, state of the art, source level formal verification in mind, the whole compiler for aML is also designed to be fully formally verified. Using Coq, we are collaborating with a leading research lab in the formal verification field, to bring the latest progress in the formal verification to aML.</li>
-          <li>Led the team building a series of frameworks, libraries and tools to aid dapp development in the Nervos ecosystem, including <a href="https://github.com/nervosnetwork/capsule">capsule</a>, <a href="https://github.com/nervosnetwork/lumos">lumos</a>, <a href="https://github.com/nervosnetwork/tippy">tippy</a>, <a href="https://github.com/nervosnetwork/ckb-standalone-debugger">ckb-debugger</a> and more.</li>
-          <li>Led the team building <a href="https://github.com/nervosnetwork/godwoken">godwoken</a>, the first layer 2 solution on Nervos CKB. <a href="https://github.com/nervosnetwork/godwoken-polyjuice">Polyjuice</a> was built to provide Ethereum compatible layer on top of godwoken. For more details on godwoken and polyjuice, I've written 2 architectural documents: <a href="https://github.com/nervosnetwork/godwoken/blob/develop/docs/life_of_a_godwoken_transaction.md">Life of a Godwoken Transaction</a>, and <a href="https://github.com/nervosnetwork/godwoken/blob/develop/docs/life_of_a_polyjuice_transaction.md">Life of a Polyjuice Transaction</a>.</li>
+            <li>Co-designed and implemented <a href="https://github.com/OffchainLabs/nitro/pull/4170">SP1's Arbitrum integration</a>, enabling Arbitrum to use SP1 as a proving backend.</li>
+            <li><a href="https://github.com/succinctlabs/sp1/pulls?q=is%3Apr+author%3Awakabat+perf">Optimized</a> SP1's RISC-V VM to ~3× its original throughput through targeted micro-architectural work.</li>
+            <li><a href="https://github.com/succinctlabs/sp1/pull/2594">Built</a> a process-based sandbox for JIT code isolation.</li>
+            <li><a href="https://github.com/wasmerio/wasmer/pulls?q=is%3Apr+author%3Awakabat">Extended</a> Wasmer to support RV32 as a target and improved its RV64 support.</li>
         </ul>
 
-        <h2>Citrusbyte(now TheoremOne) <span>Software Engineer / Remote / 2013 - 2018</span></h2>
-        <p>As a remote Software Engineer, I both worked and led teams on buliding assorted projects ranging from Web apps, embedded systems, as well as Linux kernel related technologies. Some of my work highlights include:</p>
+        <h2>Cryptape <span>Staff Software Engineer / Remote / 2018 - 2025</span></h2>
+        <p>Joined to build <a href="https://github.com/nervosnetwork/ckb">Nervos CKB</a>, a permissionless layer-1 blockchain. Grew into engineering leadership, including a period as CTO, then returned to a senior IC role to focus on deep VM and systems work.</p>
         <ul>
-          <li>Led the technical team building a major internal project for the retail department of one industry leading consume electronics company. The project was once used by all the retail stores of the company globally, which was also featured in one of its global marketing events.</li>
-          <li>Built the initial backend of <a href="https://www.theoremone.co/results/caterpillar">asset tracking platform</a> for Caterpillar's supply chain.</li>
-          <li>Helped build the device component of <a href="https://overwatchsec.com/">Overwatch</a> for threat and intrusion analysis. <a href="https://wiki.archlinux.org/index.php/Kernel_module">Linux kernel module</a> technology was leveraged for performance considerations.</li>
-          <li>Helped build many of the client libraries used in the <a href="https://www.theoremone.co/results/att-iot-platform">AT&amp;T M2X</a> internet of things services.</li>
+          <li>Designed, implemented and led development of <a href="https://github.com/nervosnetwork/ckb-vm">CKB VM</a>, the core virtual machine used in Nervos CKB. To the best of my knowledge, CKB VM is the first blockchain VM using <a href="https://riscv.org/">RISC-V ISA</a>. As a suite of VM implementations, CKB-VM features a hand-tuned assembly-based interpreter inspired by <a href="https://web.archive.org/web/20180331151714/http://article.gmane.org/gmane.comp.lang.lua.general/75426">LuaJIT</a>, and an <a href="https://xuejie.space/2022_09_08_a_journey_to_the_limit/">LLVM-based AOT engine</a> running in roughly 2.34× the time of native x86_64 code.</li>
+          <li>Led development of libraries and tools pioneering RISC-V software ecosystem in blockchains, including <a href="https://github.com/nervosnetwork/ckb-script-templates">build skeletons to simplify development work</a>, <a href="https://blog.cryptape.com/a-journey-optimizing-ckb-smart-contract">deep RISC-V program optimizations</a>, <a href="https://blog.cryptape.com/optimizing-c-code-for-ckb-vm">libc / libc++ porting for CKB</a>, and <a href="https://blog.cryptape.com/against-rop-attacks">comprehensive security analysis</a>.</li>
+          <li>Contributed to Nervos CKB with system-level insights, including the design of <a href="https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0050-vm-syscalls-3/0050-vm-syscalls-3.md">spawn syscalls</a>, and <a href="https://blog.cryptape.com/deterministic-debugging-of-ckbs-flaky-tests">flaky test debugging</a>.</li>
         </ul>
+
+        <h2>Citrusbyte (now TheoremOne) <span>Software Engineer / Remote / 2013 - 2018</span></h2>
+        <p>Worked on and led teams building diverse projects spanning web apps, embedded systems, and Linux kernel technologies. Led the engineering team on a major Apple Store supporting project that was featured in an Apple Keynote.</p>
 
         <h2>Google <span>Software Engineer Intern / Shanghai / 2010 - 2011</span></h2>
-        <p>Worked in the AdWords team for over a year, I helped built a series of internal and external tools, including a conversion tool for importing advertising campaigns from <a href="https://www.sklik.cz/">Sklik</a> into Google AdWords, a visualization tool for presenting AdWords potential conversion results to advertisers, and a range encoding algorithm for compressing URLs on the fly by exploiting URL patterns.</p>
+        <p>Worked in the AdWords team, helping build a series of internal and external tools, including a conversion tool for importing advertising campaigns from <a href="https://www.sklik.cz/">Sklik</a> into Google AdWords, a visualization tool for presenting AdWords potential conversion results to advertisers, and a range encoding algorithm for compressing URLs on the fly by exploiting URL patterns.</p>
 
         <h2>Open Source Work <span>Anywhere / 2011 - Now</span></h2>
-        <p>I've also contributed to open source projects from time to time. Since many of my professional work also result in open source projects, I will only include selected personal projects here:</p>
+        <p>I've also contributed to open source projects from time to time. Since much of my professional work is itself open source, I will only include selected personal projects here:</p>
         <ul>
           <li><a href="https://github.com/xxuejie/diviner">diviner</a>: a <a href="https://apple.github.io/foundationdb/testing.html">FoundationDB</a> style simulation testing framework. I've written a complete post describing this project <a href="https://xuejie.space/2020_04_11_diviner_a_new_attempt_on_deterministic_testing/">here</a>.</li>
-          <li><a href="https://github.com/xxuejie/paguridae">paguridae</a>: a Web IDE inspired from <a href="http://acme.cat-v.org/">acme</a>, using simplicity driven design principles.</li>
-          <li><a href="https://github.com/xxuejie/ckb-boxer">ckb-boxer</a>: an attempt at building a minimal CKB distribution. I've also written a post describing the project <a href="https://xuejie.space/2020_03_16_lets_build_a_minimal_blockchain_what_is_a_blockchain/">here</a>.</li>
-          <li><a href="https://github.com/xxuejie/redix_sharding">redix_sharding</a>: an Elixir based Redis sharding library</li>
+          <li><a href="https://github.com/xxuejie/paguridae">paguridae</a>: a Web IDE inspired by <a href="http://acme.cat-v.org/">acme</a>, using simplicity driven design principles.</li>
           <li><a href="https://github.com/xxuejie/sohm">sohm</a> and <a href="https://github.com/xxuejie/sohm.lua">sohm.lua</a>: a scalable variant of the <a href="http://ohm.keyvalue.org/">Object-hash mapping library for Redis</a>. The lua version was written to leverage extreme performance provided via <a href="https://openresty.org/en/">OpenResty</a>. The sohm.lua library has been deployed in an environment where 200,000+ queries per second were recorded at peak time.</li>
           <li><a href="https://github.com/xxuejie/webruby">webruby</a>: webruby brings mruby, a lightweight Ruby implementation to the browser, enabling one to run Ruby code in the browser environment. Note this project compiles mruby into <a href="https://en.wikipedia.org/wiki/Asm.js">asm.js</a>, which is the predecessor of WebAssembly. I've also been learning and trying WebAssembly since then to keep a knowledge of WebAssembly's nuts and bolts.</li>
         </ul>
       </dd>
       <dd class="clear"></dd>
 
+      <dt>Selected Writing</dt>
+      <dd>
+        <ul>
+          <li><a href="https://xuejie.space/2022_09_08_a_journey_to_the_limit/">A Journey to the Limit</a> — building an LLVM-based AOT engine that runs in roughly 2.34× the time of native x86_64 code</li>
+          <li><a href="https://blog.cryptape.com/against-rop-attacks">Against ROP Attacks</a></li>
+          <li><a href="https://blog.cryptape.com/deterministic-debugging-of-ckbs-flaky-tests">Deterministic Debugging of CKB's Flaky Tests</a></li>
+          <li><a href="https://blog.cryptape.com/a-journey-optimizing-ckb-smart-contract">A Journey Optimizing CKB Smart Contract</a></li>
+          <li><a href="https://speakerdeck.com/xxuejie/towards-a-true-programmable-blockchain-world-an-introduction-to-ckb-vm">Towards a True Programmable Blockchain World</a> (talk)</li>
+        </ul>
+      </dd>
+      <dd class="clear"></dd>
+
       <dt>Skills</dt>
       <dd>
-        <h2>Software Design</h2>
-        <p>Throughout my career I've practiced with <a href="https://www.youtube.com/watch?v=9BGkJ4jDJdc">simplicity driven design</a>. I firmly believe simplicity is the most effective weapon against complicated computer systems, as well as ever-changing domain logics.</p>
-
         <h2>Systems Programming</h2>
-        <p>I have extensive low level systems programming experience. I have built performant low level <a href="https://github.com/nervosnetwork/ckb-vm">virtual machine</a> whose bottleneck lies in modern CPU's micro-architecture, tweaked <a href="https://github.com/sparkfun/m2x-arduino">software</a> for embedded devices with extremely low memory, <a href="https://ieeexplore.ieee.org/document/7004222/">modified Hadoop</a> to unlock more potential performance.</p>
+        <p>I have extensive low-level systems programming experience. I have <a href="https://github.com/nervosnetwork/ckb-vm">authored</a> and <a href="https://github.com/succinctlabs/sp1/pulls?q=is%3Apr+author%3Awakabat+perf">optimized</a> virtual machines where bottleneck lies in modern CPU micro-architecture, tweaked <a href="https://github.com/sparkfun/m2x-arduino">software</a> for embedded devices with extremely low memory, and <a href="https://ieeexplore.ieee.org/document/7004222/">modified Hadoop</a> to unlock additional performance.</p>
 
-        <h2>WebAssembly</h2>
-        <p>I've been working with WebAssembly related technologies from <a href="https://github.com/xxuejie/webruby">the very beginning</a>, whether it is emscripten, LLVM, asm.js or the current WebAssembly. I've also been <a href="https://github.com/xxuejie/instant-riscv">up to date</a> with latest developments in the WASM world.</p>
+        <h2>Virtual Machines</h2>
+        <p>I introduced RISC-V as a practical VM architecture for blockchains through <a href="https://github.com/nervosnetwork/ckb-vm">CKB-VM</a> in 2018 and have helped pioneer its ecosystem since.</p>
+        <p>I've been working with WebAssembly related technologies from <a href="https://github.com/xxuejie/webruby">the very beginning</a>, whether it is emscripten, LLVM, asm.js or the current WebAssembly. I'm also up to date with the latest progress, both in the <a href="https://github.com/wasmerio/wasmer/pulls?q=is%3Apr+author%3Awakabat">implementations</a>, and in <a href="https://github.com/xxuejie/instant-riscv">software</a> that relies on WASM.</p>
+
+        <h2>Software Design</h2>
+        <p>Throughout my career I've practiced with <a href="https://www.youtube.com/watch?v=9BGkJ4jDJdc">simplicity driven design</a>. I firmly believe simplicity is the most effective weapon against complicated computer systems, as well as ever-changing domain logic.</p>
 
         <h2>Polyglot Programming</h2>
-        <p>Throughout my career I've been dealing with many different technologies. I'm proficient in C, Rust, Go, Ruby, JavaScript, low level assemblies on x86-64, aarch64 and RISC-V. I've also have experience (but to a lesser extent) in C++, Java, Erlang/Elixir, Lua, Python, Coq, C#, etc.</p>
+        <p>Throughout my career I've been dealing with many different technologies. I'm proficient in C/C++, Rust, Go, Ruby, JavaScript, low-level assemblies on x86-64, aarch64 and RISC-V. I also have experience (but to a lesser extent) in Java, Erlang/Elixir, Lua, Python, Coq, C#, etc.</p>
       </dd>
       <dd class="clear"></dd>
 
       <dt>Education</dt>
       <dd>
-        <h2>Syracuse University <span>PhD Fellowship Program(unfinished) / 2011 - 2013</span></h2>
+        <h2>Syracuse University <span>PhD Fellowship Program, unfinished / 2011 - 2013</span></h2>
         <p><strong>Major:</strong> Electrical and Computer Engineering</p>
         <div>Selected publications:</div>
         <ul>

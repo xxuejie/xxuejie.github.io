@@ -1,424 +1,245 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <meta name="HandheldFriendly" content="True">
-    <meta name="MobileOptimized" content="320">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="referrer" content="no-referrer">
-    
+<html lang="en-US">
 
-    
-      <link href='https://fonts.googleapis.com/css?family=Open+Sans:400|Old+Standard+TT:400&display=swap' rel='stylesheet' type='text/css'>
-    
+<head>
+  <meta http-equiv="X-Clacks-Overhead" content="GNU Terry Pratchett" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>A Journey to the Absolute Limit: CKB-VM&#39;s LLVM AOT engine | Less is more</title>
+<meta name="title" content="A Journey to the Absolute Limit: CKB-VM&#39;s LLVM AOT engine" />
+<meta name="description" content="It&rsquo;s long been a fascinating journey optimizing CKB-VM. For example, here&rsquo;s the runtime gathered when running secp256k1 verification on CKB-VM:
+|                               | µs    | Ratio  |
+|-------------------------------|-------|--------|
+| CKB-VM (Rust interpreter)     | 12034 | 316.68 |
+| CKB-VM (Assembly interpreter) |  2417 | 63.61  |
+| CKB-VM (Old AOT)              |  1741 | 45.82  |
+| Wasmtime 0.40.1               |   228 | 6.0    |
+| WAVM nightly/2022-05-14       |   185 | 4.87   |
+| Native                        |    38 | 1.0    |
+For wasm tests, we compile the same secp256k1 test program above using WASI_SDK 16." />
+<meta name="keywords" content="" />
 
-    <link rel="icon" type="image/png" href="https://xuejie.space/favicon_16x16.png" sizes="16x16">
-    <link rel="icon" type="image/png" href="https://xuejie.space/favicon_32x32.png" sizes="32x32">
-    <link rel="icon" type="image/png" href="https://xuejie.space/favicon_128x128.png" sizes="128x128">
 
-    <title>
-      
-      
-         A Journey to the Absolute Limit: CKB-VM&#39;s LLVM AOT engine 
-      
-    </title>
-    <link rel="canonical" href="https://xuejie.space/2022_09_08_a_journey_to_the_limit/">
+<meta property="og:url" content="https://xuejie.space/2022_09_08_a_journey_to_the_limit/">
+	<meta property="og:site_name" content="Less is more">
+	<meta property="og:title" content="A Journey to the Absolute Limit: CKB-VM&#39;s LLVM AOT engine">
+	<meta property="og:description" content="It’s long been a fascinating journey optimizing CKB-VM. For example, here’s the runtime gathered when running secp256k1 verification on CKB-VM:
+| | µs | Ratio | |-------------------------------|-------|--------| | CKB-VM (Rust interpreter) | 12034 | 316.68 | | CKB-VM (Assembly interpreter) | 2417 | 63.61 | | CKB-VM (Old AOT) | 1741 | 45.82 | | Wasmtime 0.40.1 | 228 | 6.0 | | WAVM nightly/2022-05-14 | 185 | 4.87 | | Native | 38 | 1.0 | For wasm tests, we compile the same secp256k1 test program above using WASI_SDK 16.">
+	<meta property="og:locale" content="en_US">
+	<meta property="og:type" content="article">
+		<meta property="article:published_time" content="2022-09-08T00:00:00+00:00">
+		<meta property="article:modified_time" content="2022-09-08T00:00:00+00:00">
 
-    <style>
-  * {
-    border:0;
-    font:inherit;
-    font-size:100%;
-    vertical-align:baseline;
-    margin:0;
-    padding:0;
-    color: black;
-    text-decoration-skip: ink;
+
+
+
+	<meta name="twitter:card" content="summary">
+	<meta name="twitter:title" content="A Journey to the Absolute Limit: CKB-VM&#39;s LLVM AOT engine">
+	<meta name="twitter:description" content="It’s long been a fascinating journey optimizing CKB-VM. For example, here’s the runtime gathered when running secp256k1 verification on CKB-VM:
+| | µs | Ratio | |-------------------------------|-------|--------| | CKB-VM (Rust interpreter) | 12034 | 316.68 | | CKB-VM (Assembly interpreter) | 2417 | 63.61 | | CKB-VM (Old AOT) | 1741 | 45.82 | | Wasmtime 0.40.1 | 228 | 6.0 | | WAVM nightly/2022-05-14 | 185 | 4.87 | | Native | 38 | 1.0 | For wasm tests, we compile the same secp256k1 test program above using WASI_SDK 16.">
+
+
+
+
+	<meta itemprop="name" content="A Journey to the Absolute Limit: CKB-VM&#39;s LLVM AOT engine">
+	<meta itemprop="description" content="It’s long been a fascinating journey optimizing CKB-VM. For example, here’s the runtime gathered when running secp256k1 verification on CKB-VM:
+| | µs | Ratio | |-------------------------------|-------|--------| | CKB-VM (Rust interpreter) | 12034 | 316.68 | | CKB-VM (Assembly interpreter) | 2417 | 63.61 | | CKB-VM (Old AOT) | 1741 | 45.82 | | Wasmtime 0.40.1 | 228 | 6.0 | | WAVM nightly/2022-05-14 | 185 | 4.87 | | Native | 38 | 1.0 | For wasm tests, we compile the same secp256k1 test program above using WASI_SDK 16.">
+	<meta itemprop="datePublished" content="2022-09-08T00:00:00+00:00">
+	<meta itemprop="dateModified" content="2022-09-08T00:00:00+00:00">
+	<meta itemprop="wordCount" content="5356">
+<meta name="referrer" content="no-referrer-when-downgrade" />
+
+  <style>
+  :root {
+    --width: 720px;
+    --font-main: Verdana, sans-serif;
+    --font-secondary: Verdana, sans-serif;
+    --font-scale: 1em;
+    --background-color: #fff;
+    --heading-color: #222;
+    --text-color: #444;
+    --link-color: #3273dc;
+    --visited-color: #8b6fcb;
+    --blockquote-color: #222;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --background-color: #01242e;
+      --heading-color: #eee;
+      --text-color: #ddd;
+      --link-color: #8cc2dd;
+      --visited-color: #8b6fcb;
+      --blockquote-color: #ccc;
+    }
   }
 
   body {
-    font-family:'Open Sans', 'Myriad Pro', Myriad, sans-serif;
-    font-size:17px;
-    line-height:160%;
-    color:#1d1313;
-    max-width:700px;
-    margin:auto;
+    font-family: var(--font-secondary);
+    font-size: var(--font-scale);
+    margin: auto;
+    padding: 20px;
+    max-width: var(--width);
+    text-align: left;
+    background-color: var(--background-color);
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    line-height: 1.5;
+    color: var(--text-color);
   }
 
-  p {
-    margin: 20px 0;
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-main);
+    color: var(--heading-color);
   }
 
-  a img {
-    border:none;
-  }
-
-  img {
-    margin: 10px auto 10px auto;
-    max-width: 100%;
-    display: block;
-  }
-
-  .left-justify {
-    float: left;
-  }
-
-  .right-justify {
-    float:right;
-  }
-
-  pre, code {
-    font: 12px Consolas, "Liberation Mono", Menlo, Courier, monospace;
-    background-color: #f7f7f7;
-  }
-
-  code {
-    font-size: 12px;
-    padding: 4px;
-  }
-
-  pre {
-    margin-top: 0;
-    margin-bottom: 16px;
-    word-wrap: normal;
-    padding: 16px;
-    overflow: auto;
-    font-size: 85%;
-    line-height: 1.45;
-  }
-
-  pre>code {
-    padding: 0;
-    margin: 0;
-    font-size: 100%;
-    word-break: normal;
-    white-space: pre;
-    background: transparent;
-    border: 0;
-  }
-
-  pre code {
-    display: inline;
-    max-width: auto;
-    padding: 0;
-    margin: 0;
-    overflow: visible;
-    line-height: inherit;
-    word-wrap: normal;
-    background-color: transparent;
-    border: 0;
-  }
-
-  pre code::before,
-  pre code::after {
-    content: normal;
-  }
-
-  em,q,em,dfn {
-    font-style:italic;
-  }
-
-  .sans,html .gist .gist-file .gist-meta {
-    font-family:"Open Sans","Myriad Pro",Myriad,sans-serif;
-  }
-
-  .mono,pre,code,tt,p code,li code {
-    font-family:Menlo,Monaco,"Andale Mono","lucida console","Courier New",monospace;
-  }
-
-  .heading,.serif,h1,h2,h3 {
-    font-family:"Old Standard TT",serif;
-  }
-
-  strong {
-    font-weight:600;
-  }
-
-  q:before {
-    content:"\201C";
-  }
-
-  q:after {
-    content:"\201D";
-  }
-
-  del,s {
-    text-decoration:line-through;
-  }
-
-  blockquote {
-    font-family:"Old Standard TT",serif;
-    text-align:center;
-    padding:50px;
-  }
-
-  blockquote p {
-    display:inline-block;
-    font-style:italic;
-  }
-
-  blockquote:before,blockquote:after {
-    font-family:"Old Standard TT",serif;
-    content:'\201C';
-    font-size:35px;
-    color:#403c3b;
-  }
-
-  blockquote:after {
-    content:'\201D';
-  }
-
-  hr {
-    width:40%;
-    height: 1px;
-    background:#403c3b;
-    margin: 25px auto;
-  }
-
-  h1 {
-    font-size:35px;
-  }
-
-  h2 {
-    font-size:28px;
-  }
-
-  h3 {
-    font-size:22px;
-    margin-top:18px;
-  }
-
-  h1 a,h2 a,h3 a {
-    text-decoration:none;
-  }
-
-  h1,h2 {
-    margin-top:28px;
-  }
-
-  #sub-header, time {
-    color:#403c3b;
-    font-size:13px;
-  }
-
-  #sub-header {
-    margin: 0 4px;
-  }
-
-  #nav h1 a {
-    font-size:35px;
-    color:#1d1313;
-    line-height:120%;
-  }
-
-  .posts_listing a,#nav a {
+  a {
+    color: var(--link-color);
+    cursor: pointer;
     text-decoration: none;
   }
 
-  li {
-    margin-left: 20px;
-  }
-
-  ul li {
-    margin-left: 5px;
-  }
-
-  ul li {
-    list-style-type: none;
-  }
-  ul li:before {
-    content:"\00BB \0020";
-  }
-
-  #nav ul li:before, .posts_listing li:before {
-    content:'';
-    margin-right:0;
-  }
-
-  #content {
-    text-align:left;
-    width:100%;
-    font-size:15px;
-    padding:60px 0 80px;
-  }
-
-  #content h1,#content h2 {
-    margin-bottom:5px;
-  }
-
-  #content h2 {
-    font-size:25px;
-  }
-
-  #content .entry-content {
-    margin-top:15px;
-  }
-
-  #content time {
-    margin-left:3px;
-  }
-
-  #content h1 {
-    font-size:30px;
-  }
-
-  .highlight {
-    margin: 10px 0;
-  }
-
-  .posts_listing {
-    margin:0 0 50px;
-  }
-
-  .posts_listing li {
-    margin:0 0 25px 15px;
-  }
-
-  .posts_listing li a:hover,#nav a:hover {
+  a:hover {
     text-decoration: underline;
   }
 
-  #nav {
-    text-align:center;
-    position:static;
-    margin-top:60px;
+  nav a {
+    margin-right: 8px;
   }
 
-  #nav ul {
-    display: table;
-    margin: 8px auto 0 auto;
+  strong,
+  b {
+    color: var(--heading-color);
   }
 
-  #nav li {
-    list-style-type:none;
-    display:table-cell;
-    font-size:15px;
-    padding: 0 20px;
+  button {
+    margin: 0;
+    cursor: pointer;
   }
 
-  #links {
-    margin: 50px 0 0 0;
+  time {
+    font-family: monospace;
+    font-style: normal;
+    font-size: 15px;
   }
 
-  #links :nth-child(2) {
-    float:right;
+  main {
+    line-height: 1.6;
   }
 
-  #not-found {
+  table {
+    width: 100%;
+  }
+
+  hr {
+    border: 0;
+    border-top: 1px dashed;
+  }
+
+  img {
+    max-width: 100%;
+  }
+
+  code {
+    font-family: monospace;
+    padding: 2px;
+    border-radius: 3px;
+  }
+
+  blockquote {
+    border-left: 1px solid #999;
+    color: var(--blockquote-color);
+    padding-left: 20px;
+    font-style: italic;
+  }
+
+  footer {
+    padding: 25px 0;
     text-align: center;
   }
 
-  #not-found a {
-    font-family:"Old Standard TT",serif;
-    font-size: 200px;
+  .title:hover {
     text-decoration: none;
-    display: inline-block;
-    padding-top: 225px;
   }
 
-  @media (max-width: 750px) {
-    body {
-      padding-left:20px;
-      padding-right:20px;
-    }
-
-    #nav h1 a {
-      font-size:28px;
-    }
-
-    #nav li {
-      font-size:13px;
-      padding: 0 15px;
-    }
-
-    #content {
-      margin-top:0;
-      padding-top:50px;
-      font-size:14px;
-    }
-
-    #content h1 {
-      font-size:25px;
-    }
-
-    #content h2 {
-      font-size:22px;
-    }
-
-    .posts_listing li div {
-      font-size:12px;
-    }
+  .title h1 {
+    font-size: 1.5em;
   }
 
-  @media (max-width: 400px) {
-    body {
-      padding-left:20px;
-      padding-right:20px;
-    }
-
-    #nav h1 a {
-      font-size:22px;
-    }
-
-    #nav li {
-      font-size:12px;
-      padding: 0 10px;
-    }
-
-    #content {
-      margin-top:0;
-      padding-top:20px;
-      font-size:12px;
-    }
-
-    #content h1 {
-      font-size:20px;
-    }
-
-    #content h2 {
-      font-size:18px;
-    }
-
-    .posts_listing li div{
-      font-size:12px;
-    }
+  .inline {
+    width: auto !important;
   }
+
+  .highlight,
+  .code {
+    border-radius: 3px;
+    margin-block-start: 1em;
+    margin-block-end: 1em;
+    overflow-x: auto;
+  }
+
+  .highlight pre,
+  .code pre {
+    min-width: 100%;
+    width: max-content;
+  }
+
+   
+  ul.blog-posts {
+    list-style-type: none;
+    padding: unset;
+  }
+
+  ul.blog-posts li {
+    display: flex;
+  }
+
+  ul.blog-posts li span {
+    flex: 0 0 130px;
+  }
+
+  ul.blog-posts li a:visited {
+    color: var(--visited-color);
+  }
+
 </style>
 
+</head>
 
-    
-  </head>
+<body>
+  <header><a href="https://xuejie.space/" class="title">
+  <h2>Less is more</h2>
+</a>
+<nav>
+<a href="https://xuejie.space/resume.html">Resume</a>
 
-  <body>
-    <section id=nav>
-      <h1><a href="https://xuejie.space/">Less is More</a></h1>
-      <ul>
-        
-          <li><a href="https://xuejie.space/about">About</a></li>
-        
-          <li><a href="https://github.com/xxuejie">GitHub</a></li>
-        
-          <li><a href="https://xuejie.space/index.xml">RSS</a></li>
-        
-          <li><a href="https://twitter.com/xxuejie">Twitter</a></li>
-        
-      </ul>
-    </section>
+<a href="https://twitter.com/xxuejie">Twitter</a>
 
+<a href="https://github.com/xxuejie">GitHub</a>
 
-<section id=content>
-  <h1> A Journey to the Absolute Limit: CKB-VM&#39;s LLVM AOT engine </h1>
+<a href="https://xuejie.space/index.xml">RSS</a>
 
-  
-    <div id=sub-header>
-      September 2022 · 26 minute read
-    </div>
-  
+</nav>
+</header>
+  <main>
 
-  <div class="entry-content">
-    <p>It&rsquo;s long been a fascinating journey optimizing <a href="https://github.com/nervosnetwork/ckb-vm">CKB-VM</a>. For example, here&rsquo;s the runtime gathered when running <a href="https://github.com/xxuejie/ckb-vm-bench-scripts/blob/1a3d3c7141ba96674d655269bb61e76100508a4d/c/secp256k1_bench.c">secp256k1</a> verification on CKB-VM:</p>
-<pre><code>|                               | µs    | Ratio  |
+<h1>A Journey to the Absolute Limit: CKB-VM&#39;s LLVM AOT engine</h1>
+<p>
+  <i>
+    <time datetime='2022-09-08'>
+      08 Sep, 2022
+    </time>
+  </i>
+</p>
+
+<content>
+  <p>It&rsquo;s long been a fascinating journey optimizing <a href="https://github.com/nervosnetwork/ckb-vm">CKB-VM</a>. For example, here&rsquo;s the runtime gathered when running <a href="https://github.com/xxuejie/ckb-vm-bench-scripts/blob/1a3d3c7141ba96674d655269bb61e76100508a4d/c/secp256k1_bench.c">secp256k1</a> verification on CKB-VM:</p>
+<pre tabindex="0"><code>|                               | µs    | Ratio  |
 |-------------------------------|-------|--------|
 | CKB-VM (Rust interpreter)     | 12034 | 316.68 |
 | CKB-VM (Assembly interpreter) |  2417 | 63.61  |
@@ -429,7 +250,7 @@
 </code></pre><p>For wasm tests, we compile the same secp256k1 test program above using <a href="https://github.com/WebAssembly/wasi-sdk">WASI_SDK</a> 16.</p>
 <p>CKB now uses the assembly interpreter in production, which takes roughly 63 times the runtime of the native version to run the same code.</p>
 <p>While the number above is good enough for its initial use case, the optimization work does not stop here. In an <a href="https://github.com/xxuejie/ckb-vm/tree/rvv-crypto">experimental</a> <a href="https://github.com/xxuejie/rvv-prototype/tree/rvv-crypto/bn128-example/src/rvv_crypto">branch</a>, CKB-VM, with <a href="https://github.com/riscv/riscv-v-spec">RISC-V V extension</a> enabled, can achieve the following benchmark results performing <a href="https://eips.ethereum.org/EIPS/eip-197">alt_bn128 pairing check</a> used in <a href="https://github.com/ethereum/go-ethereum/blob/8363f79f8fd735d6264e7549e7f861467fbf6c78/core/vm/contracts_test.go#L262">ethereum</a>.</p>
-<pre><code>| test              | CKB-VM (ns)  | Native (ns) | Slowdown Ratio |
+<pre tabindex="0"><code>| test              | CKB-VM (ns)  | Native (ns) | Slowdown Ratio |
 |-------------------|--------------|-------------|----------------|
 | jeff1             |     22849143 |     2201627 |    10.37829887 |
 | jeff2             |     22821825 |     2370538 |    9.627276593 |
@@ -448,7 +269,7 @@
 </code></pre><p>Note that the 2 tables shown above uses different time metric: the previous one is measured in microseconds, while the latter one is in nanoseconds.</p>
 <p>This means with the help of V extension, CKB-VM can run the same algorithm within an order of magnitude compared to native code. And let&rsquo;s not forget that CKB-VM tested here is still a simple interpreter design, which personally I think is already quite a decent result.</p>
 <p>And we can go even further than this:</p>
-<pre><code>$ git clone https://github.com/xxuejie/ckb-vm-bench-scripts
+<pre tabindex="0"><code>$ git clone https://github.com/xxuejie/ckb-vm-bench-scripts
 $ cd ckb-vm-bench-scripts
 $ git checkout 1a3d3c7141ba96674d655269bb61e76100508a4d
 $ git submodule update --init --recursive
@@ -468,7 +289,7 @@ Time to run program: 886.551225ms
 <li>Use the LLVM AOT engine to run the secp256k1 verification code</li>
 </ul>
 <p>Log shows that it takes about 886.55 milliseconds to do 10000 secp256k1 verifications. If we do the math, this means the new LLVM AOT engine can do 1 secp256k1 verification in 88.655 microseconds, Which is merely <strong>2.34x</strong> of native speed! Now we can complete the benchmark:</p>
-<pre><code>|                               | µs    | Ratio  |
+<pre tabindex="0"><code>|                               | µs    | Ratio  |
 |-------------------------------|-------|--------|
 | CKB-VM (Rust interpreter)     | 12034 | 316.68 |
 | CKB-VM (Assembly interpreter) |  2417 | 63.61  |
@@ -496,7 +317,7 @@ Time to run program: 886.551225ms
 <p>First thing here is the interpreter overhead of course. All interpreters, no matter how fast they are, will contain decoding &amp; cleanup work, which are useless to the actual computation but still consumes time. I touched this on a previous <a href="https://docs.google.com/presentation/d/163YaHngpbm9aaYxu2jhPHU0OefHLf-7d537BCQFmLdE/edit?usp=sharing">presentation</a>, note please do ignore the benchmark numbers included in the slides, they are done in a defected way, while the numbers include in this post are more recent, and are to the best of my knowledge, performed in a more precise way.</p>
 <p>To aim at the absolute limit, we will have to <em>compile</em> RISC-V assemblies to native assemblies for the host platform somehow. The old AOT engine uses <a href="https://luajit.org/dynasm.html">dynasm</a> for this task. Looking back now, I wouldn&rsquo;t really say that the old AOT engine is <em>compiling</em> the code, it&rsquo;s more like <em>transpiling</em> each RISC-V instruction one by one into a few assemblies for the native platform. This actually makes sense, since dynasm really stands for <code>dynamic assembler</code>. Even in LuaJIT, the original use case for dynasm, it&rsquo;s only the interpreter that is built via dynasm, the underlying JIT uses a different code emitting solution with a whole lot of optimizations sitting on top. In a nutshell, the old AOT engine is merely <em>assembling</em> code, not <em>compiling</em> code.</p>
 <p>I don&rsquo;t have the time to build a full compiler with a lot of moving parts, nor do I think I can compete with some of the best minds in our industry. That brings me to a common solution: LLVM will be leveraged here as the workhorse to <em>compile</em> RISC-V assemblies to native code. Here&rsquo;s one funny story to support the above argument: while working on the LLVM AOT engine, I used <a href="https://github.com/nervosnetwork/ckb-vm/blob/4575b0b423b726f3e98b8093481d1d0bfc9efbe7/tests/programs/mop_adc.S">this program</a> as a simple test to build the LLVM glue part, and LLVM took the liberty of optimizing this whole program to the following native code:</p>
-<pre><code>0000000000000000 &lt;function_10078&gt;:
+<pre tabindex="0"><code>0000000000000000 &lt;function_10078&gt;:
    0:    49 c7 44 24 38 01 00     movq   $0x1,0x38(%r12)
    7:    00 00 
    9:    41 c6 84 24 21 01 00     movb   $0x2,0x121(%r12)
@@ -519,7 +340,7 @@ Time to run program: 886.551225ms
 <p>That being said, there is still difference between the 2 AOT engines: the old AOT engine generates a bulk of binary data, all one needs to do, is marking the binary data as executable in memory, and the old AOT engine is good for execution. One can even save the binary data locally to a plain file, then load it back to memory later for execution. The LLVM AOT engine, on the other hand, would generate object file, one either statically links the object file with his/her program, or further build a dynamic linking library from the object file, then loads it dynamcally via <code>dlopen</code> at runtime. Either way, the LLVM AOT engine is more leaning into the build process, than a runtime component.</p>
 <h3 id="ast-preprocessor">AST Preprocessor</h3>
 <p>Luckily, the <a href="https://github.com/nervosnetwork/ckb-vm/blob/4575b0b423b726f3e98b8093481d1d0bfc9efbe7/src/instructions/ast.rs#L46">AST data structure</a> used in the old AOT engine is still usable. While a direct documentation on the AST is not available, an <a href="https://github.com/xxuejie/ckb-vm-contrib/blob/65582d7d609180fd7ce923a8260e671d643aa9e6/src/ast_interpreter.rs#L10">AST interpreter function</a> combined with trait implementations on <a href="https://github.com/nervosnetwork/ckb-vm/blob/4575b0b423b726f3e98b8093481d1d0bfc9efbe7/src/instructions/register.rs#L413">u64 type</a> provides a reference implementation on AST semantics. Like the old AOT module, an <a href="https://github.com/xxuejie/ckb-vm-contrib/blob/65582d7d609180fd7ce923a8260e671d643aa9e6/src/llvm_aot/ast.rs#L146">AstMachine</a> is built so we can <em>execute</em> RISC-V instructions on the AstMachine, reducing RISC-V instruction semantics to simplified register &amp; memory writes using simple AST values, much like the example below:</p>
-<pre><code>  Basic block (insts: 9) 0x101bc-0x101d6:
+<pre tabindex="0"><code>  Basic block (insts: 9) 0x101bc-0x101d6:
   Possible targets after block: 0x1a4d4, 0x101d6
     Write batch 0
       Register[ a5 ] = 0x20
@@ -540,7 +361,7 @@ Time to run program: 886.551225ms
     Call to 0x1a4d4 (with writes) (sha3_update)
       Register[ ra ] = 0x101d6
 </code></pre><p>Which corresponds to the following original RISC-V instructions:</p>
-<pre><code>   101bc:	02000793          	li	a5,32
+<pre tabindex="0"><code>   101bc:	02000793          	li	a5,32
    101c0:	16f12c23          	sw	a5,376(sp)
    101c4:	47c5                	li	a5,17
    101c6:	178e                	slli	a5,a5,0x23
@@ -561,7 +382,7 @@ Time to run program: 886.551225ms
 </ol>
 <p>After the <code>preprocess</code> function, we will have a set of functions consisting of basic blocks, each basic block will also contain a series of <code>writes</code> and <code>control</code> changes. Those shall be directly fed into the LLVM engine for actual code generation.</p>
 <p>If you have followed the previous steps to run the LLVM AOT engine, you can use the following command to take a peek at the output from the <code>preprocess</code> function:</p>
-<pre><code>$ ckb-vm-llvm-aoter -i ./build/secp256k1_bench --generate writes
+<pre tabindex="0"><code>$ ckb-vm-llvm-aoter -i ./build/secp256k1_bench --generate writes
 </code></pre><h3 id="register-allocation">Register Allocation</h3>
 <p>Aiming at the upper limit, register allocation will be a huge topic. RISC-V has 32 general purpose registers with one additional PC register, while x64 only grants us 16 general purpose registers, one of them (<code>rsp</code>) has to keep the native stack. In the interpreter design of CKB-VM, all RISC-V registers are kept in memory. Even though the old AOT engine tries to tackle this problem, only <code>ra</code>, <code>sp</code> and <code>a0</code> are kept in x64 registers. Others will be used for bookkeeping reasons, including 5 temporary registers due to a lack of register allocator! While I do believe the memory used to keep RISC-V registers will most likely be in CPU cache, still it prevents the CPU from doing renaming for better performance, unless running on <a href="https://www.agner.org/forum/viewtopic.php?t=41">very recent CPU</a>. Even so, there are quirks we might run into, chances are the performance is still not on par.</p>
 <p>Drawing <a href="https://home.in.tum.de/~engelke/pubs/2104-vee-slides.pdf">inspirations</a> from the acedemia, <a href="https://reviews.llvm.org/D12681">HHVM calling convention</a> can be used for this problem. First used by <a href="https://github.com/facebook/hhvm/blob/master/hphp/doc/hackers-guide/jit-core.md">HHVM JIT</a>, this special calling convention allows a function to have 15 arguments all put in registers, and also return 14 arguments in registers. In LLVM AOT engine, we design the code so each RISC-V function is generated into one native x64 function. Except for one argument used to keep a pointer to the <code>LlvmAotMachineData</code> struct, 14 x64 registers can be used to keep 14 hot RISC-V registers, and when the function returns, the updated values for those 14 RISC-V registers can also be returned as function arguments, to the caller function. This way we can keep as many RISC-V registers in x64 registers as possible. When temporary registers are needed(e.g: the unfortunate restriction that shift operands can only live in <code>rcx</code>, or that <code>mul</code>/<code>div</code> only affects <code>rax</code>/<code>rdx</code>), we can trust LLVM to help us perform correct register spills. This results in the following workflow:</p>
@@ -595,7 +416,7 @@ Time to run program: 886.551225ms
 <h3 id="calls">Calls</h3>
 <p>To best aid modern CPU&rsquo;s branch predictors, LLVM AOT engine compiles each RISC-V function into each x86 host function. Each RISC-V function call is also transformed into an x86 host function call. This choice has implications on both sides:</p>
 <p>On the good side, it simplifies the handling of returns. Take the following RISC-V function for example:</p>
-<pre><code>000000000001209c &lt;secp256k1_pubkey_load&gt;:
+<pre tabindex="0"><code>000000000001209c &lt;secp256k1_pubkey_load&gt;:
    1209c:	711d                	addi	sp,sp,-96
    1209e:	87b2                	mv	a5,a2
    120a0:	e8a2                	sd	s0,80(sp)
@@ -625,7 +446,7 @@ Time to run program: 886.551225ms
 <li>The RISC-V return address is kept in RISC-V&rsquo;s <code>RA</code> register, whether it&rsquo;s kept in a x64 register or in memory</li>
 </ul>
 <p>Here&rsquo;s the return part from <code>memcpy</code>:</p>
-<pre><code>   1b22c:	9be1                	andi	a5,a5,-8
+<pre tabindex="0"><code>   1b22c:	9be1                	andi	a5,a5,-8
    1b22e:	07a1                	addi	a5,a5,8
    1b230:	973e                	add	a4,a4,a5
    1b232:	95be                	add	a1,a1,a5
@@ -644,7 +465,7 @@ Time to run program: 886.551225ms
 <h3 id="hurdling-special-code-path">Hurdling Special Code Path</h3>
 <p>Modern compilers are sophisticated enough that they would build all kinds of tricks to make program run fast. This means some program, while adhering the RISC-V specification as well as calling convention, might come as a surprise for us. We do want to make as many programs as possible to run <em>fast</em> on the LLVM AOT engine, this means sometimes we will have to cope with such successes. Here&rsquo;s a story making unrolled <code>memset</code> to run <em>fast</em>.</p>
 <p>The memset talked about lives at <a href="https://github.com/nervosnetwork/riscv-newlib/blob/04f240198c1451b853d8f84b6df99ecf510e3a0c/newlib/libc/string/memset.c#L38">here</a>, when compiled with GCC, the following code would be generated:</p>
-<pre><code>000000000001b2c8 &lt;memset&gt;:
+<pre tabindex="0"><code>000000000001b2c8 &lt;memset&gt;:
    ...
    1b2ee:	40c306b3          	sub	a3,t1,a2
    1b2f2:	068a                	slli	a3,a3,0x2
@@ -724,19 +545,19 @@ Time to run program: 886.551225ms
 <h2 id="conclusion">Conclusion</h2>
 <p>I still have some other topics I want to talk about but this is already a super long one. It probably is better to save for another day. In the meantime, the introduction on the LLVM AOT engine is rather complete. Let&rsquo;s hope we can put it to good use :)</p>
 
-  </div>
+</content>
 
-  <div id=links>
-    
-      <a class="basic-alignment left" href="https://xuejie.space/2022_08_17_is_upstream_ready_for_riscv/">&laquo; Is Upstream Ready for RISC-V?</a>
-    
-    
-  </div>
-</section>
+
+
+<p>
+  
+</p>
+
+  </main>
+  <footer>Made with <a href="https://github.com/janraasch/hugo-bearblog/">Hugo ʕ•ᴥ•ʔ Bear</a>
+</footer>
 
   
 </body>
+
 </html>
-
-
-

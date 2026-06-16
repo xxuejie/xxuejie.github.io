@@ -1,423 +1,236 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <meta name="HandheldFriendly" content="True">
-    <meta name="MobileOptimized" content="320">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="referrer" content="no-referrer">
-    
+<html lang="en-US">
 
-    
-      <link href='https://fonts.googleapis.com/css?family=Open+Sans:400|Old+Standard+TT:400&display=swap' rel='stylesheet' type='text/css'>
-    
+<head>
+  <meta http-equiv="X-Clacks-Overhead" content="GNU Terry Pratchett" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Let&#39;s Build a Minimal Blockchain 3: What Is A Blockchain? | Less is more</title>
+<meta name="title" content="Let&#39;s Build a Minimal Blockchain 3: What Is A Blockchain?" />
+<meta name="description" content="If you have followed through this series, you would find the title quite misleading: I&rsquo;m not gonna build the actual blockchain, I&rsquo;m just dumping random ideas in the design of modern blockchains. Sadly this series is gonna be of contents like this for a while, at least till I have dumped all the ideas in my head, and I have got some time to do the actual coding part.
+Another issue of this series, is that so far it&rsquo;s just full of ideas and no concrete examples. This can be changed easily, in this article we will have real examples to play with. But first let&rsquo;s get to the question: what is a blockchain?" />
+<meta name="keywords" content="" />
 
-    <link rel="icon" type="image/png" href="https://xuejie.space/favicon_16x16.png" sizes="16x16">
-    <link rel="icon" type="image/png" href="https://xuejie.space/favicon_32x32.png" sizes="32x32">
-    <link rel="icon" type="image/png" href="https://xuejie.space/favicon_128x128.png" sizes="128x128">
 
-    <title>
-      
-      
-         Let&#39;s Build a Minimal Blockchain 3: What Is A Blockchain? 
-      
-    </title>
-    <link rel="canonical" href="https://xuejie.space/2020_03_16_lets_build_a_minimal_blockchain_what_is_a_blockchain/">
+<meta property="og:url" content="https://xuejie.space/2020_03_16_lets_build_a_minimal_blockchain_what_is_a_blockchain/">
+	<meta property="og:site_name" content="Less is more">
+	<meta property="og:title" content="Let&#39;s Build a Minimal Blockchain 3: What Is A Blockchain?">
+	<meta property="og:description" content="If you have followed through this series, you would find the title quite misleading: I’m not gonna build the actual blockchain, I’m just dumping random ideas in the design of modern blockchains. Sadly this series is gonna be of contents like this for a while, at least till I have dumped all the ideas in my head, and I have got some time to do the actual coding part.
+Another issue of this series, is that so far it’s just full of ideas and no concrete examples. This can be changed easily, in this article we will have real examples to play with. But first let’s get to the question: what is a blockchain?">
+	<meta property="og:locale" content="en_US">
+	<meta property="og:type" content="article">
+		<meta property="article:published_time" content="2020-03-16T00:00:00+00:00">
+		<meta property="article:modified_time" content="2020-03-16T00:00:00+00:00">
 
-    <style>
-  * {
-    border:0;
-    font:inherit;
-    font-size:100%;
-    vertical-align:baseline;
-    margin:0;
-    padding:0;
-    color: black;
-    text-decoration-skip: ink;
+
+
+
+	<meta name="twitter:card" content="summary">
+	<meta name="twitter:title" content="Let&#39;s Build a Minimal Blockchain 3: What Is A Blockchain?">
+	<meta name="twitter:description" content="If you have followed through this series, you would find the title quite misleading: I’m not gonna build the actual blockchain, I’m just dumping random ideas in the design of modern blockchains. Sadly this series is gonna be of contents like this for a while, at least till I have dumped all the ideas in my head, and I have got some time to do the actual coding part.
+Another issue of this series, is that so far it’s just full of ideas and no concrete examples. This can be changed easily, in this article we will have real examples to play with. But first let’s get to the question: what is a blockchain?">
+
+
+
+
+	<meta itemprop="name" content="Let&#39;s Build a Minimal Blockchain 3: What Is A Blockchain?">
+	<meta itemprop="description" content="If you have followed through this series, you would find the title quite misleading: I’m not gonna build the actual blockchain, I’m just dumping random ideas in the design of modern blockchains. Sadly this series is gonna be of contents like this for a while, at least till I have dumped all the ideas in my head, and I have got some time to do the actual coding part.
+Another issue of this series, is that so far it’s just full of ideas and no concrete examples. This can be changed easily, in this article we will have real examples to play with. But first let’s get to the question: what is a blockchain?">
+	<meta itemprop="datePublished" content="2020-03-16T00:00:00+00:00">
+	<meta itemprop="dateModified" content="2020-03-16T00:00:00+00:00">
+	<meta itemprop="wordCount" content="2059">
+<meta name="referrer" content="no-referrer-when-downgrade" />
+
+  <style>
+  :root {
+    --width: 720px;
+    --font-main: Verdana, sans-serif;
+    --font-secondary: Verdana, sans-serif;
+    --font-scale: 1em;
+    --background-color: #fff;
+    --heading-color: #222;
+    --text-color: #444;
+    --link-color: #3273dc;
+    --visited-color: #8b6fcb;
+    --blockquote-color: #222;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --background-color: #01242e;
+      --heading-color: #eee;
+      --text-color: #ddd;
+      --link-color: #8cc2dd;
+      --visited-color: #8b6fcb;
+      --blockquote-color: #ccc;
+    }
   }
 
   body {
-    font-family:'Open Sans', 'Myriad Pro', Myriad, sans-serif;
-    font-size:17px;
-    line-height:160%;
-    color:#1d1313;
-    max-width:700px;
-    margin:auto;
+    font-family: var(--font-secondary);
+    font-size: var(--font-scale);
+    margin: auto;
+    padding: 20px;
+    max-width: var(--width);
+    text-align: left;
+    background-color: var(--background-color);
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    line-height: 1.5;
+    color: var(--text-color);
   }
 
-  p {
-    margin: 20px 0;
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-main);
+    color: var(--heading-color);
   }
 
-  a img {
-    border:none;
-  }
-
-  img {
-    margin: 10px auto 10px auto;
-    max-width: 100%;
-    display: block;
-  }
-
-  .left-justify {
-    float: left;
-  }
-
-  .right-justify {
-    float:right;
-  }
-
-  pre, code {
-    font: 12px Consolas, "Liberation Mono", Menlo, Courier, monospace;
-    background-color: #f7f7f7;
-  }
-
-  code {
-    font-size: 12px;
-    padding: 4px;
-  }
-
-  pre {
-    margin-top: 0;
-    margin-bottom: 16px;
-    word-wrap: normal;
-    padding: 16px;
-    overflow: auto;
-    font-size: 85%;
-    line-height: 1.45;
-  }
-
-  pre>code {
-    padding: 0;
-    margin: 0;
-    font-size: 100%;
-    word-break: normal;
-    white-space: pre;
-    background: transparent;
-    border: 0;
-  }
-
-  pre code {
-    display: inline;
-    max-width: auto;
-    padding: 0;
-    margin: 0;
-    overflow: visible;
-    line-height: inherit;
-    word-wrap: normal;
-    background-color: transparent;
-    border: 0;
-  }
-
-  pre code::before,
-  pre code::after {
-    content: normal;
-  }
-
-  em,q,em,dfn {
-    font-style:italic;
-  }
-
-  .sans,html .gist .gist-file .gist-meta {
-    font-family:"Open Sans","Myriad Pro",Myriad,sans-serif;
-  }
-
-  .mono,pre,code,tt,p code,li code {
-    font-family:Menlo,Monaco,"Andale Mono","lucida console","Courier New",monospace;
-  }
-
-  .heading,.serif,h1,h2,h3 {
-    font-family:"Old Standard TT",serif;
-  }
-
-  strong {
-    font-weight:600;
-  }
-
-  q:before {
-    content:"\201C";
-  }
-
-  q:after {
-    content:"\201D";
-  }
-
-  del,s {
-    text-decoration:line-through;
-  }
-
-  blockquote {
-    font-family:"Old Standard TT",serif;
-    text-align:center;
-    padding:50px;
-  }
-
-  blockquote p {
-    display:inline-block;
-    font-style:italic;
-  }
-
-  blockquote:before,blockquote:after {
-    font-family:"Old Standard TT",serif;
-    content:'\201C';
-    font-size:35px;
-    color:#403c3b;
-  }
-
-  blockquote:after {
-    content:'\201D';
-  }
-
-  hr {
-    width:40%;
-    height: 1px;
-    background:#403c3b;
-    margin: 25px auto;
-  }
-
-  h1 {
-    font-size:35px;
-  }
-
-  h2 {
-    font-size:28px;
-  }
-
-  h3 {
-    font-size:22px;
-    margin-top:18px;
-  }
-
-  h1 a,h2 a,h3 a {
-    text-decoration:none;
-  }
-
-  h1,h2 {
-    margin-top:28px;
-  }
-
-  #sub-header, time {
-    color:#403c3b;
-    font-size:13px;
-  }
-
-  #sub-header {
-    margin: 0 4px;
-  }
-
-  #nav h1 a {
-    font-size:35px;
-    color:#1d1313;
-    line-height:120%;
-  }
-
-  .posts_listing a,#nav a {
+  a {
+    color: var(--link-color);
+    cursor: pointer;
     text-decoration: none;
   }
 
-  li {
-    margin-left: 20px;
-  }
-
-  ul li {
-    margin-left: 5px;
-  }
-
-  ul li {
-    list-style-type: none;
-  }
-  ul li:before {
-    content:"\00BB \0020";
-  }
-
-  #nav ul li:before, .posts_listing li:before {
-    content:'';
-    margin-right:0;
-  }
-
-  #content {
-    text-align:left;
-    width:100%;
-    font-size:15px;
-    padding:60px 0 80px;
-  }
-
-  #content h1,#content h2 {
-    margin-bottom:5px;
-  }
-
-  #content h2 {
-    font-size:25px;
-  }
-
-  #content .entry-content {
-    margin-top:15px;
-  }
-
-  #content time {
-    margin-left:3px;
-  }
-
-  #content h1 {
-    font-size:30px;
-  }
-
-  .highlight {
-    margin: 10px 0;
-  }
-
-  .posts_listing {
-    margin:0 0 50px;
-  }
-
-  .posts_listing li {
-    margin:0 0 25px 15px;
-  }
-
-  .posts_listing li a:hover,#nav a:hover {
+  a:hover {
     text-decoration: underline;
   }
 
-  #nav {
-    text-align:center;
-    position:static;
-    margin-top:60px;
+  nav a {
+    margin-right: 8px;
   }
 
-  #nav ul {
-    display: table;
-    margin: 8px auto 0 auto;
+  strong,
+  b {
+    color: var(--heading-color);
   }
 
-  #nav li {
-    list-style-type:none;
-    display:table-cell;
-    font-size:15px;
-    padding: 0 20px;
+  button {
+    margin: 0;
+    cursor: pointer;
   }
 
-  #links {
-    margin: 50px 0 0 0;
+  time {
+    font-family: monospace;
+    font-style: normal;
+    font-size: 15px;
   }
 
-  #links :nth-child(2) {
-    float:right;
+  main {
+    line-height: 1.6;
   }
 
-  #not-found {
+  table {
+    width: 100%;
+  }
+
+  hr {
+    border: 0;
+    border-top: 1px dashed;
+  }
+
+  img {
+    max-width: 100%;
+  }
+
+  code {
+    font-family: monospace;
+    padding: 2px;
+    border-radius: 3px;
+  }
+
+  blockquote {
+    border-left: 1px solid #999;
+    color: var(--blockquote-color);
+    padding-left: 20px;
+    font-style: italic;
+  }
+
+  footer {
+    padding: 25px 0;
     text-align: center;
   }
 
-  #not-found a {
-    font-family:"Old Standard TT",serif;
-    font-size: 200px;
+  .title:hover {
     text-decoration: none;
-    display: inline-block;
-    padding-top: 225px;
   }
 
-  @media (max-width: 750px) {
-    body {
-      padding-left:20px;
-      padding-right:20px;
-    }
-
-    #nav h1 a {
-      font-size:28px;
-    }
-
-    #nav li {
-      font-size:13px;
-      padding: 0 15px;
-    }
-
-    #content {
-      margin-top:0;
-      padding-top:50px;
-      font-size:14px;
-    }
-
-    #content h1 {
-      font-size:25px;
-    }
-
-    #content h2 {
-      font-size:22px;
-    }
-
-    .posts_listing li div {
-      font-size:12px;
-    }
+  .title h1 {
+    font-size: 1.5em;
   }
 
-  @media (max-width: 400px) {
-    body {
-      padding-left:20px;
-      padding-right:20px;
-    }
-
-    #nav h1 a {
-      font-size:22px;
-    }
-
-    #nav li {
-      font-size:12px;
-      padding: 0 10px;
-    }
-
-    #content {
-      margin-top:0;
-      padding-top:20px;
-      font-size:12px;
-    }
-
-    #content h1 {
-      font-size:20px;
-    }
-
-    #content h2 {
-      font-size:18px;
-    }
-
-    .posts_listing li div{
-      font-size:12px;
-    }
+  .inline {
+    width: auto !important;
   }
+
+  .highlight,
+  .code {
+    border-radius: 3px;
+    margin-block-start: 1em;
+    margin-block-end: 1em;
+    overflow-x: auto;
+  }
+
+  .highlight pre,
+  .code pre {
+    min-width: 100%;
+    width: max-content;
+  }
+
+   
+  ul.blog-posts {
+    list-style-type: none;
+    padding: unset;
+  }
+
+  ul.blog-posts li {
+    display: flex;
+  }
+
+  ul.blog-posts li span {
+    flex: 0 0 130px;
+  }
+
+  ul.blog-posts li a:visited {
+    color: var(--visited-color);
+  }
+
 </style>
 
+</head>
 
-    
-  </head>
+<body>
+  <header><a href="https://xuejie.space/" class="title">
+  <h2>Less is more</h2>
+</a>
+<nav>
+<a href="https://xuejie.space/resume.html">Resume</a>
 
-  <body>
-    <section id=nav>
-      <h1><a href="https://xuejie.space/">Less is More</a></h1>
-      <ul>
-        
-          <li><a href="https://xuejie.space/about">About</a></li>
-        
-          <li><a href="https://github.com/xxuejie">GitHub</a></li>
-        
-          <li><a href="https://xuejie.space/index.xml">RSS</a></li>
-        
-          <li><a href="https://twitter.com/xxuejie">Twitter</a></li>
-        
-      </ul>
-    </section>
+<a href="https://twitter.com/xxuejie">Twitter</a>
 
+<a href="https://github.com/xxuejie">GitHub</a>
 
-<section id=content>
-  <h1> Let&#39;s Build a Minimal Blockchain 3: What Is A Blockchain? </h1>
+<a href="https://xuejie.space/index.xml">RSS</a>
 
-  
-    <div id=sub-header>
-      March 2020 · 10 minute read
-    </div>
-  
+</nav>
+</header>
+  <main>
 
-  <div class="entry-content">
-    <p>If you have followed through this series, you would find the title quite misleading: I&rsquo;m not gonna build the actual blockchain, I&rsquo;m just dumping random ideas in the design of modern blockchains. Sadly this series is gonna be of contents like this for a while, at least till I have dumped all the ideas in my head, and I have got some time to do the actual coding part.</p>
+<h1>Let&#39;s Build a Minimal Blockchain 3: What Is A Blockchain?</h1>
+<p>
+  <i>
+    <time datetime='2020-03-16'>
+      16 Mar, 2020
+    </time>
+  </i>
+</p>
+
+<content>
+  <p>If you have followed through this series, you would find the title quite misleading: I&rsquo;m not gonna build the actual blockchain, I&rsquo;m just dumping random ideas in the design of modern blockchains. Sadly this series is gonna be of contents like this for a while, at least till I have dumped all the ideas in my head, and I have got some time to do the actual coding part.</p>
 <p>Another issue of this series, is that so far it&rsquo;s just full of ideas and no concrete examples. This can be changed easily, in this article we will have real examples to play with. But first let&rsquo;s get to the question: what is a blockchain?</p>
 <p>One obvious way to answer that, is whatever is published by the blockchain authors can be consider a blockchain. You can treat the Bitcoin binary released by Bitcoin developers as the Bitcoin blockchain, you can also think the CKB releases as the CKB blockchain. But is this the real answer? Let&rsquo;s think deeper: what is the part that uniquely defines a blockchain? Foundamentally, what is the part that uniquely defines one blockchain, such as CKB, from other blockchains, such as Bitcoin, or Ethereum.</p>
 <p>Personally, I feel the answer here, is the consensus protocol, in other words, the logic used to verify a block. If this part is changed, CKB will not be CKB anymore, Bitcoin will also not be Bitcoin. At the very core part, it really is the block accepting code, that truly defines a blockchain.</p>
@@ -440,15 +253,15 @@
 </ul>
 <p>Different people might have different angles, personally, I would classify this as a syncing protocol as well. Yes it only syncs blocks from another node, it never relays blocks to other nodes, but it fulfills the purpose of downloading all the blocks and create a node one can use.</p>
 <p>Let&rsquo;s now implement this protocol, as we can see below, it just takes a 50-line JS file to implement the protocol:</p>
-<pre><code>$ export TOP=$(pwd)
+<pre tabindex="0"><code>$ export TOP=$(pwd)
 $ cat &lt;&lt; EOF &gt; fib.ts
 #!/usr/bin/env node
 
-const Blockchain = require(&quot;./blockchain.umd.js&quot;);
-const Toolkit = require(&quot;ckb-js-toolkit&quot;);
-const { spawn } = require(&quot;child_process&quot;);
-const process = require(&quot;process&quot;);
-const readline = require(&quot;readline&quot;);
+const Blockchain = require(&#34;./blockchain.umd.js&#34;);
+const Toolkit = require(&#34;ckb-js-toolkit&#34;);
+const { spawn } = require(&#34;child_process&#34;);
+const process = require(&#34;process&#34;);
+const readline = require(&#34;readline&#34;);
 
 if (process.argv.length !== 5) {
   console.log(`Usage: ${process.argv[1]} &lt;rpc path&gt; &lt;ckb-boxer binary&gt; &lt;start block number&gt;`)
@@ -464,14 +277,14 @@ function sleep(ms = 0) {
 }
 
 (async () =&gt; {
-  const boxer = spawn(BOXER_PATH, [&quot;run&quot;, &quot;-C&quot;, &quot;data&quot;],
+  const boxer = spawn(BOXER_PATH, [&#34;run&#34;, &#34;-C&#34;, &#34;data&#34;],
                       Object.assign({}, process.env, {
-                        RUST_LOG: &quot;debug&quot;
+                        RUST_LOG: &#34;debug&#34;
                       }));
-  boxer.stdout.on(&quot;data&quot;, data =&gt; {
+  boxer.stdout.on(&#34;data&#34;, data =&gt; {
     console.log(`Boxer STDOUT: ${data}`);
   });
-  boxer.stderr.on(&quot;data&quot;, data =&gt; {
+  boxer.stderr.on(&#34;data&#34;, data =&gt; {
     console.log(`Boxer STDERR: ${data}`);
   });
 
@@ -479,14 +292,14 @@ function sleep(ms = 0) {
   const tip_number = BigInt((await rpc.get_tip_header()).number);
   let current_number = START_BLOCK_NUMBER;
   while (current_number &lt;= tip_number) {
-    const block = await rpc.get_block_by_number(&quot;0x&quot; + current_number.toString(16));
+    const block = await rpc.get_block_by_number(&#34;0x&#34; + current_number.toString(16));
     const normalizedBlock = Toolkit.normalizers.NormalizeBlock(block);
 
     const serializedBlock = Blockchain.SerializeBlock(normalizedBlock);
     const serializedBlockHex = new Toolkit.Reader(serializedBlock).serializeJson();
 
     console.log(`Sending block ${current_number} to ckb-boxer`);
-    boxer.stdin.write(&quot;0001NBLK&quot; + serializedBlockHex.substr(2) + &quot;\n&quot;);
+    boxer.stdin.write(&#34;0001NBLK&#34; + serializedBlockHex.substr(2) + &#34;\n&#34;);
     current_number += BigInt(1);
   }
 
@@ -494,14 +307,14 @@ function sleep(ms = 0) {
 }) ();
 EOF
 </code></pre><p>We will need a couple of dependencies to run the protocol here:</p>
-<pre><code>$ cd $TOP
+<pre tabindex="0"><code>$ cd $TOP
 $ npm install ckb-js-toolkit@0.6.0 rollup@2.0.6
 $ cargo install moleculec
 $ git clone https://github.com/xxuejie/ckb-boxer
 $ cd ckb-boxer
 $ cargo build --release
 $ cd $TOP
-# I'm running the code under Linux, if you use other platforms, you might need
+# I&#39;m running the code under Linux, if you use other platforms, you might need
 # to tweak the downloaded binaries here
 $ curl -LO https://github.com/nervosnetwork/ckb/releases/download/v0.29.0/ckb_v0.29.0_x86_64-unknown-linux-gnu.tar.gz
 $ curl -LO https://github.com/xxuejie/moleculec-es/releases/download/0.1.1/moleculec-es_0.1.1_Linux_x86_64.tar.gz
@@ -512,11 +325,11 @@ $ moleculec --language - --schema-file blockchain.mol --format json &gt; blockch
 $ ./moleculec-es -inputFile blockchain.json -outputFile blockchain.js
 $ npx rollup -f umd -i blockchain.js -o blockchain.umd.js --name Blockchain
 </code></pre><p>Let&rsquo;s start a full featured CKB node that syncs mainnet as normal here:</p>
-<pre><code>$ cd $TOP
+<pre tabindex="0"><code>$ cd $TOP
 $ ./ckb_v0.29.0_x86_64-unknown-linux-gnu/ckb init -C mainnet -c mainnet
 $ ./ckb_v0.29.0_x86_64-unknown-linux-gnu/ckb run -C mainnet
 </code></pre><p>Wait for a while for the full featured CKB to sync some blocks. Now in a different terminal, we can now start our alternative syncing solution:</p>
-<pre><code>$ cd $TOP
+<pre tabindex="0"><code>$ cd $TOP
 $ ./ckb_v0.29.0_x86_64-unknown-linux-gnu/ckb init -C alternate -c mainnet
 $ chmod +x runner.js
 $ ./runner.js http://127.0.0.1:8114 ckb-boxer/target/release/ckb-boxer 1
@@ -550,21 +363,19 @@ Boxer STDOUT: 0000TIPH0000000000000000
 <h1 id="recap">Recap</h1>
 <p>I do believe we should go back to the basis: a blockchain should only be the core blockchain logic. Right now there are just too many things that will hinder your eyes, such as building a syncing protocol, building a transaction pool, tuning a multi-threaded infrastructure. The result of all of those, is that a developer might only be able to spend a tiny fraction of the time on the core logic of the blockchain, which IMHO, is not the best way to build a blockchain. We deserve something much better, I yearn for a world where a blockchain developer can focus the entire efforts on making sure the blockchain logic is flawless, instead of wasting efforts on surrounding components that are only essential, but not unique to the developer&rsquo;s own innovated blockchain.</p>
 
-  </div>
+</content>
 
-  <div id=links>
-    
-      <a class="basic-alignment left" href="https://xuejie.space/2020_03_03_introduction_to_ckb_script_programming_performant_wasm/">&laquo; Introduction to CKB Script Programming 8: Performant WASM</a>
-    
-    
-      <a class="basic-alignment left" href="https://xuejie.space/2020_03_19_cycle_reduction_in_duktape/">Introduction to CKB Script Programming 9: Cycle Reductions in Duktape Script &raquo;</a>
-    
-  </div>
-</section>
+
+
+<p>
+  
+</p>
+
+  </main>
+  <footer>Made with <a href="https://github.com/janraasch/hugo-bearblog/">Hugo ʕ•ᴥ•ʔ Bear</a>
+</footer>
 
   
 </body>
+
 </html>
-
-
-

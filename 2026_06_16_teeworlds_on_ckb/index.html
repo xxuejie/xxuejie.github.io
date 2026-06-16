@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head>
+  <meta http-equiv="X-Clacks-Overhead" content="GNU Terry Pratchett" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Teeworlds on CKB | Less is more</title>
+<meta name="title" content="Teeworlds on CKB" />
+<meta name="description" content="For unexpected reasons, I recently had some free time to tinker. I started to work on a thesis I had for years: we have powerful VMs in blockchains, but they are constrained to simple logic moving funds around, what if we dig deeper to unleash the potential?
+After some trial and error, I&rsquo;ve ported Teeworlds, an open source multiplayer shooter game to CKB. By porting Teeworlds to CKB, I mean that the core 50Hz game tick logic of Teeworlds runs / validates fully on CKB-VM. Graphics, sound and networking still remain off-chain; the core game logic now also runs on chain, including all the movement, collision, weapons and fighting logic." />
+<meta name="keywords" content="" />
+
+
+<meta property="og:url" content="https://xuejie.space/2026_06_16_teeworlds_on_ckb/">
+	<meta property="og:site_name" content="Less is more">
+	<meta property="og:title" content="Teeworlds on CKB">
+	<meta property="og:description" content="For unexpected reasons, I recently had some free time to tinker. I started to work on a thesis I had for years: we have powerful VMs in blockchains, but they are constrained to simple logic moving funds around, what if we dig deeper to unleash the potential?
+After some trial and error, I’ve ported Teeworlds, an open source multiplayer shooter game to CKB. By porting Teeworlds to CKB, I mean that the core 50Hz game tick logic of Teeworlds runs / validates fully on CKB-VM. Graphics, sound and networking still remain off-chain; the core game logic now also runs on chain, including all the movement, collision, weapons and fighting logic.">
+	<meta property="og:locale" content="en_US">
+	<meta property="og:type" content="article">
+		<meta property="article:published_time" content="2026-06-16T00:00:00+00:00">
+		<meta property="article:modified_time" content="2026-06-16T00:00:00+00:00">
+
+
+
+
+	<meta name="twitter:card" content="summary">
+	<meta name="twitter:title" content="Teeworlds on CKB">
+	<meta name="twitter:description" content="For unexpected reasons, I recently had some free time to tinker. I started to work on a thesis I had for years: we have powerful VMs in blockchains, but they are constrained to simple logic moving funds around, what if we dig deeper to unleash the potential?
+After some trial and error, I’ve ported Teeworlds, an open source multiplayer shooter game to CKB. By porting Teeworlds to CKB, I mean that the core 50Hz game tick logic of Teeworlds runs / validates fully on CKB-VM. Graphics, sound and networking still remain off-chain; the core game logic now also runs on chain, including all the movement, collision, weapons and fighting logic.">
+
+
+
+
+	<meta itemprop="name" content="Teeworlds on CKB">
+	<meta itemprop="description" content="For unexpected reasons, I recently had some free time to tinker. I started to work on a thesis I had for years: we have powerful VMs in blockchains, but they are constrained to simple logic moving funds around, what if we dig deeper to unleash the potential?
+After some trial and error, I’ve ported Teeworlds, an open source multiplayer shooter game to CKB. By porting Teeworlds to CKB, I mean that the core 50Hz game tick logic of Teeworlds runs / validates fully on CKB-VM. Graphics, sound and networking still remain off-chain; the core game logic now also runs on chain, including all the movement, collision, weapons and fighting logic.">
+	<meta itemprop="datePublished" content="2026-06-16T00:00:00+00:00">
+	<meta itemprop="dateModified" content="2026-06-16T00:00:00+00:00">
+	<meta itemprop="wordCount" content="3150">
+<meta name="referrer" content="no-referrer-when-downgrade" />
+
+  <style>
+  :root {
+    --width: 720px;
+    --font-main: Verdana, sans-serif;
+    --font-secondary: Verdana, sans-serif;
+    --font-scale: 1em;
+    --background-color: #fff;
+    --heading-color: #222;
+    --text-color: #444;
+    --link-color: #3273dc;
+    --visited-color: #8b6fcb;
+    --blockquote-color: #222;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --background-color: #01242e;
+      --heading-color: #eee;
+      --text-color: #ddd;
+      --link-color: #8cc2dd;
+      --visited-color: #8b6fcb;
+      --blockquote-color: #ccc;
+    }
+  }
+
+  body {
+    font-family: var(--font-secondary);
+    font-size: var(--font-scale);
+    margin: auto;
+    padding: 20px;
+    max-width: var(--width);
+    text-align: left;
+    background-color: var(--background-color);
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    line-height: 1.5;
+    color: var(--text-color);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-main);
+    color: var(--heading-color);
+  }
+
+  a {
+    color: var(--link-color);
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+
+  nav a {
+    margin-right: 8px;
+  }
+
+  strong,
+  b {
+    color: var(--heading-color);
+  }
+
+  button {
+    margin: 0;
+    cursor: pointer;
+  }
+
+  time {
+    font-family: monospace;
+    font-style: normal;
+    font-size: 15px;
+  }
+
+  main {
+    line-height: 1.6;
+  }
+
+  table {
+    width: 100%;
+  }
+
+  hr {
+    border: 0;
+    border-top: 1px dashed;
+  }
+
+  img {
+    max-width: 100%;
+  }
+
+  code {
+    font-family: monospace;
+    padding: 2px;
+    border-radius: 3px;
+  }
+
+  blockquote {
+    border-left: 1px solid #999;
+    color: var(--blockquote-color);
+    padding-left: 20px;
+    font-style: italic;
+  }
+
+  footer {
+    padding: 25px 0;
+    text-align: center;
+  }
+
+  .title:hover {
+    text-decoration: none;
+  }
+
+  .title h1 {
+    font-size: 1.5em;
+  }
+
+  .inline {
+    width: auto !important;
+  }
+
+  .highlight,
+  .code {
+    border-radius: 3px;
+    margin-block-start: 1em;
+    margin-block-end: 1em;
+    overflow-x: auto;
+  }
+
+  .highlight pre,
+  .code pre {
+    min-width: 100%;
+    width: max-content;
+  }
+
+   
+  ul.blog-posts {
+    list-style-type: none;
+    padding: unset;
+  }
+
+  ul.blog-posts li {
+    display: flex;
+  }
+
+  ul.blog-posts li span {
+    flex: 0 0 130px;
+  }
+
+  ul.blog-posts li a:visited {
+    color: var(--visited-color);
+  }
+
+</style>
+
+</head>
+
+<body>
+  <header><a href="https://xuejie.space/" class="title">
+  <h2>Less is more</h2>
+</a>
+<nav>
+<a href="https://xuejie.space/resume.html">Resume</a>
+
+<a href="https://twitter.com/xxuejie">Twitter</a>
+
+<a href="https://github.com/xxuejie">GitHub</a>
+
+<a href="https://xuejie.space/index.xml">RSS</a>
+
+</nav>
+</header>
+  <main>
+
+<h1>Teeworlds on CKB</h1>
+<p>
+  <i>
+    <time datetime='2026-06-16'>
+      16 Jun, 2026
+    </time>
+  </i>
+</p>
+
+<content>
+  <p>For unexpected reasons, I recently had some free time to tinker. I started to work on a thesis I had for years: we have powerful VMs in blockchains, but they are constrained to simple logic moving funds around, what if we dig deeper to unleash the potential?</p>
+<p>After some trial and error, I&rsquo;ve ported <a href="https://www.teeworlds.com/">Teeworlds</a>, an open source multiplayer shooter game to CKB. By porting Teeworlds to CKB, I mean that the core 50Hz game tick logic of Teeworlds runs / validates fully on CKB-VM. Graphics, sound and networking still remain off-chain; the core game logic now also runs on chain, including all the movement, collision, weapons and fighting logic.</p>
+<p>You can see a video here to get a taste of it: <a href="https://www.youtube.com/watch?v=ChPVvTt2u9Y">https://www.youtube.com/watch?v=ChPVvTt2u9Y</a></p>
+<p>Or you can try the open source code, set up and run a game yourself following <a href="https://github.com/xxuejie/teeworlds/blob/f77e39e5fa5bfa0b4831d8d6d7c4690183807a29/ckb/README.md">those steps</a>.</p>
+<p>There is no shortage of attempts to build games on blockchain. But to the best of my knowledge, you have to make a choice:</p>
+<ul>
+<li>Build a turn-based, macro-strategy game. I admire Dark Forest a lot, it pioneered what I do here. However, its architecture dictates a game of asynchronous planning by design. There are also other types of games I want to explore.</li>
+<li>Run the core game logic off-chain, only have the items moved on chain. Big Time / Off The Grid falls into this category.</li>
+</ul>
+<p>In 2026, I believe we now have fast enough blockchain VMs that enable lower-level, deeper optimizations. Complicated, <strong>real-time</strong> game logic can now be implemented on chain. To showcase this, I started porting a small set of open source games to blockchain VMs (a brand new title is indeed tempting, but game design is not my strength, porting open source games gives me a chance to learn the territory first). Teeworlds is my first milestone: a 50Hz, real-time multiplayer shooter game, where each individual game session can be wrapped and validated in a single CKB transaction.</p>
+<h1 id="design-chunks-that-never-bisect">Design: chunks that never bisect</h1>
+<p>Before diving into details, let&rsquo;s talk about one design principle that drives everything that follows:</p>
+<p>On-chain games I&rsquo;m working on are designed around <code>chunks</code>. A <code>chunk</code> of gameplay must be validated in a single blockchain transaction. There are no bisection games, no multi-round interactive proving, one transaction decides it or fails.</p>
+<p>A <code>chunk</code> means a unit of gameplay, what counts varies by genre:</p>
+<ul>
+<li>Teeworlds: one game session.</li>
+<li><a href="https://en.wikipedia.org/wiki/Multiplayer_online_battle_arena">MOBA</a>s or <a href="https://en.wikipedia.org/wiki/Fighting_game">fighting games</a>: likely also one game session.</li>
+<li><a href="https://en.wikipedia.org/wiki/Massively_multiplayer_online_role-playing_game">MMORPG</a>s: they have no natural boundary, so one chunk might be one minute of wall-clock gameplay.</li>
+</ul>
+<p>In 2026, I believe blockchain VMs are fast enough to have complex game logic implemented efficiently. By building around <strong>chunks</strong>, performant VMs help avoid bisection validation games, greatly simplifying blockchain infrastructure. In many cases people are fighting rough edges of blockchains, instead of designing games properly. With simplified blockchain architecture, hopefully we can see better games.</p>
+<p>For economic reasons, there might still be an optimistic-based workflow in those <strong>chunk</strong>-based games, but what&rsquo;s great here is: validation will always be completed in one transaction. Gaming on chain is hard enough, let&rsquo;s not complicate it with bisecting games.</p>
+<h1 id="implementation-how-do-we-port-games-on-chain">Implementation: how do we port games on-chain?</h1>
+<p>Tweaking Teeworlds to be an on-chain game works as follows:</p>
+<ol>
+<li>Locate the core <a href="https://m-abdullah-ramees0916.medium.com/the-game-loop-f6f5cb68c00">game loop</a> of Teeworlds, modify the game loop, so for each <strong>chunk</strong>, a <strong>game tape</strong> is dumped, containing all player inputs at each game loop iteration (in many cases this is also called a tick).</li>
+<li>Replicate the game loop in a different main function, stripping all the networking, graphics and sound related code. Focus on the game loop, so given a game tape, it should run the same gameplay on native host environment, resulting in the same final states. In my context, I call such a standalone program a <strong>replayer</strong>.</li>
+<li>Given the working replayer on native environment, port the same replayer over to CKB-VM, or your performant VM of choice.</li>
+<li>More likely than not, the replayer might not be optimized at this point, so profiling and optimizing work is required to make the replayer efficient in on-chain environment.</li>
+<li>Finally, build the scaffolding code to submit gameplays to blockchains (optionally, you can also replay gameplays on blockchains, I added this for Teeworlds), to complete the whole workflow.</li>
+</ol>
+<p>When porting Teeworlds, <a href="https://github.com/xxuejie/teeworlds/commit/0d337b82c2af44aa580c57c07effa8edc9c82736">this commit</a> maps to step 1 and 2, <a href="https://github.com/xxuejie/teeworlds/commit/ad28045c97a88596022fd1f9c49ca61290761b26">this commit</a> maps to step 3, <a href="https://github.com/xxuejie/teeworlds/commit/dfad4682dc55f4224a0689b1301a01636962fa28">this</a> maps to step 4, and finally step 5 is <a href="https://github.com/xxuejie/teeworlds/commit/050c8593eb605991c7bbe0301466fdbeb1950102">here</a>.</p>
+<p>There are some notes worth mentioning, most of which have to do with step 2:</p>
+<ul>
+<li>Technically, a replayer running on native host environment is not needed in final production setup. But I find it a good practice to start with a native replayer first, since it eases debugging of the replayer. Frequently the tape recording &amp; replaying can be a source of bugs, and I do recommend getting a working native replayer first, before moving to blockchain VMs.</li>
+<li>You might have already realized this: making a game fully reproducible to build a <strong>replayer</strong>, can be a challenging task. Modern games use a lot of data sources to drive replay: timestamps, RNGs, player inputs, etc. all of those must be made deterministic. A game tape should thus record initial seed for RNGs, record timestamp for each game tick, record player inputs, and all other information that would affect game states. This is actually a quite troublesome task, I&rsquo;ve been actually thinking about building <a href="https://antithesis.com/docs/resources/deterministic_simulation_testing/">Deterministic Simulation Testing</a> solutions to simplify it.</li>
+<li>In addition to game states after running the game tape, some games also require game states before running the game tape. Teeworlds does not need this, but MMORPGs or some complicated MOBAs might require it. The game does not start from an empty state, an initial state is required. Only when running the game tape starting from the initial state, will we arrive at the same final state. So for some games, game loop must dump both the before and after state of the game.</li>
+</ul>
+<p>Maybe when fully on-chain games become more popular, we can have <strong>replayer</strong>-aware game engines to simplify porting. For now these steps are just a guideline, actual tricks might vary from one game to another.</p>
+<h1 id="challenges">Challenges</h1>
+<p>Of course there are challenges: we must make sure the game fits in an on-chain binary, both the computation costs (cycles) and memory usage must be within limit. In fact, the first version I got working cost over 1 billion cycles for 1-minute gameplay, this is way more expensive than we can afford.</p>
+<p>A fast VM alone isn&rsquo;t enough to build real-time games on chain, we need rigorous optimizations in the on-chain programs as well:</p>
+<h2 id="musl-libcxx">Musl, libcxx</h2>
+<p>CKB-VM used to settle on a poorly structured, half-baked <a href="https://github.com/nervosnetwork/ckb-c-stdlib/tree/master/libc">libc</a> with just enough, easily implemented functions. I consider this to be one of the many mistakes I made designing CKB-VM&rsquo;s ecosystem. CKB-VM might be much better served if I had spent more effort porting over a proper libc and had it available since the early days.</p>
+<p>For simpler crypto algorithm implementations, our poor libc might work, but for porting games, we need a complete libc, some games might use the C++ Standard Library (STL) as well. We will need more complete solutions.</p>
+<p>While working on other projects, I have ported <a href="https://musl.libc.org/">musl libc</a> and <a href="https://libcxx.llvm.org/">libcxx</a> over, as a complete solution for C/C++ standard libraries on CKB. They also come with tricks for optimizations, please refer to <a href="https://blog.cryptape.com/optimizing-c-code-for-ckb-vm">this post</a> for more details.</p>
+<p>It&rsquo;s worth noting that Teeworlds, like games of its time, has limited use of STL to a few places:</p>
+<ul>
+<li>The <a href="https://cppreference.com/cpp/algorithm">algorithms library</a></li>
+<li><code>new</code> / <code>delete</code> to allocate / deallocate memory</li>
+</ul>
+<p>It skips <code>std::vector</code>, <code>std::map</code> and many other components in the STL. We could use a just-enough C++ library but I&rsquo;ve learned my mistake, having a fully-working libcxx is much, much better. Not to mention there are also other games worth porting, some might use more C++ features. <a href="https://github.com/TeamHypersomnia/Hypersomnia">Hypersomnia</a> is another game that can be fun to port over, but uses more C++ features.</p>
+<h2 id="fixed-math">Fixed math</h2>
+<p>The first bottleneck we would locate, is that softfloat routines, e.g., <code>__addsf3</code>, <code>__mulsf3</code>, etc., take a lot of CKB cycles. Teeworlds by default uses a lot of float values. This has 2 problems:</p>
+<ul>
+<li>The first one of course is performance, floating point operations are designed for hardware to run, not for software to emulate. Just to give you a sense of what it takes, <a href="https://gist.github.com/xxuejie/eb58dfd0f469ef2b16f57f1fa1b6519c">here</a> is the full dump of <code>__addsf3</code>, used to add 2 float values together. We are using a lot of operations just to basically add 2 floats together.</li>
+<li>Floating-point operations are frequently the source of indeterminism. As far as I know <a href="https://gafferongames.com/post/floating_point_determinism/">this post</a> summarizes the issue best, quoting: <code>&quot;It is possible to get deterministic results for floating calculations across multiple computers provided you use an executable built with the same compiler, run on machines with the same architecture, and perform some platform-specific tricks.&quot;</code> But that&rsquo;s too much for us to rely on.</li>
+</ul>
+<p>To solve both issues, I&rsquo;m replacing all float values in Teeworlds with <a href="https://github.com/MikeLankamp/fpm">fpm</a>, a decent fixed-point math library. Specifically, we use <code>fpm::fixed&lt;std::int64_t, __int128_t, 16&gt;</code>, meaning each float in Teeworlds is replaced by a 64-bit integer, where the upper 48 bits represent the integer part, while the lower 16 bits represent the fractional part. This way, math operations map to neat integer operations separated by byte boundaries. A whole lot of computation cycles are thus saved.</p>
+<h2 id="alpha-max-plus-beta-min-approximation">Alpha max plus beta min approximation</h2>
+<p>More profiling reveals that the square root operation required in <a href="https://en.wikipedia.org/wiki/Euclidean_distance">Euclidean distance</a>, surprisingly, is one major source of slowdown. Even after we switched to fixed point math, <a href="https://github.com/MikeLankamp/fpm/blob/b46537fe9697e1a598ac8a26f8ae43d8b286ac3f/include/fpm/math.hpp#L461">sqrt</a> operation still takes a lot of cycles.</p>
+<p>Some of you might have heard about the famous <a href="https://en.wikipedia.org/wiki/Fast_inverse_square_root">fast inverse square root</a> used by John Carmack in Quake III. It&rsquo;s funny that a legend ran into the same problem! Unfortunately, the trick is only applied to floating point numbers. After switching to fixed point numbers, we don&rsquo;t have the same trick available. It&rsquo;s also worth noting later this operation also becomes a <a href="https://www.felixcloutier.com/x86/rsqrtss">hardware instruction</a> (and it has been proven to be faster than Carmack&rsquo;s trick), but under the <code>rv64imc_zba_zbb_zbc_zbs</code> ISA, we don&rsquo;t have a similar instruction available.</p>
+<p>There is a solution if we look beyond square root. In Teeworlds, the square root operation is almost exclusively used to calculate Euclidean distance. And a high-speed approximation named <a href="https://en.wikipedia.org/wiki/Alpha_max_plus_beta_min_algorithm">alpha max plus beta min algorithm</a> exists for Euclidean distance. This technique was actually used a lot in the 1990s games, where the sqrt operation was really expensive. It is also <a href="https://academic.oup.com/mnras/article/471/3/3323/3922864">well used</a> in modern graphics shader development.</p>
+<p>I have to mention that the fixed math replacement and the alpha-beta approximation likely changes original game&rsquo;s feel a bit. Previously Teeworlds used floating point values and real sqrt operations, in the new version we settled on fixed point values and Euclidean distance approximation. As a real amateur Teeworlds player, I hardly notice the gameplay difference after the changes, but if you are a Teeworlds veteran who disagrees, I&rsquo;d love to work with you to see how we can still retain the exact same game feel, while still using fixed point math with approximated Euclidean distances.</p>
+<h2 id="other-tricks">Other tricks</h2>
+<p>Other tricks came out of profiling real running code.</p>
+<ul>
+<li>I switched to a new <a href="https://github.com/xxuejie/teeworlds/commit/dfad4682dc55f4224a0689b1301a01636962fa28#diff-a0e5d95915df938ffb0e9b9b879a2e56b1459be64eda405ac51aad4b5763d9d5R133-R151">collision detection algorithm</a>. I have to give the credit to Gemini for helping me find a simple yet faster collision detection implementation.</li>
+<li>Some loops iterate over more players than supported, surprisingly, this also takes noticeable cycles. By restricting to fewer players, we should have less cycle consumption.</li>
+</ul>
+<p>After applying all optimizations, a 2-player, 1-minute Teeworlds game takes ~150 million CKB cycles, or ~80 million RISC-V instructions to run. Teeworlds runs at 50Hz, meaning 1-minute gameplay has about 3000 game loop ticks to process, on average we now spend ~26000 RISC-V instructions for each game loop tick. There might still be room to optimize, but I&rsquo;m happy with the result now.</p>
+<h2 id="optimizations-can-matter-a-lot">Optimizations can matter a lot</h2>
+<p>Before I added any optimization, I benchmarked a 2-player, 1-minute Teeworlds game using the default map. It takes over one billion CKB cycles to validate the game on chain. With above optimizations applied, a game using the same setup takes ~150 million CKB cycles to run, or ~80 million RISC-V instructions. The lesson I learned is: it&rsquo;s imperative for us to have performant blockchain VMs, but having optimized programs running inside VMs is equally important. New use cases on blockchains can only be unlocked, when both layers are optimized jointly.</p>
+<h1 id="we-are-back-in-the-1990s-again">We are back in the 1990s again</h1>
+<p>The optimizations applied above reminds me a lot of optimizations on older machines in the 1990s. Strip libc for more space, replace floats with fixed-point math, approximate distances instead of precise computation. These aren&rsquo;t blockchain tricks — they&rsquo;re the tricks console and PC game programmers used in the 1990s to squeeze playable games out of severely constrained hardware. They echo the tricks people did on <a href="https://fabiensanglard.net/snes_ppus_why/">Nintendo machines</a>, or how John Carmack invented smooth side-scrolling on early PCs, which led to the <a href="https://en.wikipedia.org/wiki/Commander_Keen">Commander Keen</a> series.</p>
+<p>There is a joke that computer science is not about inventing new things, but about re-discovering techniques and tricks already invented years ago. Maybe we are doing similar things again. We drew inspiration from the 1990s on how to run decent games in resource limited environment, but then push for new ways to play games enabled by blockchains. I will expand more on this topic in the next section. For now, I want to dive into an interesting example.</p>
+<h2 id="neo-geo">Neo Geo</h2>
+<p>Many of us grew up playing <a href="https://en.wikipedia.org/wiki/The_King_of_Fighters">The King of Fighters</a> series (or KOF for short), having a lot of memories in arcades. KOF games are originally designed for <a href="https://en.wikipedia.org/wiki/Neo_Geo">Neo Geo</a> system, which at its core runs on a 12MHz Motorola 68000, and a 4Mhz Zilog Z80 CPU. To dive more into Neo Geo system, here&rsquo;s <a href="https://www.copetti.org/writings/consoles/neogeo/">an amazing introduction</a>.</p>
+<p>With a modern performant VM, and careful optimization, I&rsquo;m willing to bet we can build a Neo Geo emulator running on chain, bypassing all the graphics and sound processing parts. The core CPUs used by Neo Geo could be emulated efficiently.</p>
+<p>What&rsquo;s more interesting: Neo Geo&rsquo;s memory architecture maps surprisingly well onto CKB cells. Neo Geo carries a 2MB P ROM for program data, which many games — including the KOF series — split into two halves:</p>
+<ul>
+<li>The first 1MB is <code>P1 static memory</code>, it stores code that&rsquo;s always resident.</li>
+<li>The second 1MB is <code>P2 banked memory</code>, it serves as a window into a much larger <code>P2 ROM</code>. KOF 97&rsquo;s full <code>P2 ROM</code> is 4MB. At runtime, P1 code dynamically swaps slices of that 4MB into the banked window, based on selected fighters and loaded stages.</li>
+</ul>
+<p>This maps properly to the dep-cell path in CKB: we load <code>P1 ROM</code> into VM memory once. The <code>P2 ROM</code> can be split into multiple dep cells, 512KB each. 2 CKB syscalls can load 1MB of <code>P2 ROM</code> into <code>P2 banked memory</code> precisely. The architecture Neo Geo developers used to squeeze more content into a constrained system is the same architecture CKB-VM gives you at minimal cost.</p>
+<p>In fact there are many gaming systems from the 80s to the 90s using banked memory. All those emulators will likely run on CKB-VM. I do want to point out to properly build a product, we need to think about and sort out the legal implications, but the point I want to make is: modern blockchain VMs should already be powerful enough for many gaming systems we used to love and enjoy.</p>
+<h1 id="on-chain-pushes-different-games">On-chain pushes different games</h1>
+<p>I&rsquo;m sure others are better than me at this, but I think different games can emerge from being on-chain:</p>
+<ul>
+<li>Decoupling art from logic is natural when building a <code>replayer</code>. What if a 2D game later gets a 3D view? Dwarf Fortress already has an experimental 3D visualizer alongside its default 2D view.</li>
+<li>Modding is a real thing. On-chain games become things you play in, live in, modify, and cherish.</li>
+</ul>
+<p>Those ideas existed long before blockchains. Blockchains merely amplify them.</p>
+<h1 id="state-channels-ephemeral-rollups">State channels, ephemeral rollups</h1>
+<p>I&rsquo;m sure you know me as a die-hard VM enthusiast. I love to think about, tweak and talk all things about virtual machines, and I&rsquo;m less interested in blockchain research. So in this whole post about on-chain games I&rsquo;m talking about virtual machine advancements and making things quick. But there is a whole chapter about trustless setup, avoiding cheaters in fully on-chain games. I have ignored this topic so far, simply because it isn&rsquo;t my expertise.</p>
+<p>Luckily, people have extensively studied this area, so I don&rsquo;t have to do much of the research on my own. There are <a href="https://www.ubishops.ca/wp-content/uploads/hu20250912.pdf">state channel</a> based solutions, or <a href="https://arxiv.org/pdf/2311.02650">ephemeral rollups</a> we can leverage to build trusts among players and servers. My contribution to the topic, is just faster VMs and programs to make complicated game logic possible on chain.</p>
+<h2 id="optimistic-but-not-like-some-optimistic-systems">Optimistic, but not like some optimistic systems</h2>
+<p>There is one thing I want to point out: validating a game session requires a big chunk of input data, and a lot of computation cycles. From an economic point of view, large deployments of on-chain games likely won&rsquo;t validate every game session. There is a spectrum of security and trust tradeoffs:</p>
+<ul>
+<li>Submit the whole input data, and validate every game session on chain.</li>
+<li>Submit the full game tape, but only submit the final game state hash on chain.</li>
+<li>Submit only a hash of game tape, and a hash of the final game state on chain.</li>
+</ul>
+<p>The cost decreases, security also decreases. The latter 2 solutions both require an optimistic design: servers submit the hash, posting a bond with a deadline. Within the deadline, it is expected players will check the hash, and challenge if the hash is invalid. What&rsquo;s different in current design, is that challenge phase is merely the execution of one transaction with all the input data (there is a caveat, I will explain in later posts), bisecting is completely removed, when VMs can deliver good enough performance.</p>
+<h1 id="beyond-ckb">Beyond CKB</h1>
+<p>This setup does not stop with CKB, either. I created CKB-VM and spent almost seven years crafting programs on CKB-VM, I have the most velocity building on CKB-VM. That said, CKB is hardly the only choice now. The performance of CKB-VM is closely tied to design principles for CKB the L1 blockchain. In different environments, more performant VMs are introduced to make blockchains with different design considerations much faster. CKB&rsquo;s mainnet is clocked to run at roughly 350MHz - 437MHz (depending on different metrics you use), with a fixed 4MB memory space. Modern optimizing RISC-V VMs reach ~2GHz, with a bigger memory space, unlocking even more complex programs.</p>
+<p>There&rsquo;s no right or wrong here, only design preferences.</p>
+<p>And it&rsquo;s even possible to look beyond RISC-V. The gaming architecture only needs a performant VM, allowing lower-level optimizations. Other VMs might also be capable of running the games.</p>
+<p>But there are definitely some requirements involved to build real-time on-chain games that go beyond VM discussions. I&rsquo;ll cover those in the next post.</p>
+
+</content>
+
+
+
+<p>
+  
+</p>
+
+  </main>
+  <footer>Made with <a href="https://github.com/janraasch/hugo-bearblog/">Hugo ʕ•ᴥ•ʔ Bear</a>
+</footer>
+
+  
+</body>
+
+</html>

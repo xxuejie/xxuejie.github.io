@@ -1,423 +1,236 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <meta name="HandheldFriendly" content="True">
-    <meta name="MobileOptimized" content="320">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="referrer" content="no-referrer">
-    
+<html lang="en-US">
 
-    
-      <link href='https://fonts.googleapis.com/css?family=Open+Sans:400|Old+Standard+TT:400&display=swap' rel='stylesheet' type='text/css'>
-    
+<head>
+  <meta http-equiv="X-Clacks-Overhead" content="GNU Terry Pratchett" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Introduction to CKB Script Programming 1: Validation Model | Less is more</title>
+<meta name="title" content="Introduction to CKB Script Programming 1: Validation Model" />
+<meta name="description" content="As of now, the cell validation model in CKB has been more or less stablized, hence I&rsquo;m starting a series of article introducing CKB script programming here. My goal here is to fill in all the missing implementation details one need to write CKB scripts after reading the whitepaper, so you can start exploring this beautiful wonderland CKB presents.
+You might noticed that I call the code running on CKB as script, not smart contract. This is because smart contract is quite a confusing term to me, and I want to use a different word here to indicate CKB&rsquo;s unique programmability. A script in CKB&rsquo;s sense need not be just a script we see in scripting languages such as Ruby, JS, it actually refers to the RISC-V format binary you run on CKB VM." />
+<meta name="keywords" content="" />
 
-    <link rel="icon" type="image/png" href="https://xuejie.space/favicon_16x16.png" sizes="16x16">
-    <link rel="icon" type="image/png" href="https://xuejie.space/favicon_32x32.png" sizes="32x32">
-    <link rel="icon" type="image/png" href="https://xuejie.space/favicon_128x128.png" sizes="128x128">
 
-    <title>
-      
-      
-         Introduction to CKB Script Programming 1: Validation Model 
-      
-    </title>
-    <link rel="canonical" href="https://xuejie.space/2019_07_05_introduction_to_ckb_script_programming_validation_model/">
+<meta property="og:url" content="https://xuejie.space/2019_07_05_introduction_to_ckb_script_programming_validation_model/">
+	<meta property="og:site_name" content="Less is more">
+	<meta property="og:title" content="Introduction to CKB Script Programming 1: Validation Model">
+	<meta property="og:description" content="As of now, the cell validation model in CKB has been more or less stablized, hence I’m starting a series of article introducing CKB script programming here. My goal here is to fill in all the missing implementation details one need to write CKB scripts after reading the whitepaper, so you can start exploring this beautiful wonderland CKB presents.
+You might noticed that I call the code running on CKB as script, not smart contract. This is because smart contract is quite a confusing term to me, and I want to use a different word here to indicate CKB’s unique programmability. A script in CKB’s sense need not be just a script we see in scripting languages such as Ruby, JS, it actually refers to the RISC-V format binary you run on CKB VM.">
+	<meta property="og:locale" content="en_US">
+	<meta property="og:type" content="article">
+		<meta property="article:published_time" content="2019-07-05T00:00:00+00:00">
+		<meta property="article:modified_time" content="2019-07-05T00:00:00+00:00">
 
-    <style>
-  * {
-    border:0;
-    font:inherit;
-    font-size:100%;
-    vertical-align:baseline;
-    margin:0;
-    padding:0;
-    color: black;
-    text-decoration-skip: ink;
+
+
+
+	<meta name="twitter:card" content="summary">
+	<meta name="twitter:title" content="Introduction to CKB Script Programming 1: Validation Model">
+	<meta name="twitter:description" content="As of now, the cell validation model in CKB has been more or less stablized, hence I’m starting a series of article introducing CKB script programming here. My goal here is to fill in all the missing implementation details one need to write CKB scripts after reading the whitepaper, so you can start exploring this beautiful wonderland CKB presents.
+You might noticed that I call the code running on CKB as script, not smart contract. This is because smart contract is quite a confusing term to me, and I want to use a different word here to indicate CKB’s unique programmability. A script in CKB’s sense need not be just a script we see in scripting languages such as Ruby, JS, it actually refers to the RISC-V format binary you run on CKB VM.">
+
+
+
+
+	<meta itemprop="name" content="Introduction to CKB Script Programming 1: Validation Model">
+	<meta itemprop="description" content="As of now, the cell validation model in CKB has been more or less stablized, hence I’m starting a series of article introducing CKB script programming here. My goal here is to fill in all the missing implementation details one need to write CKB scripts after reading the whitepaper, so you can start exploring this beautiful wonderland CKB presents.
+You might noticed that I call the code running on CKB as script, not smart contract. This is because smart contract is quite a confusing term to me, and I want to use a different word here to indicate CKB’s unique programmability. A script in CKB’s sense need not be just a script we see in scripting languages such as Ruby, JS, it actually refers to the RISC-V format binary you run on CKB VM.">
+	<meta itemprop="datePublished" content="2019-07-05T00:00:00+00:00">
+	<meta itemprop="dateModified" content="2019-07-05T00:00:00+00:00">
+	<meta itemprop="wordCount" content="1240">
+<meta name="referrer" content="no-referrer-when-downgrade" />
+
+  <style>
+  :root {
+    --width: 720px;
+    --font-main: Verdana, sans-serif;
+    --font-secondary: Verdana, sans-serif;
+    --font-scale: 1em;
+    --background-color: #fff;
+    --heading-color: #222;
+    --text-color: #444;
+    --link-color: #3273dc;
+    --visited-color: #8b6fcb;
+    --blockquote-color: #222;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --background-color: #01242e;
+      --heading-color: #eee;
+      --text-color: #ddd;
+      --link-color: #8cc2dd;
+      --visited-color: #8b6fcb;
+      --blockquote-color: #ccc;
+    }
   }
 
   body {
-    font-family:'Open Sans', 'Myriad Pro', Myriad, sans-serif;
-    font-size:17px;
-    line-height:160%;
-    color:#1d1313;
-    max-width:700px;
-    margin:auto;
+    font-family: var(--font-secondary);
+    font-size: var(--font-scale);
+    margin: auto;
+    padding: 20px;
+    max-width: var(--width);
+    text-align: left;
+    background-color: var(--background-color);
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    line-height: 1.5;
+    color: var(--text-color);
   }
 
-  p {
-    margin: 20px 0;
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-main);
+    color: var(--heading-color);
   }
 
-  a img {
-    border:none;
-  }
-
-  img {
-    margin: 10px auto 10px auto;
-    max-width: 100%;
-    display: block;
-  }
-
-  .left-justify {
-    float: left;
-  }
-
-  .right-justify {
-    float:right;
-  }
-
-  pre, code {
-    font: 12px Consolas, "Liberation Mono", Menlo, Courier, monospace;
-    background-color: #f7f7f7;
-  }
-
-  code {
-    font-size: 12px;
-    padding: 4px;
-  }
-
-  pre {
-    margin-top: 0;
-    margin-bottom: 16px;
-    word-wrap: normal;
-    padding: 16px;
-    overflow: auto;
-    font-size: 85%;
-    line-height: 1.45;
-  }
-
-  pre>code {
-    padding: 0;
-    margin: 0;
-    font-size: 100%;
-    word-break: normal;
-    white-space: pre;
-    background: transparent;
-    border: 0;
-  }
-
-  pre code {
-    display: inline;
-    max-width: auto;
-    padding: 0;
-    margin: 0;
-    overflow: visible;
-    line-height: inherit;
-    word-wrap: normal;
-    background-color: transparent;
-    border: 0;
-  }
-
-  pre code::before,
-  pre code::after {
-    content: normal;
-  }
-
-  em,q,em,dfn {
-    font-style:italic;
-  }
-
-  .sans,html .gist .gist-file .gist-meta {
-    font-family:"Open Sans","Myriad Pro",Myriad,sans-serif;
-  }
-
-  .mono,pre,code,tt,p code,li code {
-    font-family:Menlo,Monaco,"Andale Mono","lucida console","Courier New",monospace;
-  }
-
-  .heading,.serif,h1,h2,h3 {
-    font-family:"Old Standard TT",serif;
-  }
-
-  strong {
-    font-weight:600;
-  }
-
-  q:before {
-    content:"\201C";
-  }
-
-  q:after {
-    content:"\201D";
-  }
-
-  del,s {
-    text-decoration:line-through;
-  }
-
-  blockquote {
-    font-family:"Old Standard TT",serif;
-    text-align:center;
-    padding:50px;
-  }
-
-  blockquote p {
-    display:inline-block;
-    font-style:italic;
-  }
-
-  blockquote:before,blockquote:after {
-    font-family:"Old Standard TT",serif;
-    content:'\201C';
-    font-size:35px;
-    color:#403c3b;
-  }
-
-  blockquote:after {
-    content:'\201D';
-  }
-
-  hr {
-    width:40%;
-    height: 1px;
-    background:#403c3b;
-    margin: 25px auto;
-  }
-
-  h1 {
-    font-size:35px;
-  }
-
-  h2 {
-    font-size:28px;
-  }
-
-  h3 {
-    font-size:22px;
-    margin-top:18px;
-  }
-
-  h1 a,h2 a,h3 a {
-    text-decoration:none;
-  }
-
-  h1,h2 {
-    margin-top:28px;
-  }
-
-  #sub-header, time {
-    color:#403c3b;
-    font-size:13px;
-  }
-
-  #sub-header {
-    margin: 0 4px;
-  }
-
-  #nav h1 a {
-    font-size:35px;
-    color:#1d1313;
-    line-height:120%;
-  }
-
-  .posts_listing a,#nav a {
+  a {
+    color: var(--link-color);
+    cursor: pointer;
     text-decoration: none;
   }
 
-  li {
-    margin-left: 20px;
-  }
-
-  ul li {
-    margin-left: 5px;
-  }
-
-  ul li {
-    list-style-type: none;
-  }
-  ul li:before {
-    content:"\00BB \0020";
-  }
-
-  #nav ul li:before, .posts_listing li:before {
-    content:'';
-    margin-right:0;
-  }
-
-  #content {
-    text-align:left;
-    width:100%;
-    font-size:15px;
-    padding:60px 0 80px;
-  }
-
-  #content h1,#content h2 {
-    margin-bottom:5px;
-  }
-
-  #content h2 {
-    font-size:25px;
-  }
-
-  #content .entry-content {
-    margin-top:15px;
-  }
-
-  #content time {
-    margin-left:3px;
-  }
-
-  #content h1 {
-    font-size:30px;
-  }
-
-  .highlight {
-    margin: 10px 0;
-  }
-
-  .posts_listing {
-    margin:0 0 50px;
-  }
-
-  .posts_listing li {
-    margin:0 0 25px 15px;
-  }
-
-  .posts_listing li a:hover,#nav a:hover {
+  a:hover {
     text-decoration: underline;
   }
 
-  #nav {
-    text-align:center;
-    position:static;
-    margin-top:60px;
+  nav a {
+    margin-right: 8px;
   }
 
-  #nav ul {
-    display: table;
-    margin: 8px auto 0 auto;
+  strong,
+  b {
+    color: var(--heading-color);
   }
 
-  #nav li {
-    list-style-type:none;
-    display:table-cell;
-    font-size:15px;
-    padding: 0 20px;
+  button {
+    margin: 0;
+    cursor: pointer;
   }
 
-  #links {
-    margin: 50px 0 0 0;
+  time {
+    font-family: monospace;
+    font-style: normal;
+    font-size: 15px;
   }
 
-  #links :nth-child(2) {
-    float:right;
+  main {
+    line-height: 1.6;
   }
 
-  #not-found {
+  table {
+    width: 100%;
+  }
+
+  hr {
+    border: 0;
+    border-top: 1px dashed;
+  }
+
+  img {
+    max-width: 100%;
+  }
+
+  code {
+    font-family: monospace;
+    padding: 2px;
+    border-radius: 3px;
+  }
+
+  blockquote {
+    border-left: 1px solid #999;
+    color: var(--blockquote-color);
+    padding-left: 20px;
+    font-style: italic;
+  }
+
+  footer {
+    padding: 25px 0;
     text-align: center;
   }
 
-  #not-found a {
-    font-family:"Old Standard TT",serif;
-    font-size: 200px;
+  .title:hover {
     text-decoration: none;
-    display: inline-block;
-    padding-top: 225px;
   }
 
-  @media (max-width: 750px) {
-    body {
-      padding-left:20px;
-      padding-right:20px;
-    }
-
-    #nav h1 a {
-      font-size:28px;
-    }
-
-    #nav li {
-      font-size:13px;
-      padding: 0 15px;
-    }
-
-    #content {
-      margin-top:0;
-      padding-top:50px;
-      font-size:14px;
-    }
-
-    #content h1 {
-      font-size:25px;
-    }
-
-    #content h2 {
-      font-size:22px;
-    }
-
-    .posts_listing li div {
-      font-size:12px;
-    }
+  .title h1 {
+    font-size: 1.5em;
   }
 
-  @media (max-width: 400px) {
-    body {
-      padding-left:20px;
-      padding-right:20px;
-    }
-
-    #nav h1 a {
-      font-size:22px;
-    }
-
-    #nav li {
-      font-size:12px;
-      padding: 0 10px;
-    }
-
-    #content {
-      margin-top:0;
-      padding-top:20px;
-      font-size:12px;
-    }
-
-    #content h1 {
-      font-size:20px;
-    }
-
-    #content h2 {
-      font-size:18px;
-    }
-
-    .posts_listing li div{
-      font-size:12px;
-    }
+  .inline {
+    width: auto !important;
   }
+
+  .highlight,
+  .code {
+    border-radius: 3px;
+    margin-block-start: 1em;
+    margin-block-end: 1em;
+    overflow-x: auto;
+  }
+
+  .highlight pre,
+  .code pre {
+    min-width: 100%;
+    width: max-content;
+  }
+
+   
+  ul.blog-posts {
+    list-style-type: none;
+    padding: unset;
+  }
+
+  ul.blog-posts li {
+    display: flex;
+  }
+
+  ul.blog-posts li span {
+    flex: 0 0 130px;
+  }
+
+  ul.blog-posts li a:visited {
+    color: var(--visited-color);
+  }
+
 </style>
 
+</head>
 
-    
-  </head>
+<body>
+  <header><a href="https://xuejie.space/" class="title">
+  <h2>Less is more</h2>
+</a>
+<nav>
+<a href="https://xuejie.space/resume.html">Resume</a>
 
-  <body>
-    <section id=nav>
-      <h1><a href="https://xuejie.space/">Less is More</a></h1>
-      <ul>
-        
-          <li><a href="https://xuejie.space/about">About</a></li>
-        
-          <li><a href="https://github.com/xxuejie">GitHub</a></li>
-        
-          <li><a href="https://xuejie.space/index.xml">RSS</a></li>
-        
-          <li><a href="https://twitter.com/xxuejie">Twitter</a></li>
-        
-      </ul>
-    </section>
+<a href="https://twitter.com/xxuejie">Twitter</a>
 
+<a href="https://github.com/xxuejie">GitHub</a>
 
-<section id=content>
-  <h1> Introduction to CKB Script Programming 1: Validation Model </h1>
+<a href="https://xuejie.space/index.xml">RSS</a>
 
-  
-    <div id=sub-header>
-      July 2019 · 6 minute read
-    </div>
-  
+</nav>
+</header>
+  <main>
 
-  <div class="entry-content">
-    <p>As of now, the cell validation model in CKB has been more or less stablized, hence I&rsquo;m starting a series of article introducing CKB script programming here. My goal here is to fill in all the missing implementation details one need to write CKB scripts after reading the whitepaper, so you can start exploring this beautiful wonderland CKB presents.</p>
+<h1>Introduction to CKB Script Programming 1: Validation Model</h1>
+<p>
+  <i>
+    <time datetime='2019-07-05'>
+      05 Jul, 2019
+    </time>
+  </i>
+</p>
+
+<content>
+  <p>As of now, the cell validation model in CKB has been more or less stablized, hence I&rsquo;m starting a series of article introducing CKB script programming here. My goal here is to fill in all the missing implementation details one need to write CKB scripts after reading the whitepaper, so you can start exploring this beautiful wonderland CKB presents.</p>
 <p>You might noticed that I call the code running on CKB as <code>script</code>, not <code>smart contract</code>. This is because smart contract is quite a confusing term to me, and I want to use a different word here to indicate CKB&rsquo;s unique programmability. A script in CKB&rsquo;s sense need not be just a script we see in scripting languages such as Ruby, JS, it actually refers to the RISC-V format binary you run on CKB VM.</p>
 <p>This first post here, is dedicated to the brand <a href="https://github.com/nervosnetwork/ckb/pull/913">new verification model</a> introduced in CKB v0.14.0. It might sound boring but I promise you this is the last post without actual examples to play with :P</p>
 <p>Note even though I believe CKB&rsquo;s programming model is quite stable now, development is still happening so there might be changes. I will try my best to make sure this post is updated but if anything confuses you, this post is describing CKB&rsquo;s Lina mainnet version now.</p>
@@ -425,13 +238,13 @@
 <p>Below illustrates a real transaction on CKB:</p>
 <p><img src="https://xuejie.space/images/tx.svg" alt="Transaction Example"></p>
 <p>There are a lot of things going on in this graph, and we will come back to this graph again in later posts. Today, we will just focus on 2 entities in the cell data structure: <code>lock</code> and <code>type</code>.</p>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-rust" data-lang="rust"><span style="font-weight:bold">pub</span> <span style="font-weight:bold">struct</span> <span style="font-weight:bold">CellOutput</span> {
-    <span style="font-weight:bold">pub</span> capacity: <span style="font-weight:bold">Capacity</span>,
-    <span style="font-weight:bold">pub</span> lock: <span style="font-weight:bold">Script</span>,
-    <span style="">#[serde(rename = </span><span style="font-style:italic">&#34;type&#34;</span><span style="">)]</span>
-    <span style="font-weight:bold">pub</span> type_: Option&lt;Script&gt;,
-}
-</code></pre></div><p>From the data structure we can see that <code>lock</code> and <code>type</code> shared the same structure, later we can show that they are also executed in the same environment, the differences between them are just in a few tiny bits:</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-rust" data-lang="rust"><span style="display:flex;"><span><span style="font-weight:bold">pub</span> <span style="font-weight:bold">struct</span> <span style="font-weight:bold">CellOutput</span> {
+</span></span><span style="display:flex;"><span>    <span style="font-weight:bold">pub</span> capacity: <span style="font-weight:bold">Capacity</span>,
+</span></span><span style="display:flex;"><span>    <span style="font-weight:bold">pub</span> lock: <span style="font-weight:bold">Script</span>,
+</span></span><span style="display:flex;"><span>    <span style="">#[serde(rename = </span><span style="font-style:italic">&#34;type&#34;</span><span style="">)]</span>
+</span></span><span style="display:flex;"><span>    <span style="font-weight:bold">pub</span> type_: Option&lt;Script&gt;,
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>From the data structure we can see that <code>lock</code> and <code>type</code> shared the same structure, later we can show that they are also executed in the same environment, the differences between them are just in a few tiny bits:</p>
 <ul>
 <li><code>lock</code> is required, while <code>type</code> is optional</li>
 <li>Mentally, they are used to capture different use cases.</li>
@@ -489,21 +302,19 @@
 <h1 id="whats-next">What&rsquo;s Next</h1>
 <p>Now that cell model is covered, we will look at how to actual write a CKB VM script in the next post. The default secp256k1 lock script will be examined to show the life of a CKB VM script.</p>
 
-  </div>
+</content>
 
-  <div id=links>
-    
-      <a class="basic-alignment left" href="https://xuejie.space/about/">&laquo; About</a>
-    
-    
-      <a class="basic-alignment left" href="https://xuejie.space/2019_07_13_introduction_to_ckb_script_programming_script_basics/">Introduction to CKB Script Programming 2: Script Basics &raquo;</a>
-    
-  </div>
-</section>
+
+
+<p>
+  
+</p>
+
+  </main>
+  <footer>Made with <a href="https://github.com/janraasch/hugo-bearblog/">Hugo ʕ•ᴥ•ʔ Bear</a>
+</footer>
 
   
 </body>
+
 </html>
-
-
-
