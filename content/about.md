@@ -2,7 +2,6 @@
 title = "About"
 date = "2019-01-29"
 private = true
-type = "no-links"
 +++
 
 I'm Xuejie Xiao, this is my new site for writing.
