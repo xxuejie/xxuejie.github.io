@@ -8,10 +8,18 @@
     <managingEditor>xxuejie@gmail.com (Xuejie Xiao)</managingEditor>
     <webMaster>xxuejie@gmail.com (Xuejie Xiao)</webMaster>
     
-    <lastBuildDate>Tue, 16 Jun 2026 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Wed, 24 Jun 2026 00:00:00 +0000</lastBuildDate>
     
         <atom:link href="https://xuejie.space/index.xml" rel="self" type="application/rss+xml" />
     <item>
+      <title>Fat transactions, thin transactions</title>
+      <link>https://xuejie.space/2026_06_24_fat_transactions/</link>
+      <pubDate>Wed, 24 Jun 2026 00:00:00 +0000</pubDate>
+      <author>xxuejie@gmail.com (Xuejie Xiao)</author>
+      <guid>https://xuejie.space/2026_06_24_fat_transactions/</guid><description>&lt;p&gt;We talk a lot about VMs. This time, I want to expand to a different-yet-related topic.&lt;/p&gt;
+&lt;h1 id=&#34;isas-resemble-each-other&#34;&gt;ISAs resemble each other&lt;/h1&gt;
+&lt;p&gt;We used to fight on &lt;a href=&#34;https://en.wikipedia.org/wiki/Instruction_set_architecture&#34;&gt;ISAs (instruction set architecture)&lt;/a&gt; for VMs, we still do. I embrace RISC-V, primarily because it stays frozen. It has a small core everyone agrees to, frozen for decades, yet it is still capable of pushing innovations. New software and optimizations continue to work on the small core.&lt;/p&gt;</description>
+    </item><item>
       <title>Teeworlds on CKB</title>
       <link>https://xuejie.space/2026_06_16_teeworlds_on_ckb/</link>
       <pubDate>Tue, 16 Jun 2026 00:00:00 +0000</pubDate>
@@ -33,12 +41,5 @@
 | WAVM nightly/2022-05-14       |   185 | 4.87   |
 | Native                        |    38 | 1.0    |
 &lt;/code&gt;&lt;/pre&gt;&lt;p&gt;For wasm tests, we compile the same secp256k1 test program above using &lt;a href=&#34;https://github.com/WebAssembly/wasi-sdk&#34;&gt;WASI_SDK&lt;/a&gt; 16.&lt;/p&gt;</description>
-    </item><item>
-      <title>Is Upstream Ready for RISC-V?</title>
-      <link>https://xuejie.space/2022_08_17_is_upstream_ready_for_riscv/</link>
-      <pubDate>Tue, 16 Aug 2022 00:00:00 +0000</pubDate>
-      <author>xxuejie@gmail.com (Xuejie Xiao)</author>
-      <guid>https://xuejie.space/2022_08_17_is_upstream_ready_for_riscv/</guid><description>&lt;p&gt;When RISC-V was first introduced to the Nervos ecosystem, a &lt;a href=&#34;https://hub.docker.com/r/nervos/ckb-riscv-gnu-toolchain&#34;&gt;patched&lt;/a&gt; toolchain had to be used since upstream gcc/clang does not provide enough support for RISC-V. However, one argument supporting RISC-V in a blockchain, was exactly to embrace a wide open source community, where Nervos can both enjoy the contributions by the whole community, as well as contribute back code built when working on the Nervos ecosystem.&lt;/p&gt;
-&lt;p&gt;Fast forward a few years, the question remains: as of August 2022, is upstream gcc, clang, etc. ready to support RISC-V development? It&amp;rsquo;s now time to find out.&lt;/p&gt;</description>
     </item></channel>
 </rss>
