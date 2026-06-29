@@ -8,10 +8,17 @@
     <managingEditor>xxuejie@gmail.com (Xuejie Xiao)</managingEditor>
     <webMaster>xxuejie@gmail.com (Xuejie Xiao)</webMaster>
     
-    <lastBuildDate>Wed, 24 Jun 2026 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Mon, 29 Jun 2026 00:00:00 +0000</lastBuildDate>
     
         <atom:link href="https://xuejie.space/index.xml" rel="self" type="application/rss+xml" />
     <item>
+      <title>Porting One Hour One Life&#39;s Game Loop to CKB</title>
+      <link>https://xuejie.space/2026_06_29_porting_one_hour_one_life_game_loop_to_ckb/</link>
+      <pubDate>Mon, 29 Jun 2026 00:00:00 +0000</pubDate>
+      <author>xxuejie@gmail.com (Xuejie Xiao)</author>
+      <guid>https://xuejie.space/2026_06_29_porting_one_hour_one_life_game_loop_to_ckb/</guid><description>&lt;p&gt;Following my Teeworlds port, which showcased MOBA / fighting games on chain, I started another quest: porting the game loop of &lt;a href=&#34;https://onehouronelife.com/&#34;&gt;One Hour One Life&lt;/a&gt; (OHOL for short) by &lt;a href=&#34;https://hcsoftware.sourceforge.net/jason-rohrer/&#34;&gt;Jason Rohrer&lt;/a&gt; to the CKB blockchain.&lt;/p&gt;
+&lt;p&gt;OHOL is a multiplayer survival game of parenting and civilization building (or one can think of it as a &lt;a href=&#34;https://en.wikipedia.org/wiki/Massively_multiplayer_online_role-playing_game&#34;&gt;MMORPG&lt;/a&gt;). The port is powered by CKB-VM, a deterministic RISC-V-based virtual machine used by CKB to validate on-chain programs.&lt;/p&gt;</description>
+    </item><item>
       <title>Fat transactions, thin transactions</title>
       <link>https://xuejie.space/2026_06_24_fat_transactions/</link>
       <pubDate>Wed, 24 Jun 2026 00:00:00 +0000</pubDate>
@@ -26,20 +33,5 @@
       <author>xxuejie@gmail.com (Xuejie Xiao)</author>
       <guid>https://xuejie.space/2026_06_16_teeworlds_on_ckb/</guid><description>&lt;p&gt;For unexpected reasons, I recently had some free time to tinker. I started to work on a thesis I had for years: we have powerful VMs in blockchains, but they are constrained to simple logic moving funds around, what if we dig deeper to unleash the potential?&lt;/p&gt;
 &lt;p&gt;After some trial and error, I&amp;rsquo;ve ported &lt;a href=&#34;https://www.teeworlds.com/&#34;&gt;Teeworlds&lt;/a&gt;, an open source multiplayer shooter game to CKB. By porting Teeworlds to CKB, I mean that the core 50Hz game tick logic of Teeworlds runs / validates fully on CKB-VM. Graphics, sound and networking still remain off-chain; the core game logic now also runs on chain, including all the movement, collision, weapons and fighting logic.&lt;/p&gt;</description>
-    </item><item>
-      <title>A Journey to the Absolute Limit: CKB-VM&#39;s LLVM AOT engine</title>
-      <link>https://xuejie.space/2022_09_08_a_journey_to_the_limit/</link>
-      <pubDate>Thu, 08 Sep 2022 00:00:00 +0000</pubDate>
-      <author>xxuejie@gmail.com (Xuejie Xiao)</author>
-      <guid>https://xuejie.space/2022_09_08_a_journey_to_the_limit/</guid><description>&lt;p&gt;It&amp;rsquo;s long been a fascinating journey optimizing &lt;a href=&#34;https://github.com/nervosnetwork/ckb-vm&#34;&gt;CKB-VM&lt;/a&gt;. For example, here&amp;rsquo;s the runtime gathered when running &lt;a href=&#34;https://github.com/xxuejie/ckb-vm-bench-scripts/blob/1a3d3c7141ba96674d655269bb61e76100508a4d/c/secp256k1_bench.c&#34;&gt;secp256k1&lt;/a&gt; verification on CKB-VM:&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;|                               | µs    | Ratio  |
-|-------------------------------|-------|--------|
-| CKB-VM (Rust interpreter)     | 12034 | 316.68 |
-| CKB-VM (Assembly interpreter) |  2417 | 63.61  |
-| CKB-VM (Old AOT)              |  1741 | 45.82  |
-| Wasmtime 0.40.1               |   228 | 6.0    |
-| WAVM nightly/2022-05-14       |   185 | 4.87   |
-| Native                        |    38 | 1.0    |
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;For wasm tests, we compile the same secp256k1 test program above using &lt;a href=&#34;https://github.com/WebAssembly/wasi-sdk&#34;&gt;WASI_SDK&lt;/a&gt; 16.&lt;/p&gt;</description>
     </item></channel>
 </rss>

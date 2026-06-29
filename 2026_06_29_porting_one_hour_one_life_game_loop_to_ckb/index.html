@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head>
+  <meta http-equiv="X-Clacks-Overhead" content="GNU Terry Pratchett" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Porting One Hour One Life&#39;s Game Loop to CKB | Less is more</title>
+<meta name="title" content="Porting One Hour One Life&#39;s Game Loop to CKB" />
+<meta name="description" content="Following my Teeworlds port, which showcased MOBA / fighting games on chain, I started another quest: porting the game loop of One Hour One Life (OHOL for short) by Jason Rohrer to the CKB blockchain.
+OHOL is a multiplayer survival game of parenting and civilization building (or one can think of it as a MMORPG). The port is powered by CKB-VM, a deterministic RISC-V-based virtual machine used by CKB to validate on-chain programs." />
+<meta name="keywords" content="" />
+
+
+<meta property="og:url" content="https://xuejie.space/2026_06_29_porting_one_hour_one_life_game_loop_to_ckb/">
+	<meta property="og:site_name" content="Less is more">
+	<meta property="og:title" content="Porting One Hour One Life&#39;s Game Loop to CKB">
+	<meta property="og:description" content="Following my Teeworlds port, which showcased MOBA / fighting games on chain, I started another quest: porting the game loop of One Hour One Life (OHOL for short) by Jason Rohrer to the CKB blockchain.
+OHOL is a multiplayer survival game of parenting and civilization building (or one can think of it as a MMORPG). The port is powered by CKB-VM, a deterministic RISC-V-based virtual machine used by CKB to validate on-chain programs.">
+	<meta property="og:locale" content="en_US">
+	<meta property="og:type" content="article">
+		<meta property="article:published_time" content="2026-06-29T00:00:00+00:00">
+		<meta property="article:modified_time" content="2026-06-29T00:00:00+00:00">
+
+
+
+
+	<meta name="twitter:card" content="summary">
+	<meta name="twitter:title" content="Porting One Hour One Life&#39;s Game Loop to CKB">
+	<meta name="twitter:description" content="Following my Teeworlds port, which showcased MOBA / fighting games on chain, I started another quest: porting the game loop of One Hour One Life (OHOL for short) by Jason Rohrer to the CKB blockchain.
+OHOL is a multiplayer survival game of parenting and civilization building (or one can think of it as a MMORPG). The port is powered by CKB-VM, a deterministic RISC-V-based virtual machine used by CKB to validate on-chain programs.">
+
+
+
+
+	<meta itemprop="name" content="Porting One Hour One Life&#39;s Game Loop to CKB">
+	<meta itemprop="description" content="Following my Teeworlds port, which showcased MOBA / fighting games on chain, I started another quest: porting the game loop of One Hour One Life (OHOL for short) by Jason Rohrer to the CKB blockchain.
+OHOL is a multiplayer survival game of parenting and civilization building (or one can think of it as a MMORPG). The port is powered by CKB-VM, a deterministic RISC-V-based virtual machine used by CKB to validate on-chain programs.">
+	<meta itemprop="datePublished" content="2026-06-29T00:00:00+00:00">
+	<meta itemprop="dateModified" content="2026-06-29T00:00:00+00:00">
+	<meta itemprop="wordCount" content="5025">
+<meta name="referrer" content="no-referrer-when-downgrade" />
+
+  <style>
+  :root {
+    --width: 720px;
+    --font-main: Verdana, sans-serif;
+    --font-secondary: Verdana, sans-serif;
+    --font-scale: 1em;
+    --background-color: #fff;
+    --heading-color: #222;
+    --text-color: #444;
+    --link-color: #3273dc;
+    --visited-color: #8b6fcb;
+    --blockquote-color: #222;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --background-color: #01242e;
+      --heading-color: #eee;
+      --text-color: #ddd;
+      --link-color: #8cc2dd;
+      --visited-color: #8b6fcb;
+      --blockquote-color: #ccc;
+    }
+  }
+
+  body {
+    font-family: var(--font-secondary);
+    font-size: var(--font-scale);
+    margin: auto;
+    padding: 20px;
+    max-width: var(--width);
+    text-align: left;
+    background-color: var(--background-color);
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    line-height: 1.5;
+    color: var(--text-color);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-main);
+    color: var(--heading-color);
+  }
+
+  a {
+    color: var(--link-color);
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+
+  nav a {
+    margin-right: 8px;
+  }
+
+  strong,
+  b {
+    color: var(--heading-color);
+  }
+
+  button {
+    margin: 0;
+    cursor: pointer;
+  }
+
+  time {
+    font-family: monospace;
+    font-style: normal;
+    font-size: 15px;
+  }
+
+  main {
+    line-height: 1.6;
+  }
+
+  table {
+    width: 100%;
+  }
+
+  hr {
+    border: 0;
+    border-top: 1px dashed;
+  }
+
+  img {
+    max-width: 100%;
+  }
+
+  code {
+    font-family: monospace;
+    padding: 2px;
+    border-radius: 3px;
+  }
+
+  blockquote {
+    border-left: 1px solid #999;
+    color: var(--blockquote-color);
+    padding-left: 20px;
+    font-style: italic;
+  }
+
+  footer {
+    padding: 25px 0;
+    text-align: center;
+  }
+
+  .title:hover {
+    text-decoration: none;
+  }
+
+  .title h1 {
+    font-size: 1.5em;
+  }
+
+  .inline {
+    width: auto !important;
+  }
+
+  .highlight,
+  .code {
+    border-radius: 3px;
+    margin-block-start: 1em;
+    margin-block-end: 1em;
+    overflow-x: auto;
+  }
+
+  .highlight pre,
+  .code pre {
+    min-width: 100%;
+    width: max-content;
+  }
+
+   
+  ul.blog-posts {
+    list-style-type: none;
+    padding: unset;
+  }
+
+  ul.blog-posts li {
+    display: flex;
+  }
+
+  ul.blog-posts li span {
+    flex: 0 0 130px;
+  }
+
+  ul.blog-posts li a:visited {
+    color: var(--visited-color);
+  }
+
+</style>
+
+</head>
+
+<body>
+  <header><a href="https://xuejie.space/" class="title">
+  <h2>Less is more</h2>
+</a>
+<nav>
+<a href="https://xuejie.space/resume.html">Resume</a>
+
+<a href="https://twitter.com/xxuejie">Twitter</a>
+
+<a href="https://github.com/xxuejie">GitHub</a>
+
+<a href="https://xuejie.space/index.xml">RSS</a>
+
+</nav>
+</header>
+  <main>
+
+<h1>Porting One Hour One Life&#39;s Game Loop to CKB</h1>
+<p>
+  <i>
+    <time datetime='2026-06-29'>
+      29 Jun, 2026
+    </time>
+  </i>
+</p>
+
+<content>
+  <p>Following my Teeworlds port, which showcased MOBA / fighting games on chain, I started another quest: porting the game loop of <a href="https://onehouronelife.com/">One Hour One Life</a> (OHOL for short) by <a href="https://hcsoftware.sourceforge.net/jason-rohrer/">Jason Rohrer</a> to the CKB blockchain.</p>
+<p>OHOL is a multiplayer survival game of parenting and civilization building (or one can think of it as a <a href="https://en.wikipedia.org/wiki/Massively_multiplayer_online_role-playing_game">MMORPG</a>). The port is powered by CKB-VM, a deterministic RISC-V-based virtual machine used by CKB to validate on-chain programs.</p>
+<p>A demo of this unofficial port can be found <a href="https://www.youtube.com/watch?v=VouaANmvG-M">here</a>. I&rsquo;m still polishing the code, so unfortunately the source code is not yet available. However, I do have a <a href="https://xuejie.space/ohol_on_ckb_tx.zip">MockTransaction tx file</a> available. So you can try running the game loop in <a href="https://github.com/nervosnetwork/ckb-standalone-debugger">ckb-debugger</a>:</p>
+<pre tabindex="0"><code>$ unzip ohol_on_ckb_tx.zip
+$ ckb-debugger --tx-file ohol_on_ckb_tx.json --cell-type input -i 0 -s type
+(logs omitted...)
+
+Script log: [INFO] CKB: canonical hash verified
+Run result: 0
+All cycles: 198217586(189.0M)
+</code></pre><p>The transaction has one input <code>cell</code> (CKB&rsquo;s basic state container, roughly analogous to a UTXO) with an always-success <code>lock script</code> (a RISC-V program, here we use a dummy one for the demo), and a <code>type script</code> (another RISC-V program) that runs the OHOL game loop, reading the game tape from the transaction&rsquo;s witness field.</p>
+<p>One note is that the OHOL game loop binary is actually ~6.1MB in size. For a debugger used binary this is fine, I&rsquo;m attaching the binary with debugging information, so profiling it does reveal bottlenecks. When debug information is stripped, the OHOL game loop binary will be ~462KB, well within CKB&rsquo;s limits (CKB requires all transactions to be no larger than 512KB).</p>
+<p>The test transaction runs one minute of OHOL gameplay, replicating all game logic in ~198.2 million CKB cycles, or ~113 million RISC-V instructions. (CKB <code>cycles</code> are CKB-VM&rsquo;s metering unit, conceptually similar to gas on Ethereum — every instruction costs a small, fixed number of cycles, and a transaction has a cycle limit.) I also gathered some memory usage information:</p>
+<pre tabindex="0"><code>=== MEMORY USAGE ===
+_end (heap start):   0x26dcd7 (2546903 bytes)
+brk max:             0x400000 (4 MB)
+stack region:        [0x0, 0x080000]
+peak heap used:     ~1327104 bytes (1296.0 KB) out of 1647401 (1608.8 KB) available
+peak stack used:    ~289936 bytes (283.1 KB) out of 524288 (512.0 KB) available
+min SP:             0x039370 (at step 8954357, pc=0x0c7626)
+  in function:       trim+0xe
+</code></pre><p>Of CKB-VM&rsquo;s 4MB memory space, we reserve 512KB for stack, 1604.8KB for heap. When running OHOL game loop, peak stack usage is 283.1KB (55.29%), peak heap usage is 1296KB (80.76%). I have to mention that this is a working-but-yet-to-be-heavily-optimized version. There are still bottlenecks in both computation and memory that we can address. I will get to this more later.</p>
+<p><strong>Please understand that this is only an unofficial, unfinished technical demo. It is not the official <a href="https://onehouronelife.com/">One Hour One Life</a> game, and it is not affiliated with, endorsed by, or authorized by <a href="https://en.wikipedia.org/wiki/Jason_Rohrer">Jason Rohrer</a>. I fully respect the <a href="https://github.com/jasonrohrer/OneLife/blob/master/no_copyright.txt">terms</a> Jason Rohrer set, and I’m deeply grateful for the incredible work he put into creating the original game, as well as making it public domain. If this ever becomes a standalone game or public service, it will use a different name and distinct branding.</strong></p>
+<h1 id="forever-running-architecture">Forever-running Architecture</h1>
+<p>OHOL is different from Teeworlds. The game is persistent and constantly evolving. There are no clear &ldquo;game sessions&rdquo;. Everyone joins the same game world, and it runs 24/7, we don&rsquo;t nuke a world every 5 minutes and start from scratch.</p>
+<p>While we are still gathering <code>game tape</code> like Teeworlds, we are using a slightly different workflow: every minute, all player inputs on a server are gathered and submitted on chain. A cryptographically secure <code>world state hash</code> is derived from the <code>world state</code>, i.e., all of OHOL&rsquo;s game state, including the map, items on the map, player states, and other global world state. A <code>game tape</code> thus transitions the game from <code>world state hash 1</code> to <code>world state hash 2</code>, and so on. Every minute a new tape is submitted on chain, updating <code>world state hash</code> stored on chain. The <code>chunk</code> in OHOL is thus one minute of wall-clock gameplay.</p>
+<p>After defining <code>chunk</code> of gameplay and introducing <code>world state hash</code>, OHOL shares essentially the same architecture and workflow as Teeworlds:</p>
+<ol>
+<li>Modify the game loop of OHOL, so a <code>game tape</code> is dumped for each <code>chunk</code>.</li>
+<li>As a prerequisite, we introduce a feature to dump the <code>world state</code> of OHOL, which is then used to calculate the <code>world state hash</code>.</li>
+<li>We build a native <code>replayer</code> first, abstracting all sources of data, such as player inputs, RNG sources, timestamps, etc. Given the same world state and the same tape, the <code>replayer</code> should re-run the gameplay to the exact same ending world state.</li>
+<li>We then port the <code>replayer</code> from the native environment to CKB-VM.</li>
+<li>When needed, profile the CKB-VM <code>replayer</code> and apply necessary optimizations.</li>
+<li>Build scaffolding code for CKB integration.</li>
+</ol>
+<p>This is the same workflow as Teeworlds, with the addition of step 2. Teeworlds does not need a <code>world state</code> or <code>world state hash</code>, but a persistent world like OHOL does.</p>
+<h1 id="work-to-make-ohol-feasible">Work to Make OHOL Feasible</h1>
+<p>OHOL is a significantly more complicated game compared to Teeworlds, with rich content to make the game a joy to play. There are certain optimizations that can be deferred till we can profile OHOL properly, but there are design problems we need to work out first so OHOL can run in CKB-VM&rsquo;s limited environment.</p>
+<h2 id="archipelago">Archipelago</h2>
+<p>Fundamentally, OHOL is a grid-based game. Its giant map is divided into <code>tiles</code>. A <code>tile</code> has an X and Y position, a player walks from one tile to another, a tile can hold at most one item.</p>
+<p>By default, OHOL&rsquo;s map is really big, it uses the entire space of an <code>int32_t</code> value (negative values are also coordinates) to represent the X coordinate or the Y coordinate of a tile. This means OHOL by default has 4,294,967,296 x 4,294,967,296 tiles. This is way too big for CKB-VM to process.</p>
+<p>After some calculations, I coined the <a href="https://en.wikipedia.org/wiki/Archipelago">archipelago</a> idea. Each archipelago in my port is limited to the following constraints:</p>
+<ul>
+<li>256x256 tiles</li>
+<li>64 players</li>
+<li>32768 items</li>
+</ul>
+<p>Of course the game should never be limited to just this small grid and 64 players. The idea is we deploy one archipelago as a CKB cell on-chain, and there could well be many archipelagos. I have ideas on how archipelagos can communicate and connect to each other, but I&rsquo;ll leave it to the next post where I talk more about game design changes. For now the takeaway is: by restricting one CKB cell to one archipelago, we can then process its entire gameplay in CKB-VM.</p>
+<p>It&rsquo;s worth noting that the archipelago idea is not new, similar designs have been <a href="https://onehouronelife.com/forums/viewtopic.php?id=6715&amp;p=2">tried</a> by OHOL at <a href="https://store.steampowered.com/news/app/595690/view/699890007742088725">different points in time</a>.</p>
+<h2 id="packed-banks">Packed banks</h2>
+<p>OHOL has a list of <a href="https://github.com/jasonrohrer/OneLifeData7/tree/master/objects">objects</a> and <a href="https://github.com/jasonrohrer/OneLifeData7/tree/master/transitions">transitions</a> encoding game logic. Objects represent, well, all the objects that exist in the game, transitions express the rules by which one object transforms into another. In OHOL they are encoded in plain txt files, and are loaded when OHOL client and server boot, but for an on-chain environment, we cannot work with this format for several reasons:</p>
+<ul>
+<li>TXT format is good for editing, but wastes a lot of space.</li>
+<li>Parsing and processing them for every transaction might not be the best way to do it.</li>
+</ul>
+<p>I introduced <code>PackedObject</code> and <code>PackedTrans</code> structure, where we encode the same data in binary formats:</p>
+<pre tabindex="0"><code>typedef struct {
+  int16_t id;
+  int16_t dummyParent;
+  uint16_t descFlags;
+  int16_t _pad2;
+  uint64_t flags;
+  float containSize;
+  float rValue;
+  int32_t foodValue;
+
+  // Some fields are omitted...
+} PackedObject;
+
+static_assert(sizeof(PackedObject) == BANK_OBJ_REC_SIZE,
+              &#34;PackedObject must be 128 bytes&#34;);
+
+typedef struct {
+  int16_t actor;
+  int16_t target;
+  int16_t newActor;
+  int16_t newTarget;
+  int32_t autoDecaySeconds;
+  uint8_t flags;
+
+  // Some fields are omitted...
+} PackedTrans;
+
+static_assert(sizeof(PackedTrans) == BANK_TRANS_REC_SIZE,
+              &#34;PackedTrans must be 40 bytes&#34;);
+</code></pre><p>This way we encode each object in 128 bytes, each transition in 40 bytes. It allows a more compact representation.</p>
+<p>Even so, they won&rsquo;t fit in a single CKB-VM binary. In the current version I use, OHOL has 11,402 objects (4,437 object files, plus auto-generated objects), 53,322 transitions (5,231 transition files, plus auto-generated reverse/symmetric transitions). Those require ~3.43 MB in total. Compressing them won&rsquo;t help either, LZ4 brings them down to 487KB, but we&rsquo;d still need to find the memory to decompress them.</p>
+<p>In the Teeworlds post, I talked about the <code>banked memory</code> used by Neo Geo system. While Neo Geo only allows 1MB of <code>P2 banked memory</code>, it can have ROMs that are much bigger than 1MB. KOF 97 uses a 4MB <code>P2 ROM</code>, regions from it are dynamically loaded into banked memory at runtime.</p>
+<p>We can do the same for OHOL. I built a tool to split objects &amp; transitions into 500K <code>packed bank</code> files:</p>
+<pre tabindex="0"><code>$ ls -lh cells
+total 3.6M
+-rw-r--r-- 1 cachy cachy 128K Jun 23 07:26 bank_bulk.bin
+-rw-r--r-- 1 cachy cachy 512K Jun 23 07:26 bank_obj_000.bin
+-rw-r--r-- 1 cachy cachy 512K Jun 23 07:26 bank_obj_001.bin
+-rw-r--r-- 1 cachy cachy 402K Jun 23 07:26 bank_obj_002.bin
+-rw-r--r-- 1 cachy cachy 1011 Jun 23 07:26 bank_sizes.h
+-rw-r--r-- 1 cachy cachy 500K Jun 23 07:26 bank_trans_000.bin
+-rw-r--r-- 1 cachy cachy 500K Jun 23 07:26 bank_trans_001.bin
+-rw-r--r-- 1 cachy cachy 500K Jun 23 07:26 bank_trans_002.bin
+-rw-r--r-- 1 cachy cachy 500K Jun 23 07:26 bank_trans_003.bin
+-rw-r--r-- 1 cachy cachy  83K Jun 23 07:26 bank_trans_004.bin
+</code></pre><p>We can then deploy each <code>packed bank</code> file on CKB as its own <code>cell</code>, and reference it from our transaction as a <code>dep cell</code> (a read-only data dependency, think of it like opening a read-only file shipped with the transaction).</p>
+<p>We then can load needed objects &amp; transitions on demand. In the current port, I didn&rsquo;t really implement <code>banked memory</code> exactly like Neo Geo. Objects are loaded based on which gets used, nearby objects (by ID) are not necessarily used together. Instead I implemented a small 128-entry, 2-way associative LRU cache, where I first load objects by ID into this cache. Later matches can consult the in-memory cache directly, on a miss, we look into dep cells again. The dep cells are also designed to allow random access, so given an object ID, we know exactly its cell index and offset, and we can load it immediately via one CKB syscall (just think of CKB syscalls as file I/O).</p>
+<p>Transitions are trickier, but we can still build a small index to allow random access into dep cells. This is where <code>bank_bulk.bin</code> file comes in handy, I actually pack some metadata (how many objects / transitions are available), transition index, and data that can be pre-computed into this single binary file. This includes:</p>
+<ul>
+<li>Maximum object ID and transition ID. IDs are sparse, there are actually 10,810 non-empty objects.</li>
+<li><a href="https://github.com/jasonrohrer/OneLifeData7/tree/master/categories">categories</a>, this is much smaller, so we pack it and load it all at once.</li>
+<li>All spawnable person object IDs.</li>
+<li>All female person IDs.</li>
+<li>Race information.</li>
+<li>All death marker object IDs.</li>
+<li>All edible object IDs.</li>
+<li>Toolset information.</li>
+</ul>
+<p>Those are typically computed by OHOL at boot time. In <code>replayer</code>, we pre-compute them, pack them in <code>bank_bulk.bin</code>, so the <code>replayer</code> can simply load the data.</p>
+<p><code>bank_sizes.h</code> contains data hash we use to locate the <code>bank_bulk.bin</code> dep cell, along with the sizes of each pre-computed data section. This way precomputed data can all reside in BSS as well, avoiding heap overhead.</p>
+<p>If you dig into the test transaction discussed above, you&rsquo;ll find all of those <code>*.bin</code> files.</p>
+<p>If you&rsquo;ve ever shipped a game for fixed-hardware consoles (Neo Geo, GBA, PSP-era handhelds), CKB-VM will feel familiar: 4MB of RAM, a hard cycle budget, no hardware floating-point unit, no MMU, and a 512KB program-size limit. Most of the techniques in this post are not blockchain tricks — they&rsquo;re console-era memory tricks, applied to a modern open-source game.</p>
+<h2 id="vm-memory-layout">VM memory layout</h2>
+<p>To make the best use of CKB-VM&rsquo;s 4MB memory space, I redesigned the whole memory layout:</p>
+<ul>
+<li>Stack lives from 0 - 512KB.</li>
+<li>ELF is loaded starting from 512KB.</li>
+<li>Heap starts from the <code>_end</code> symbol declared by ELF, and extends all the way up to 4MB.</li>
+</ul>
+<p>There is actually a <a href="https://github.com/nervosnetwork/ckb-script-templates/tree/main/stack-reorder-contract">template</a> following this design, you can try it out in your CKB program as well.</p>
+<p>The layout is designed so that when stack overflow happens, it is picked up immediately as an error (<code>SP</code> crosses 0, becoming very large). CKB-VM has no MMU, the default layout has a small chance that stack and heap might overlap. As we are pushing towards the limits of CKB-VM, an overlap between stack and heap might lead to strange bugs and is very dangerous. With the redesigned layout, we can safely push both stack and heap to their limits. This is actually another regret of mine: I wish I had adopted this trick earlier when designing CKB-VM programs.</p>
+<p>As mentioned above, I have employed another design: if the size of a structure is known at compile time, we should declare it as a static variable, placing it in the <a href="https://en.wikipedia.org/wiki/.bss">BSS</a> section. Heap allocations have overhead. Some (glibc, for example) allocate more than requested, and put metadata right before the returned pointer. Some (glibc again) also add padding for alignment. Even for different allocators like <code>jemalloc</code>, metadata still exists, just not near the returned pointer. As we put more structures into <code>BSS</code> where we can, heap can be reserved for cases where it is truly needed.</p>
+<h2 id="inlined-settings">Inlined settings</h2>
+<p>Apart from in-game data like objects / transitions / categories, there are also <a href="https://github.com/jasonrohrer/OneLife/tree/master/server/settings">settings</a> required by OHOL game. Some values in <code>settings</code> are for administration tasks, but others might affect gameplay, we need those values in <code>replayer</code> as well.</p>
+<p>We can pack settings in <code>packed bank</code> files as well, but I want to go one step further: settings are typically <a href="https://github.com/jasonrohrer/OneLife/blob/93899b0716be79d251511f10b5710315dd70cd60/server/server.cpp#L19532-L19569">loaded</a> directly with known parameters at compile time, such as:</p>
+<pre tabindex="0"><code>starvingEmotionIndex = SettingsManager::getIntSetting( &#34;starvingEmotionIndex&#34;, 2 );
+</code></pre><p>So maybe we can just scan the settings folder, and generate a C++ function that returns settings values directly like:</p>
+<pre tabindex="0"><code>int SettingsManager::getIntSetting( const char *inSettingName) {
+  if (std::memcmp(inSettingName, &#34;barrierBlocksPlanes&#34;, 19) == 0) {
+    return 1;
+  } else if (std::memcmp(inSettingName, &#34;allowPeriodicPlacements&#34;, 23) == 0) {
+    return 0;
+  } else if (std::memcmp(inSettingName, &#34;starvingEmotionIndex&#34;, 20) == 0) {
+    return 31;
+  } else if (...) {
+    // ... more cases ...
+  } else {
+    return 0;
+  }
+}
+</code></pre><p>But there could be hundreds of settings (I count 228 in my test), and that&rsquo;s a lot of <code>if-else-if</code> branches to write. Luckily, <a href="https://en.wikipedia.org/wiki/Perfect_hash_function">perfect hash</a> can help. Please consult <a href="http://people.cs.bris.ac.uk/~clifford/coms31900-2021/slides/static-hashing.pdf">this amazing lecture</a> for more details on perfect hashing. In short, a typical hash function deals with key collisions via <a href="https://en.wikipedia.org/wiki/Open_addressing">open addressing</a> or <a href="https://www.databricks.com/blog/what-are-hash-buckets">hash buckets</a>. If all the keys are known beforehand, a perfect hash lets us derive a hash function in which no collisions exist. Each key maps to its own slot, resulting in an efficient lookup table. With this trick, we can have the following:</p>
+<pre tabindex="0"><code>int SettingsManager::getIntSetting( const char *inSettingName, char *outValueFound ) {
+  switch ( settingHash( inSettingName ) ) {
+    case 0x1u: // &#34;barrierBlocksPlanes&#34;
+      return 1;
+      break;
+    case 0x4u: // &#34;allowPeriodicPlacements&#34;
+      return 0;
+      break;
+    case 0x6e7u: // &#34;starvingEmotionIndex&#34;
+      return 31;
+      break;
+
+    // ... more cases ...
+
+    default:
+      return 0;
+  }
+}
+</code></pre><p>Personally I consider this a much nicer design than <code>if-else-if</code> branches.</p>
+<p>We can go even further. Let&rsquo;s look at a typical call site for <code>SettingsManager</code>:</p>
+<pre tabindex="0"><code>starvingEmotionIndex = SettingsManager::getIntSetting( &#34;starvingEmotionIndex&#34;, 2 );
+</code></pre><p>We know the method, we know all the parameters of the method. Ideally, compilers should be able to strip the function call and arrive at just:</p>
+<pre tabindex="0"><code>starvingEmotionIndex = 31;
+</code></pre><p>This is exactly why I didn&rsquo;t use the <code>packed bank</code> trick for settings. We don&rsquo;t need CKB syscalls, we don&rsquo;t even need to make C++ calls. Settings values should become direct assignments in <code>replayer</code>.</p>
+<p>After marking the methods as <code>inline</code> to help with control-flow analysis, and with some care to keep the setting methods tidy, both g++ and clang can completely eliminate all <code>getIntSetting</code> calls at <code>-O2</code> or higher. They can even strip the <code>SettingsManager::getIntSetting</code> method itself, among others. In the final <code>replayer</code> code, settings become direct assignments (and some of those assignments may be optimized out as well).</p>
+<p>It&rsquo;s worth mentioning that modern compilers are quite sophisticated. If we implemented the <code>SettingsManager::getIntSetting</code> as 200+ <code>if-else-if</code> branches, compilers might still be able to optimize the code away. Still, I think <code>perfect hash</code> makes the code more beautiful. I have to quote the memorable legend <a href="https://en.wikipedia.org/wiki/Joe_Armstrong_(programmer)">Joe Armstrong</a> here:</p>
+<blockquote>
+<p>Make it work, then make it beautiful, then if you really, really have to, make it fast. 90 percent of the time, if you make it beautiful, it will already be fast. So really, just make it beautiful!</p>
+</blockquote>
+<h2 id="map">Map</h2>
+<p>World state has 3 main parts:</p>
+<ul>
+<li>Map, including tile information, and items on map tiles.</li>
+<li>Player states.</li>
+<li>Other global states, such as rand sources, time, food factors, etc.</li>
+</ul>
+<p>Player states and global states are trivial to track. Since we constrain each archipelago to 64 players, the storage requirement is also reasonable.</p>
+<p>However, map is a big problem. Even when we limit an archipelago to 256x256 grid, there are still 65536 tiles to track, many of which could have items on them. OHOL has its own <a href="https://onehouronelife.com/forums/viewtopic.php?id=3194">database engine</a> for the map, which doesn&rsquo;t fit an on-chain environment. We will have to come up with our own design here.</p>
+<p>In addition, <code>world state hash</code> also requires us to be able to hash all components of a map to build a hash representing all states. Essentially, we need a map format that satisfies two requirements:</p>
+<ul>
+<li>Efficient on-chain gameplay in a compact memory region.</li>
+<li>Quick hashing of the entire state to build a <code>world state hash</code></li>
+</ul>
+<h3 id="first-version-ecs-inspired-layout">First version: ECS-inspired layout</h3>
+<p>I iterated on this for a while, the first working layout I arrived at looks as follows:</p>
+<pre tabindex="0"><code>#define WS_MAP_SIZE 256
+#define WS_MAX_ITEMS 32768
+#define WS_MAX_CONTAINERS 512
+
+typedef struct {
+  int16_t objTypeID;
+  double decayETA;
+  uint16_t extra;
+} WS_Item;
+
+typedef struct {
+  uint8_t contCount;
+  int16_t containedIDs[8];
+  uint8_t extraData[3];
+} WS_Container;
+
+typedef struct {
+  WS_Item items[WS_MAX_ITEMS];
+  uint16_t itemFreeHead;
+  WS_Container containers[WS_MAX_CONTAINERS];
+  uint16_t containerFreeHead;
+  uint16_t itemID[WS_MAP_SIZE * WS_MAP_SIZE];
+  int16_t floorID[WS_MAP_SIZE * WS_MAP_SIZE];
+  double floorDecayETA[WS_MAP_SIZE * WS_MAP_SIZE];
+  uint8_t biome[WS_MAP_SIZE * WS_MAP_SIZE];
+  double chunkLookTime[WS_MAP_SIZE];
+} WS_MapState;
+</code></pre><p>Items require more storage, in this design, <code>WS_Item</code> takes 12 bytes. Not all tiles have an item, though. So for each tile we only store an <code>itemID</code> (2 bytes). When an item is present, the <code>itemID</code> field stores a <code>slot index</code> that points to an entry in the <code>items</code> array, which holds the real item data for that tile. This way only 2 bytes are needed per tile. We also cap the total items allowed in an archipelago to 32,768, reducing memory needs.</p>
+<p>Some items are also containers requiring more storage space. We used the same trick to keep containers in a separate array, so container overhead is not paid per <code>WS_Item</code>. For container items, <code>extra</code> field in <code>WS_Item</code> denotes the slot index in <code>containers</code> array. <code>extra</code> is also used for some special objects but I will not elaborate since it&rsquo;s irrelevant to the storage discussion.</p>
+<p>With this design, the whole map state is ~1.2MB, we can fit it in memory. In fact, I declared the <code>WS_MapState</code> structure as a static variable, ensuring it resides in the BSS section. We know its size in advance, so we don&rsquo;t pay any heap overhead.</p>
+<h3 id="skipping-ws_item-when-we-can">Skipping <code>WS_Item</code> when we can</h3>
+<p>As I dug more into the development, I noticed something: not all items need a <code>WS_Item</code> slot. Let&rsquo;s first look at <code>WS_Item</code> structure:</p>
+<pre tabindex="0"><code>typedef struct {
+  int16_t objTypeID;
+  double decayETA;
+  uint16_t extra;
+} WS_Item;
+</code></pre><p>For those who are less familiar with OHOL, <a href="https://onehouronelife.fandom.com/wiki/Decay">decay</a> in OHOL terminology simply means an object can transform to another one over time. <code>decayETA</code> stores the timestamp when decay next happens for the object.</p>
+<p>In fact, the majority of objects in OHOL have a <code>decayETA</code> of 0, they do not hold other objects or have special abilities, so they do not need the <code>extra</code> field either.</p>
+<p>In addition, the maximum object ID being used by OHOL is 11,401. Even if we leave a little buffer for future game designs, it&rsquo;s safe to say object ID range fits from 1 - 20000.</p>
+<p>Finally, we only allow 32768 items.</p>
+<p>We can thus redesign the <code>uint16_t</code> typed itemID:</p>
+<ul>
+<li>0: empty, no item is stored on the tile.</li>
+<li>1 - 20000: maps to the object ID of a plain item, which has a <code>decayETA</code> of 0, cannot store other items, has no special abilities, so <code>extra</code> is unused.</li>
+<li>20001 - 52768: maps to a slot index, subtracting 20001 from the stored value reveals the actual slot index.</li>
+<li>Higher value: reserved for now.</li>
+</ul>
+<p>We take advantage of the full range of <code>uint16_t</code> to store plain objects directly when we can. This greatly reduces the number of <code>WS_Item</code> slots needed. I&rsquo;ve also built a tool to populate the map with more items than OHOL typically places. In an archipelago with ~25,000 items, only ~200 actually require <code>WS_Item</code> slots.</p>
+<p>This also means that the 32,768-item limit only applies to items that decay, are containers, or have special abilities. Normal items don&rsquo;t count against the limit.</p>
+<h3 id="canonical-map-layout">Canonical map layout</h3>
+<p>This layout has a problem: the item on a given tile can use different slot indices in two different <code>WS_MapState</code> instances that still represent the same logical map. We want the world state hash to match whenever the logical map state matches. So we need a <code>canonical form</code>, we can&rsquo;t just hash the <code>WS_MapState</code> structure.</p>
+<p>As the first iteration, I used a simpler solution: iterate through each tile, for each tile, we dump the <code>WS_Item</code> structure when an item is present, and hash this <code>WS_Item</code> structure instead. Of course the actual implementation has more details:</p>
+<ul>
+<li>We need to convert plain items represented by just an <code>itemId</code> into <code>WS_Item</code>, filling <code>decayETA</code> and <code>extra</code> with 0.</li>
+<li>For container items, we need to dump their contained items, hash them as well.</li>
+</ul>
+<p>With those details sorted out, we get a canonical layout of the map. Differences in slot indices no longer matter.</p>
+<h3 id="new-layout">New layout</h3>
+<p>I actually managed to get <code>replayer</code> working on both native and CKB-VM environments using the above map layout. But I ran into a quirk: dumping the item for every tile and hashing each one individually is quite slow. On CKB-VM, building and hashing this canonical layout into <code>world state hash</code> takes about 40% - 50% of all running cycles. We were spending almost as many cycles building the world state hash, as we were on actually loading and running the gameplay! That&rsquo;s more than we can afford.</p>
+<p>Some of you may have already realized that, with the new encoding for <code>itemID</code>, our old data structure no longer makes sense: a typical game has ~200 items that need <code>WS_Item</code> slots, but we are pre-allocating a 32,768-item sparse array. That does not make sense, and it wastes memory. I then switched to a slightly different design:</p>
+<pre tabindex="0"><code>typedef struct {
+  uint16_t itemID[WS_MAP_SIZE * WS_MAP_SIZE];
+  int16_t floorID[WS_MAP_SIZE * WS_MAP_SIZE];
+  double floorDecayETA[WS_MAP_SIZE * WS_MAP_SIZE];
+  uint8_t biome[WS_MAP_SIZE * WS_MAP_SIZE];
+  double chunkLookTime[WS_MAP_SIZE];
+} WS_MapStateCompact;
+
+/* Complex item: everything beyond a plain objectTypeID.
+ * One per tile that needs decay, container, or grave data.
+ * Stored sorted by `pos` for deterministic canonical hash. */
+typedef struct {
+  uint16_t pos;                           /* (y+128)*256 + (x+128) */
+  int16_t objTypeID;                      /* main object type */
+  double decayETA;                        /* main object decay (0=never) */
+  uint16_t gravePlayerID;                 /* 0 if not a grave */
+  uint8_t contCount;                      /* 0-WS_CONTAINED_CAP */
+  int16_t contObjTypes[WS_CONTAINED_CAP]; /* contained type IDs */
+  double contDecayETAs[WS_CONTAINED_CAP]; /* contained decay ETAs */
+} ComplexItem;
+</code></pre><p>The encoding of <code>itemID</code> is also changed:</p>
+<ul>
+<li>0: empty, no item is stored on the tile.</li>
+<li>1 - 20000: maps to the object ID of a plain item, which has a <code>decayETA</code> of 0, cannot store other items, has no special abilities, so <code>extra</code> is unused.</li>
+<li>20001 - 65534: reserved, not used now.</li>
+<li>65535: tile has a ComplexItem.</li>
+</ul>
+<p>Now the compact map layout no longer has <code>WS_Item</code> slots, nor <code>WS_Container</code> slots. When an object is not a simple ID (e.g., it has decay, it is a container, it is a grave, etc.), <code>itemID</code> simply stores 65535 as its value. An external data structure containing <code>ComplexItem</code> can then be queried to locate the item for this tile. You can also see that <code>ComplexItem</code> has a richer structure covering all cases (decay, container, grave, etc.). Since we&rsquo;ll only have a few <code>ComplexItem</code>s, its size isn&rsquo;t a concern. We can implement the container holding <code>ComplexItem</code>s in several ways:</p>
+<ul>
+<li>A plain vector using linear scan.</li>
+<li>A sorted vector using binary search.</li>
+<li>A hash table.</li>
+</ul>
+<p>This also simplifies the <code>world state hash</code> calculation: we can now hash <code>WS_MapStateCompact</code> as a whole (no more ambiguities), then hash <code>ComplexItem</code>s in sorted order. The result is less memory used (~300KB saved), and a simpler, faster <code>world state hash</code> calculation.</p>
+<p>It&rsquo;s worth noting that at the moment, the port I have only uses <code>WS_MapStateCompact</code> when loading world state and building the <code>world state hash</code>. The internal gameplay still runs on the previous <code>WS_MapState</code>. So the ~300KB memory saving is yet to be claimed.</p>
+<h2 id="other-smaller-techniques">Other smaller techniques</h2>
+<p>Apart from migrating gameplay to <code>WS_MapStateCompact</code> to claim the ~300KB memory savings, there are several smaller tasks I&rsquo;ve also implemented:</p>
+<ul>
+<li><a href="https://en.wikipedia.org/wiki/LZ4_(compression_algorithm)">LZ4</a> compression is applied to both the world state and the game tape. In CKB-VM, we use the minimal <a href="https://github.com/nigeltao/sflz4">sflz4</a> to implement the decompression in compact, constant-sized memory. Thanks to the characteristics of OHOL&rsquo;s data, we actually achieve very good compression ratio: the LZ4 configuration we picked (<code>lz4 -f -9 -B4 -BI --no-frame-crc</code>) can compress a raw world state dump of 875KB into 42KB, a game tape of 7.1KB is also reduced to 2.4KB with the same config.</li>
+<li>In <code>replayer</code>, I skip a lot of OHOL&rsquo;s code used for curses (in the port I&rsquo;m trying a different game design than curses), logging, databases, server management, web stuff, etc. This work is needed so we can fit the OHOL binary into CKB&rsquo;s 512KB limit.</li>
+<li>Being designed for a native environment, <a href="https://github.com/jasonrohrer/minorGems/blob/master/util/SimpleVector.h#L94">SimpleVector</a> used by OHOL tends to keep larger memory chunks to reduce allocations. It works well performance-wise in a native environment, but for a memory-constrained <code>replayer</code>, it will lead to OOM quickly. I have to patch the code to allocate more conservatively.</li>
+<li>As always, a libc/libc++ <a href="https://blog.cryptape.com/optimizing-c-code-for-ckb-vm">tuned</a> for resource-constrained environments also helps a lot.</li>
+</ul>
+<h1 id="profiling--future-work">Profiling &amp; Future Work</h1>
+<p>It&rsquo;s worth mentioning the above designs and optimizations enable the game loop to run on CKB-VM. Large optimization opportunities still remain, and we can further squeeze the OHOL CKB-VM <code>replayer</code> to use even fewer cycles and less memory. One example has already been discussed above: we can move the gameplay code to the new map layout, freeing another ~300KB of memory. And yet there are still more optimizations we can apply:</p>
+<h2 id="floating-point-math">Floating point math</h2>
+<p>Here&rsquo;s an inverted stack profiling chart by <a href="https://github.com/mstange/samply">samply</a>:</p>
+<p><img src="https://xuejie.space/images/ohol_profiling.png" alt="Profiling Chart"></p>
+<p>The top 4 functions <code>__gesf2</code>, <code>__addsf3</code>, <code>__gedf2</code> and <code>__fe_getround</code> consume a total of 41.8% of all running cycles. Other functions, like <code>__fe_raise_inexact</code>, <code>__adddf3</code> and <code>__mulsf3</code> are also near the top of the list. They are all <a href="https://gcc.gnu.org/onlinedocs/gccint/Soft-float-library-routines.html">softfloat routines</a>. OHOL uses a lot of floating-point operations, and since CKB-VM does not support hardware floating-point operations, they must all be implemented via softfloat routines. Teeworlds also uses a lot of floats, we optimized it by switching to fixed-point math. Based on the profiling chart, we should do the same for OHOL, and we can potentially save a lot of cycles. For future optimization work, floating-point math should be our No. 1 priority.</p>
+<p>Of course, we can swap softfloat with fixed point math using <a href="https://github.com/MikeLankamp/fpm">fpm</a>, just like we did for Teeworlds. Fixed point math is indeed a viable option. That said, fixed-point math certainly has its own friction, and not every game can tolerate the rounding behavior it imposes. Some games might simply say: &ldquo;I don&rsquo;t want fixed point math, it does not fit my mechanics.&rdquo; I am actually thinking here: with some acceptable tradeoffs, could we have fast softfloat implementations that preserve floating-point semantics but run much faster? This is something I&rsquo;m experimenting with, if you are interested, please stay tuned.</p>
+<h2 id="compressing-decay-etas">Compressing decay ETAs</h2>
+<p>There is one chunk of data still in our port that feels wasteful:</p>
+<pre tabindex="0"><code>double floorDecayETA[WS_MAP_SIZE * WS_MAP_SIZE];
+</code></pre><p><code>WS_MAP_SIZE</code> is actually 256, meaning we are storing 65536 double values in memory, consuming 512KB of the precious 4MB memory. Similar to the items discussed above, some floors can also <a href="https://onehouronelife.fandom.com/wiki/Decay">decay</a>. <code>floorDecayETA</code> contains the timestamp for when next decay happens for the floor. There are vast opportunities for optimization:</p>
+<ul>
+<li>We have more compact ways to store timestamps than a full <code>double</code> representing fractional seconds since epoch. For starters, <code>float</code> could be used to save bytes, and we could go even further with a compact integer-based representation.</li>
+<li>By slightly altering gameplay, we can have nearby blocks decay simultaneously. For example, if 4 adjacent tiles all decay at the same time, we can cut the storage requirement by 4x. Even bigger savings are possible when more tiles decay together.</li>
+<li>Not all tiles decay, so we can also build a sparse representation, in which only decaying tiles take up storage.</li>
+</ul>
+<p>There are really numerous ways to optimize it. However, with the current code we&rsquo;re already at 55.29% peak stack usage and 80.76% peak heap usage. The <code>floorDecayETA</code> array can serve as a buffer we can shrink later, when we need more room for richer gameplay or higher capacity. It&rsquo;s actually a <a href="https://news.ycombinator.com/item?id=15947039">common</a> <a href="https://www.gamedeveloper.com/programming/dirty-game-development-tricks">trick</a> from the old days, where programmers would set aside a large static array hidden somewhere in the binary. Then days before shipping, when they couldn&rsquo;t fit the release build into memory, they&rsquo;d simply delete the hidden array to free enough space to make the game fit. <code>floorDecayETA</code> can serve as exactly that kind of secret stash, ready when we need it.</p>
+<p>I&rsquo;m sure as we profile more, more opportunities will appear. The bottom line is: even with a game as rich as OHOL, we are still well within CKB-VM&rsquo;s cycle &amp; 4MB memory limits.</p>
+<h1 id="next">Next</h1>
+<p>This post covers most of the technical challenges we ran into to port OHOL game loop to CKB-VM. Just like in the archipelago section, fitting the OHOL game loop into CKB-VM requires us to make tradeoffs and impose restrictions on OHOL. That said, I do believe a blockchain, when used right, can also foster new gameplay ideas. In the next post, I will share how I plan to build on the archipelago design and explore new OHOL-inspired gameplay ideas.</p>
+
+</content>
+
+
+
+<p>
+  
+</p>
+
+  </main>
+  <footer>Made with <a href="https://github.com/janraasch/hugo-bearblog/">Hugo ʕ•ᴥ•ʔ Bear</a>
+</footer>
+
+  
+</body>
+
+</html>
