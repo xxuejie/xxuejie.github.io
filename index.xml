@@ -8,10 +8,17 @@
     <managingEditor>xxuejie@gmail.com (Xuejie Xiao)</managingEditor>
     <webMaster>xxuejie@gmail.com (Xuejie Xiao)</webMaster>
     
-    <lastBuildDate>Mon, 29 Jun 2026 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Tue, 30 Jun 2026 00:00:00 +0000</lastBuildDate>
     
         <atom:link href="https://xuejie.space/index.xml" rel="self" type="application/rss+xml" />
     <item>
+      <title>Archipelagos: Exploring On-Chain Game Design for OHOL</title>
+      <link>https://xuejie.space/2026_06_30_archipelago/</link>
+      <pubDate>Tue, 30 Jun 2026 00:00:00 +0000</pubDate>
+      <author>xxuejie@gmail.com (Xuejie Xiao)</author>
+      <guid>https://xuejie.space/2026_06_30_archipelago/</guid><description>&lt;p&gt;We managed to run the core game loop of &lt;a href=&#34;https://onehouronelife.com/&#34;&gt;One Hour One Life&lt;/a&gt; (OHOL), a game I deeply admire, on CKB-VM in my last post. This came with compromises, the most noticeable being that we had to introduce &lt;a href=&#34;https://en.wikipedia.org/wiki/Archipelago&#34;&gt;archipelagos&lt;/a&gt;, limiting each deployment on CKB to 256x256 tiles and 64 players.&lt;/p&gt;
+&lt;p&gt;But blockchains do not just impose limits, they also open up new game design ideas worth exploring. Simply shrinking the map and player count wouldn&amp;rsquo;t be enough on its own to keep the game fun. In this post, I&amp;rsquo;ll walk through some game design ideas that build on what blockchain has to offer.&lt;/p&gt;</description>
+    </item><item>
       <title>Porting One Hour One Life&#39;s Game Loop to CKB</title>
       <link>https://xuejie.space/2026_06_29_porting_one_hour_one_life_game_loop_to_ckb/</link>
       <pubDate>Mon, 29 Jun 2026 00:00:00 +0000</pubDate>
