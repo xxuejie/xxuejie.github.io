@@ -8,10 +8,17 @@
     <managingEditor>xxuejie@gmail.com (Xuejie Xiao)</managingEditor>
     <webMaster>xxuejie@gmail.com (Xuejie Xiao)</webMaster>
     
-    <lastBuildDate>Tue, 30 Jun 2026 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Fri, 10 Jul 2026 00:00:00 +0000</lastBuildDate>
     
         <atom:link href="https://xuejie.space/index.xml" rel="self" type="application/rss+xml" />
     <item>
+      <title>C&#43;&#43; Ray Tracer on Jolt ZK VM</title>
+      <link>https://xuejie.space/2026_07_10_cpp_ray_tracer_on_jolt_zk_vm/</link>
+      <pubDate>Fri, 10 Jul 2026 00:00:00 +0000</pubDate>
+      <author>xxuejie@gmail.com (Xuejie Xiao)</author>
+      <guid>https://xuejie.space/2026_07_10_cpp_ray_tracer_on_jolt_zk_vm/</guid><description>&lt;p&gt;I&amp;rsquo;ve spent &lt;a href=&#34;https://github.com/succinctlabs/sp1/pull/2594&#34;&gt;quite&lt;/a&gt; &lt;a href=&#34;https://github.com/succinctlabs/sp1/pull/2658&#34;&gt;some&lt;/a&gt; &lt;a href=&#34;https://github.com/OffchainLabs/nitro/pull/4170&#34;&gt;time&lt;/a&gt; with Succinct&amp;rsquo;s SP1 zkVM. I believe as of now, SP1 is the most mature zero knowledge engine on the market. SP1 is not limited to simple toy programs, it can scale to really sophisticated programs for production usage.&lt;/p&gt;
+&lt;p&gt;That said, there are other equally interesting ZK engines. Most are in earlier stages compared to SP1, but they do possess fascinating, different designs that enable different tradeoffs compared to SP1. The theory behind zero knowledge proofs is quickly advancing, different research &amp;amp; engineering directions are explored by different minds, including my friends at Succinct &lt;a href=&#34;https://x.com/SuccinctLabs/article/2070217264398225839&#34;&gt;experimenting with different designs&lt;/a&gt;.&lt;/p&gt;</description>
+    </item><item>
       <title>Archipelagos: Exploring On-Chain Game Design for OHOL</title>
       <link>https://xuejie.space/2026_06_30_archipelago/</link>
       <pubDate>Tue, 30 Jun 2026 00:00:00 +0000</pubDate>

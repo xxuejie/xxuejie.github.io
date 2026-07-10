@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head>
+  <meta http-equiv="X-Clacks-Overhead" content="GNU Terry Pratchett" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>C&#43;&#43; Ray Tracer on Jolt ZK VM | Less is more</title>
+<meta name="title" content="C&#43;&#43; Ray Tracer on Jolt ZK VM" />
+<meta name="description" content="I&rsquo;ve spent quite some time with Succinct&rsquo;s SP1 zkVM. I believe as of now, SP1 is the most mature zero knowledge engine on the market. SP1 is not limited to simple toy programs, it can scale to really sophisticated programs for production usage.
+That said, there are other equally interesting ZK engines. Most are in earlier stages compared to SP1, but they do possess fascinating, different designs that enable different tradeoffs compared to SP1. The theory behind zero knowledge proofs is quickly advancing, different research &amp; engineering directions are explored by different minds, including my friends at Succinct experimenting with different designs." />
+<meta name="keywords" content="" />
+
+
+<meta property="og:url" content="https://xuejie.space/2026_07_10_cpp_ray_tracer_on_jolt_zk_vm/">
+	<meta property="og:site_name" content="Less is more">
+	<meta property="og:title" content="C&#43;&#43; Ray Tracer on Jolt ZK VM">
+	<meta property="og:description" content="I’ve spent quite some time with Succinct’s SP1 zkVM. I believe as of now, SP1 is the most mature zero knowledge engine on the market. SP1 is not limited to simple toy programs, it can scale to really sophisticated programs for production usage.
+That said, there are other equally interesting ZK engines. Most are in earlier stages compared to SP1, but they do possess fascinating, different designs that enable different tradeoffs compared to SP1. The theory behind zero knowledge proofs is quickly advancing, different research &amp; engineering directions are explored by different minds, including my friends at Succinct experimenting with different designs.">
+	<meta property="og:locale" content="en_US">
+	<meta property="og:type" content="article">
+		<meta property="article:published_time" content="2026-07-10T00:00:00+00:00">
+		<meta property="article:modified_time" content="2026-07-10T00:00:00+00:00">
+
+
+
+
+	<meta name="twitter:card" content="summary">
+	<meta name="twitter:title" content="C&#43;&#43; Ray Tracer on Jolt ZK VM">
+	<meta name="twitter:description" content="I’ve spent quite some time with Succinct’s SP1 zkVM. I believe as of now, SP1 is the most mature zero knowledge engine on the market. SP1 is not limited to simple toy programs, it can scale to really sophisticated programs for production usage.
+That said, there are other equally interesting ZK engines. Most are in earlier stages compared to SP1, but they do possess fascinating, different designs that enable different tradeoffs compared to SP1. The theory behind zero knowledge proofs is quickly advancing, different research &amp; engineering directions are explored by different minds, including my friends at Succinct experimenting with different designs.">
+
+
+
+
+	<meta itemprop="name" content="C&#43;&#43; Ray Tracer on Jolt ZK VM">
+	<meta itemprop="description" content="I’ve spent quite some time with Succinct’s SP1 zkVM. I believe as of now, SP1 is the most mature zero knowledge engine on the market. SP1 is not limited to simple toy programs, it can scale to really sophisticated programs for production usage.
+That said, there are other equally interesting ZK engines. Most are in earlier stages compared to SP1, but they do possess fascinating, different designs that enable different tradeoffs compared to SP1. The theory behind zero knowledge proofs is quickly advancing, different research &amp; engineering directions are explored by different minds, including my friends at Succinct experimenting with different designs.">
+	<meta itemprop="datePublished" content="2026-07-10T00:00:00+00:00">
+	<meta itemprop="dateModified" content="2026-07-10T00:00:00+00:00">
+	<meta itemprop="wordCount" content="3471">
+<meta name="referrer" content="no-referrer-when-downgrade" />
+
+  <style>
+  :root {
+    --width: 720px;
+    --font-main: Verdana, sans-serif;
+    --font-secondary: Verdana, sans-serif;
+    --font-scale: 1em;
+    --background-color: #fff;
+    --heading-color: #222;
+    --text-color: #444;
+    --link-color: #3273dc;
+    --visited-color: #8b6fcb;
+    --blockquote-color: #222;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --background-color: #01242e;
+      --heading-color: #eee;
+      --text-color: #ddd;
+      --link-color: #8cc2dd;
+      --visited-color: #8b6fcb;
+      --blockquote-color: #ccc;
+    }
+  }
+
+  body {
+    font-family: var(--font-secondary);
+    font-size: var(--font-scale);
+    margin: auto;
+    padding: 20px;
+    max-width: var(--width);
+    text-align: left;
+    background-color: var(--background-color);
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    line-height: 1.5;
+    color: var(--text-color);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-main);
+    color: var(--heading-color);
+  }
+
+  a {
+    color: var(--link-color);
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+
+  nav a {
+    margin-right: 8px;
+  }
+
+  strong,
+  b {
+    color: var(--heading-color);
+  }
+
+  button {
+    margin: 0;
+    cursor: pointer;
+  }
+
+  time {
+    font-family: monospace;
+    font-style: normal;
+    font-size: 15px;
+  }
+
+  main {
+    line-height: 1.6;
+  }
+
+  table {
+    width: 100%;
+  }
+
+  hr {
+    border: 0;
+    border-top: 1px dashed;
+  }
+
+  img {
+    max-width: 100%;
+  }
+
+  code {
+    font-family: monospace;
+    padding: 2px;
+    border-radius: 3px;
+  }
+
+  blockquote {
+    border-left: 1px solid #999;
+    color: var(--blockquote-color);
+    padding-left: 20px;
+    font-style: italic;
+  }
+
+  footer {
+    padding: 25px 0;
+    text-align: center;
+  }
+
+  .title:hover {
+    text-decoration: none;
+  }
+
+  .title h1 {
+    font-size: 1.5em;
+  }
+
+  .inline {
+    width: auto !important;
+  }
+
+  .highlight,
+  .code {
+    border-radius: 3px;
+    margin-block-start: 1em;
+    margin-block-end: 1em;
+    overflow-x: auto;
+  }
+
+  .highlight pre,
+  .code pre {
+    min-width: 100%;
+    width: max-content;
+  }
+
+   
+  ul.blog-posts {
+    list-style-type: none;
+    padding: unset;
+  }
+
+  ul.blog-posts li {
+    display: flex;
+  }
+
+  ul.blog-posts li span {
+    flex: 0 0 130px;
+  }
+
+  ul.blog-posts li a:visited {
+    color: var(--visited-color);
+  }
+
+</style>
+
+</head>
+
+<body>
+  <header><a href="https://xuejie.space/" class="title">
+  <h2>Less is more</h2>
+</a>
+<nav>
+<a href="https://xuejie.space/resume.html">Resume</a>
+
+<a href="https://twitter.com/xxuejie">Twitter</a>
+
+<a href="https://github.com/xxuejie">GitHub</a>
+
+<a href="https://xuejie.space/index.xml">RSS</a>
+
+</nav>
+</header>
+  <main>
+
+<h1>C&#43;&#43; Ray Tracer on Jolt ZK VM</h1>
+<p>
+  <i>
+    <time datetime='2026-07-10'>
+      10 Jul, 2026
+    </time>
+  </i>
+</p>
+
+<content>
+  <p>I&rsquo;ve spent <a href="https://github.com/succinctlabs/sp1/pull/2594">quite</a> <a href="https://github.com/succinctlabs/sp1/pull/2658">some</a> <a href="https://github.com/OffchainLabs/nitro/pull/4170">time</a> with Succinct&rsquo;s SP1 zkVM. I believe as of now, SP1 is the most mature zero knowledge engine on the market. SP1 is not limited to simple toy programs, it can scale to really sophisticated programs for production usage.</p>
+<p>That said, there are other equally interesting ZK engines. Most are in earlier stages compared to SP1, but they do possess fascinating, different designs that enable different tradeoffs compared to SP1. The theory behind zero knowledge proofs is quickly advancing, different research &amp; engineering directions are explored by different minds, including my friends at Succinct <a href="https://x.com/SuccinctLabs/article/2070217264398225839">experimenting with different designs</a>.</p>
+<p>For the past week or so I&rsquo;m trying <a href="https://github.com/a16z/jolt">Jolt</a>, which is designed solely around <a href="https://people.cs.georgetown.edu/jthaler/Lasso-paper.pdf">Lasso lookup tables</a> (or <strong>J</strong>ust <strong>O</strong>ne <strong>L</strong>ookup <strong>T</strong>able, if you caught the coincidence). This interests me a lot since memory accesses can potentially be much cheaper. After <a href="https://scispace.com/pdf/hitting-the-memory-wall-implications-of-the-obvious-s25mrxiprp.pdf">30 years of the memory wall</a>, ZK VMs built on lookup arguments might give us slightly cheaper random access. Cache-line aware data structures might no longer haunt our dreams so badly.</p>
+<p>As a rapidly evolving experimental project, Jolt only has support for writing Rust programs, using its <a href="https://jolt.a16zcrypto.com/usage/guests_hosts/guests.html">nicely wrapped macros</a>. But to really dig into the fundamentals, I really need to test code architected differently, down to the precise RISC-V instructions used. So I started a quest: can I put together a C++ program using clang / lld alone, and run it in Jolt?</p>
+<p>After some experiments I got it to work: I ported a C++ <a href="https://raytracing.github.io/books/RayTracingInOneWeekend.html">Ray Tracer</a> to Jolt, managing to execute / prove it in Jolt&rsquo;s ZK engine, I&rsquo;ve also built a guest-level profiler that is compatible with both C++ programs and Rust guest programs following Jolt&rsquo;s tutorials. If you just want to try it out first, use the following steps:</p>
+<pre tabindex="0"><code>$ git clone --recursive https://github.com/xxuejie/ray-tracer-on-jolt
+$ cd ray-tracer-on-jolt
+
+
+$ # This will build and execute the ray tracer program using Jolt&#39;s VM
+$ make run-jolt
+(build step omitted..)
+./runner/target/release/jolt-vm-runner
+Done.
+execution:   39.01s (180081356 cycles)
+Output size: 42392 bytes
+Saved image_jolt.ppm (42387 bytes)
+$ # Now you can find `image_jolt.ppm` file in current folder, it is generated
+$ # by the ray tracer program, executed in Jolt&#39;s VM.
+
+
+$ # This builds and runs the same ray tracer program in native environment:
+$ make run-native
+(build step omitted..)
+./build/raytracer_native &gt; image.ppm
+Done.
+wrote image.ppm (42490 bytes)
+$ # Generated image can be found in `image.ppm`.
+
+
+$ # You can also try proving mode in Jolt. Since proving takes more resource,
+$ # we will try it on a tiny image.
+$ make prove-jolt IMAGE=tiny
+(build step omitted..)
+./runner/target/release/jolt-vm-runner prove
+Done.
+execution:   3.67s (16920650 cycles)
+Output size: 4080 bytes
+Saved image_jolt.ppm (4073 bytes)
+
+
+== Prove + verify (max_trace_length = 33554432, ~3072.0 MiB trace) ==
+preprocess:  44.60s
+Done.
+Done.
+prove:       214.03s
+proof size:  91.3 KiB (93529 bytes)
+verify:      0.19s
+✓ proof verified
+
+
+$ # Finally, I&#39;ve built a guest program profiler you can try:
+$ PROFILE_FILE=profile.txt make run-jolt
+$ # Refer to the profiler section below for details.
+</code></pre><p>If you are interested in the internals, follow me along.</p>
+<h1 id="ray-tracer">Ray Tracer</h1>
+<p>I need a program that is big enough to use C / C++ features, but also small enough to fit experiments. I settled on a <a href="https://en.wikipedia.org/wiki/Ray_tracing_(graphics)">ray tracer</a> program, for several reasons:</p>
+<ul>
+<li>I&rsquo;ve been digging into game coding lately, and I have further plans in this direction. A ray tracer is related to the topic.</li>
+<li>A lot of floating point operations are used in ray tracing, which is even more related to my future experiments.</li>
+<li>Ray tracer is fun. After running the program, you can have an image to check out immediately. You don&rsquo;t just stare at cold debug output, you get an image.</li>
+<li>There are wonderful <a href="https://raytracing.github.io/books/RayTracingInOneWeekend.html">resources &amp; programs</a> on ray tracer we can leverage.</li>
+</ul>
+<p><a href="https://raytracing.github.io/books/RayTracingInOneWeekend.html">Ray Tracing in One Weekend</a> provides a wonderful starting point for us. I also strongly recommend you follow along in the course, try to build a ray tracer by yourself.</p>
+<p>To be honest I considered <a href="https://en.wikipedia.org/wiki/Mandelbrot_set">Mandelbrot</a> as well but ray tracing is a more fun choice.</p>
+<h1 id="jolts-risc-v-architecture">Jolt&rsquo;s RISC-V Architecture</h1>
+<p>With a program chosen, we will have to see how Jolt&rsquo;s ZK VM works.</p>
+<p>For completeness, I&rsquo;m using Jolt as of <a href="https://github.com/a16z/jolt/commit/c36a2eacab14c2e42462b8aba91edf5c09814ef1">this commit</a>. Future versions might or might not have different behaviors.</p>
+<p>First, some brief information that can be explained in one-liners:</p>
+<ul>
+<li>Jolt uses <code>RV64IMAC</code>. It has a bare metal path where CSR instructions are not available, and a <code>ZeroOS</code> mode where it behaves more like traditional Linux OS. For simplicity, I will stick to the bare metal path, but it&rsquo;s worth knowing a different path exists.</li>
+<li>Usable memory starts at <code>0x80000000</code>, all the ELF sections, stack and heap will need to start after <code>0x80000000</code>. Lower addresses are reserved (we will get to this later). This also means <code>-mcmodel=medany</code> is pretty much required for long addressing.</li>
+<li>When proving, Jolt does not use sparse memory. This means if you write a value to the address <code>0x1080000000</code>, Jolt will resize a <code>Vec</code> to use ~64GB memory. I assume this is more like a current limitation, and might be optimized away in later versions. Still it&rsquo;s worth noting it.</li>
+<li>Jolt does not use <code>argc</code> / <code>argv</code>, it does not have a return code, either. All communications have to be implemented as host-guest IO, we will get to the IO part below. There is a panic mode, though. A program either terminates, or panics.</li>
+<li>The official Jolt repo is mostly focused on proving infrastructure. A separate <a href="https://github.com/LayerZero-Labs/ZeroOS">repo</a> by <a href="https://layerzero.network/">LayerZero</a> contains the runtime part. Refer <a href="https://github.com/LayerZero-Labs/ZeroOS/blob/main/crates/zeroos-arch-riscv/src/boot.rs">here</a> for the boot process of a Jolt guest program.</li>
+</ul>
+<p>Let&rsquo;s now get into the slightly more complicated details:</p>
+<h2 id="memory-mapped-io">Memory-mapped IO</h2>
+<p>Jolt utilizes <a href="https://en.wikipedia.org/wiki/Memory-mapped_I/O_and_port-mapped_I/O">memory-mapped IO</a> a lot. Fixed (though tweakable) memory regions are allocated below <code>0x80000000</code> for guest programs to read inputs, write outputs, mark program terminations, etc. A <a href="https://github.com/a16z/jolt/blob/672a9e7e212b2305003f17d71acec672a692c3b0/common/src/jolt_device.rs#L49">MemoryConfig</a> structure defines everything. When initializing a Jolt VM, one defines the <code>MemoryConfig</code> structure, specifying parameters such as input region size, output region size, etc. When not needed one can use the default settings, which allocates 4096 bytes for input &amp; output regions. Jolt then does the calculation backwards from <code>0x80000000</code>, determining the starting address for input region, output region, termination address, panic address, etc. You can also refer <a href="https://github.com/xxuejie/musl/blob/6b5289e8b6d20a39cd932b7a7057e3e2559b3b3c/ckb/jolt_vm.h#L22-L85">here</a> for the exact calculation logic in simple C. In the default case, the initialized memory-mapped region will look like following:</p>
+<pre tabindex="0"><code>*-----------------------------------------------------------------------*
+|                     I/O REGION  (below RAM_START)                     |
+|                                                                       |
+|  Address       Region              Size    Direction                  |
+|  ----------    ----------------    ------  -------------------------- |
+|  0x7FFF8000    trusted_advice      4096 B  &lt;- guest READS (prover)    |
+|  0x7FFF9000    untrusted_advice    4096 B  &lt;- guest READS (prover)    |
+|  0x7FFFA000    input               4096 B  &lt;- guest READS (host)      |
+|  0x7FFFB000    output              4096 B  &lt;- guest WRITES (host)     |
+|  0x7FFFC000    panic               8 B     &lt;- guest WRITES 1 on panic |
+|  0x7FFFC008    termination         8 B     &lt;- guest WRITES 1, then j .|
+|                                                                       |
+|  (padding to power-of-two word boundary -- witness alignment)         |
+*-----------------------------------------------------------------------*
+                            :
+*-----------------------------------------------------------------------*
+|  0x80000000    RAM_START                                              |
+|                                                                       |
+|  Program image    .text / .rodata / .data / .bss                      |
+|  Stack canary     128 B                                               |
+|  Stack            grows DOWN   &lt;- sp starts at __stack_top            |
+|  Heap             grows UP     -&gt; bounded by __heap_end (brk)         |
+*-----------------------------------------------------------------------*
+</code></pre><p>I&rsquo;m not using devices, I haven&rsquo;t explored the device interface yet. We will get to stack &amp; heap later when we talk about symbols.</p>
+<p>In this setup, a guest program reads from memory to get inputs, writes to memory to set outputs. It also terminates by writing <code>1</code> to the termination address, and panics by writing <code>1</code> to the panic address. No syscalls are used.</p>
+<p>This does mean that conventional <code>exit</code> method in libc for RISC-V won&rsquo;t work for Jolt, a special one is <a href="https://github.com/xxuejie/musl/blob/6b5289e8b6d20a39cd932b7a7057e3e2559b3b3c/ckb/jolt_vm.h#L180">needed</a>.</p>
+<p><strong>PS</strong>: there is a caveat: the doc mentions <a href="https://jolt.a16zcrypto.com/how/architecture/ram.html#output-check">termination address</a>, <code>MemoryConfig</code> also has it, but the actual implementation elides it:</p>
+<ul>
+<li>Writing to termination address is a <a href="https://github.com/a16z/jolt/blob/672a9e7e212b2305003f17d71acec672a692c3b0/common/src/jolt_device.rs#L110-L115">no-op</a>.</li>
+<li>Execution simply <a href="https://github.com/a16z/jolt/blob/672a9e7e212b2305003f17d71acec672a692c3b0/tracer/src/lib.rs#L218-L223">stops</a> when infinite loop is reached.</li>
+</ul>
+<p>So technically, <code>j .</code> in RISC-V could stop a Jolt program, regardless, I implemented <code>exit</code> properly in case this will be fixed later (I think it should).</p>
+<h2 id="custom-opcodes">Custom Opcodes</h2>
+<p>Different from CKB-VM or SP1, Jolt implements the runtime related function as <a href="https://github.com/a16z/jolt/blob/672a9e7e212b2305003f17d71acec672a692c3b0/tracer/src/instruction/mod.rs#L3-L10">custom instructions</a>. For example, <a href="https://github.com/a16z/jolt/blob/main/tracer/src/instruction/virtual_host_io.rs#L21">VirtualHostIO</a> instruction is implemented, one usage of which prints debug messages.</p>
+<p>Similarly, precompiles on Jolt are also implemented as <a href="https://github.com/a16z/jolt/blob/672a9e7e212b2305003f17d71acec672a692c3b0/crates/jolt-riscv/src/profile.rs#L34-L43">inline instructions</a>, avoiding syscall usage.</p>
+<p>There is a way we can <a href="https://github.com/xxuejie/musl/blob/6b5289e8b6d20a39cd932b7a7057e3e2559b3b3c/ckb/jolt_vm.h#L160">encode the custom / inline instructions</a>, it&rsquo;s just worth mentioning that Jolt picks a different path.</p>
+<p>Jolt VM itself only provides a <code>trap</code> mechanism. When <code>ecall</code> happens, it sets up <code>mcause</code>, <code>mepc</code>, jumps to <code>mtvec</code> per RISC-V specification. In the bare metal case, no trap handler is installed, trapping essentially won&rsquo;t work. In other words, host &amp; guest only communicate via memory-mapped IO and VirtualHostIO. With a set of <a href="https://github.com/a16z/jolt/blob/672a9e7e212b2305003f17d71acec672a692c3b0/jolt-sdk/Cargo.toml#L45-L52">features</a>, Jolt enables ZeroOS, sets up trap handler, which will handle more <a href="https://github.com/LayerZero-Labs/ZeroOS/blob/c4087a825bf3e8157dbb2da01ee196d2a9841e4c/crates/zeroos-os-linux/src/syscall.rs#L138">OS level syscalls</a>.</p>
+<h2 id="linking--special-symbols">Linking &amp; Special Symbols</h2>
+<pre tabindex="0"><code>*----------------------------------------------------------------------*
+|  ELF LAYOUT (jolt.ld, default values)                                |
+|                                                                      |
+|  0x80000000  RAM_START  (RAM: rwx, __ram_length = 64M)               |
+|                                                                      |
+|  PROGRAM IMAGE (variable size)                                       |
+|    .text           R-X  _start (.text.boot/.text.init), code         |
+|    .rodata         R--  string literals, const data, .srodata        |
+|    .eh_frame_hdr   R--  exception handling header (C++)              |
+|    .eh_frame       R--  exception frames (LONG(0) terminated)        |
+|    .init_array     RW-  C++ static constructors                      |
+|                     (__init_array_start .. __init_array_end)         |
+|    .fini_array     RW-  C++ static destructors                       |
+|    .data           RW-  initialized globals                          |
+|      .sdata              small data                                  |
+|                         gp = __sdata_start + 0x800                   |
+|    .tdata          RW-  TLS initialized (forced non-empty)           |
+|    .tbss           RW-  TLS zero-init (forced non-empty)             |
+|    .bss            RW-  zero-init globals                            |
+|                     (__bss_start .. __bss_end  &lt;-- _start zeroes)    |
+|                                                                      |
+|  __program_end                                                       |
+|                                                                      |
+|  Stack canary          128 B    guard                                |
+|  __stack_bottom                                                      |
+|  Stack                 4 KB     grows DOWN  (sp = __stack_top)       |
+|  __stack_top                                                         |
+|                                                                      |
+|  Heap                  32 MB    grows UP   (brk: __heap_start..end)  |
+|  __heap_end  =  _end                                                 |
+|  __memory_end                                                        |
+|                                                                      |
+|  Defaults:  __ram_length=64M  __heap_size=32M  __stack_size=4K       |
+|  Assert:    fits in RAM;  !DEFINED(tohost)                           |
+*----------------------------------------------------------------------*
+
+_start (all registers start at 0):
+  1. lla gp, __global_pointer$
+  2. lla sp, __stack_top
+  3. run .init_array constructors  (__libc_start_init)
+  4. call main
+  5. j .   (PC stall = termination signal)
+</code></pre><p>Jolt requires a special ELF layout, enforced by its <a href="https://github.com/a16z/jolt/blob/672a9e7e212b2305003f17d71acec672a692c3b0/src/linker.ld.template">provided linker script template</a>. If the template confuses you with a lot of parameters, see <a href="https://github.com/xxuejie/musl/blob/6b5289e8b6d20a39cd932b7a7057e3e2559b3b3c/ckb/jolt.ld">here</a> for one that&rsquo;s in fact used.</p>
+<p>Starting from <code>0x80000000</code>, we layout everything needed in an ELF, such as <code>text</code> (code), <code>rodata</code> (readonly data), <code>eh_frame</code> (C++ exception frames), <code>init_array</code> (libc init constructors), <code>data</code> (globals), <code>bss</code> (zero initialized globals). The <code>__program_end</code> symbol marks the end of everything loaded by ELF. After <code>__program_end</code>, a 128-byte guard section is inserted, then the stack region will be denoted by <code>__stack_bottom</code> and <code>__stack_top</code> symbols. Following the stack, heap will be defined by <code>__heap_start</code> and <code>__heap_end</code>. A <code>__memory_end</code> symbol is exposed to mark the absolute end of memory used by current Jolt program.</p>
+<p>By tracing the exposed symbols, Jolt VM knows exactly the maximum memory used by the program (by <code>__memory_end</code> symbol), the stack region (by <code>__stack_bottom</code> / <code>__stack_top</code>) and the heap region (by <code>__heap_start</code> and <code>__heap_end</code>).</p>
+<p>When booting the Jolt VM, all RISC-V registers will contain 0. The entrypoint code (typically <code>_start</code>) will need to load <code>SP</code> from <code>__stack_top</code>.</p>
+<p>Different from SP1, Jolt ensures that all memory is <a href="https://github.com/a16z/jolt/blob/672a9e7e212b2305003f17d71acec672a692c3b0/crates/jolt-prover-legacy/src/zkvm/ram/mod.rs#L708">initialized to 0</a>, even in proving mode. So we don&rsquo;t have to zero-initialize BSS manually from <code>_start</code>.</p>
+<h2 id="every-vm-makes-its-own-choices">Every VM Makes Its Own Choices</h2>
+<p>Even though CKB-VM, SP1 and Jolt are all RISC-V VMs, each makes its own design choices. There is no right or wrong, people would design things differently with different backgrounds &amp; preferences. It does mean that we will have to pay attention when porting from one RISC-V VM to another.</p>
+<h1 id="putting-the-minimal-example-together">Putting the Minimal Example Together</h1>
+<p>With all the digging above, my first minimal working example can be found in <a href="https://github.com/xxuejie/ray-tracer-on-jolt/commit/566d4f74dcf04280dd52332f957c25d79cfadc56">this commit</a>. It makes a simple <code>int main() { return 0; }</code> C / C++ program run on Jolt VM.</p>
+<p>It does require a libc following Jolt&rsquo;s convention and startup sequence. For simplicity, I&rsquo;m iterating on <a href="https://github.com/xxuejie/musl">my musl fork for CKB-VM</a>, which already has a few handy changes:</p>
+<ul>
+<li>RISC-V bare-metal build workflow.</li>
+<li>Bypassing <code>sbrk</code> syscalls, use static memory instead as heap.</li>
+<li>Hijack stdout / stderr writes to proper debugging printer calls.</li>
+</ul>
+<p><a href="https://github.com/xxuejie/musl/commit/2261add65938d88de36a4e2c0636dbd3d47a9ad5">This commit</a> sets up the structure so the minimal example runs. It basically does 2 things:</p>
+<ul>
+<li>new <code>_start</code> implementation that sets <code>SP</code> based on Jolt&rsquo;s memory layout.</li>
+<li>A linker script adapted from <a href="https://github.com/a16z/jolt/blob/main/src/linker.ld.template">Jolt&rsquo;s template</a>, catering our needs.</li>
+</ul>
+<p>I also introduced <a href="https://github.com/xxuejie/ckb-libcxx-builder">my patched libcxx for CKB-VM</a> (fortunately, all changes needed for Jolt now are in musl, libcxx needs no changes yet), and the <a href="https://github.com/nervosnetwork/compiler-rt-builtins-riscv">compiler runtime for CKB-VM</a> (later we will need softfloat). Now the minimal demo works.</p>
+<h1 id="expanding-to-full-ray-tracer">Expanding to Full Ray Tracer</h1>
+<p>Starting from the minimal example, I gradually added more till ray tracer works. This requires more libc / libc++ changes:</p>
+<ul>
+<li>Musl changes to <a href="https://github.com/xxuejie/musl/commit/26b538b3bc662d7eb2673795b64153567b045f05">setup heap &amp; debug printer</a>, and <a href="https://github.com/xxuejie/musl/commit/6b5289e8b6d20a39cd932b7a7057e3e2559b3b3c">argc / argv fixes</a>.</li>
+<li><a href="https://github.com/xxuejie/ray-tracer-on-jolt/tree/4b600e6337b2679d13af66dfc4cd724298dba9cc/llvm_patch">libcxx change</a>, specifically in libunwind to skip executing CSR instructions.</li>
+</ul>
+<p>Those are enough toolchain changes for Jolt. But we are still not done yet. The original ray tracer writes image to <code>stdout</code>, and progress messages to <code>stderr</code>, while Jolt VM does allow printing debug messages, we mix <code>stdout</code> / <code>stderr</code> together. In Jolt&rsquo;s ray tracer, I <a href="https://github.com/xxuejie/ray-tracer-on-jolt/blob/4b600e6337b2679d13af66dfc4cd724298dba9cc/tracer_src/camera.h#L24-L54">patch the code</a> so image is written to Jolt&rsquo;s output region instead.</p>
+<p>If you try the original example on native environment, a ~9MB image file will be generated:</p>
+<pre tabindex="0"><code>$ make run-native IMAGE=full
+clang++ -std=c++20 -O2 -ffp-contract=off  tracer_src/main.cc -o build/raytracer_native
+./build/raytracer_native &gt; image.ppm
+Done.
+wrote image.ppm (9120845 bytes)
+</code></pre><p>Remember earlier that Jolt allocates 4096 bytes for outputs by default? This is certainly not enough for us. We increased the output buffer to 16MB in both the <a href="https://github.com/xxuejie/ray-tracer-on-jolt/blob/4b600e6337b2679d13af66dfc4cd724298dba9cc/runner/src/main.rs#L11">Rust runner</a> and the <a href="https://github.com/xxuejie/ray-tracer-on-jolt/blob/4b600e6337b2679d13af66dfc4cd724298dba9cc/Makefile#L19">C++ guest program</a>.</p>
+<p>In theory, this now works, but unfortunately it still breaks on my machine with 24GB memory:</p>
+<pre tabindex="0"><code>$ make run-jolt IMAGE=full
+</code></pre><p>This will not complete on my system with 24GB memory. An OOM error will be observed. This is due to the fact that Jolt now builds the entire <code>trace</code> of the program <a href="https://github.com/a16z/jolt/blob/672a9e7e212b2305003f17d71acec672a692c3b0/tracer/src/lib.rs#L104">into a Vec structure</a>. One can think of a <code>trace</code> as the entire execution of a RISC-V program. Executing each RISC-V instruction in Jolt VM creates a <a href="https://github.com/a16z/jolt/blob/672a9e7e212b2305003f17d71acec672a692c3b0/tracer/src/instruction/mod.rs#L438">Cycle</a>, a <code>trace</code> is just the collection of all <code>Cycle</code>s. Ray tracing is a compute-intensive task, even building the full resolution image natively on my machine takes ~30 seconds:</p>
+<pre tabindex="0"><code>$ make run-native IMAGE=full
+clang++ -std=c++20 -O2 -ffp-contract=off  tracer_src/main.cc -o build/raytracer_native
+./build/raytracer_native &gt; image.ppm
+Done.
+wrote image.ppm (9120845 bytes)
+$ sudo perf stat ./build/raytracer_native &gt; image.ppm
+Done.
+
+ Performance counter stats for &#39;./build/raytracer_native&#39;:
+
+               536      context-switches                 #     17.1 cs/sec  cs_per_second
+                48      cpu-migrations                   #      1.5 migrations/sec  migrations_per_second
+               158      page-faults                      #      5.0 faults/sec  page_faults_per_second
+         31,422.25 msec task-clock                       #      1.0 CPUs  CPUs_utilized
+        81,283,573      branch-misses                    #      0.1 %  branch_miss_rate
+    54,841,120,844      branches                         #   1745.3 M/sec  branch_frequency
+   143,987,777,769      cpu-cycles                       #      4.6 GHz  cycles_frequency
+   577,644,648,279      instructions                     #      4.0 instructions  insn_per_cycle
+                        TopdownL1                        #     11.9 %  tma_backend_bound
+                                                         #     13.2 %  tma_bad_speculation
+                                                         #      2.3 %  tma_frontend_bound
+                                                         #     72.7 %  tma_retiring
+
+      31.430368173 seconds time elapsed
+
+      31.387057000 seconds user
+       0.006993000 seconds sys
+</code></pre><p>~577 billion x86_64 instructions are executed to build the full image, significantly more instructions might be needed for RV64IMAC (lacking bit manipulation instructions). As instructions executed grow, the memory consumed by <code>trace</code> grows as well. On my 24GB machine, it is impossible to build a <code>Vec</code> holding all the <code>Cycle</code>s produced building a full resolution image. But theoretically the workflow is fine, so if you have bigger memory you can give it a try. For me, I have to try smaller images:</p>
+<pre tabindex="0"><code>$ make run-jolt IMAGE=small
+
+$ # The default IMAGE option is `small`.
+$ make run-jolt
+</code></pre><p>Smaller images will have smaller resolution (fewer pixels), fewer rays fired per pixel, fewer bounces per ray, less complexity in the scene. Those can also reduce the computation required to a smaller scale, needing fewer RISC-V instructions to execute, resulting in a smaller <code>trace</code>, so it fits in my 24GB machine. However you can tweak the <a href="https://github.com/xxuejie/ray-tracer-on-jolt/blob/4b600e6337b2679d13af66dfc4cd724298dba9cc/Makefile#L32-L43">parameters</a> for your own test.</p>
+<p>To test proving, I will have to try an even tinier image:</p>
+<pre tabindex="0"><code>$ make prove-jolt IMAGE=tiny
+</code></pre><p>There is a <a href="https://jolt.a16zcrypto.com/roadmap/streaming.html">plan</a> in Jolt to reduce the memory requirements on <code>trace</code>. Perhaps one day we can build full resolution ray tracer image with much less memory. For now, at least we can verify that the pipeline already works.</p>
+<h1 id="profiling-jolt-guest-programs">Profiling Jolt Guest Programs</h1>
+<p>Jolt does offer a simple <a href="https://jolt.a16zcrypto.com/usage/profiling/guest_profiling.html">guest profiling feature</a>, but I&rsquo;m now spoiled by <a href="https://github.com/google/pprof">pprof</a> or <a href="https://github.com/mstange/samply">samply</a>, where a decent visualized profiler allows me to dig into whole program running stats.</p>
+<p>We mentioned earlier that Jolt builds the <code>trace</code> containing full executions of a program. While this is certainly a headache for bigger programs, it does expose program executions to us. It didn&rsquo;t take long for me to put together a profiler <a href="https://github.com/xxuejie/ray-tracer-on-jolt/blob/4b600e6337b2679d13af66dfc4cd724298dba9cc/profiler/src/lib.rs">module</a>, which takes Jolt <code>trace</code> then emits a profiler data file.</p>
+<p>I use the same format from <a href="https://github.com/xxuejie/ckb-standalone-debugger/tree/samply/ckb-vm-pprof">CKB-VM&rsquo;s infrastructure</a>, so the profiler data can be fed to 3 different tools suiting different needs:</p>
+<ul>
+<li>Generate a flamegraph directly with <a href="https://github.com/jonhoo/inferno">inferno</a>.</li>
+<li>Feed into <a href="https://github.com/google/pprof">pprof</a> for visualization.</li>
+<li>Feed into <a href="https://github.com/mstange/samply">samply</a> for visualization.</li>
+</ul>
+<p>To profile the program, there are some prerequisites:</p>
+<pre tabindex="0"><code>$ # If you need flamegraph
+$ cargo install inferno
+$ # This fork of ckb debugger toolkit has support for samply as well
+$ git clone https://github.com/xxuejie/ckb-standalone-debugger --branch samply
+$ cd ckb-standalone-debugger
+$ cargo build --release
+$ # You will need ckb-vm-pprof-converter and ckb-vm-samply-converter from target/release folder.
+</code></pre><p>Now you can profile the ray tracer:</p>
+<pre tabindex="0"><code>$ PROFILE_FILE=profile.txt make run-jolt
+
+$ # Build a flamegraph:
+$ cat profile.txt | inferno-flamegraph &gt; flamegraph.svg
+
+$ # Convert into pprof format and run pprof:
+$ ckb-vm-pprof-converter --input-file profile.txt --output-file profile.prof
+$ go tool pprof -http 0.0.0.0:8000 build/raytracer profile.prof
+
+$ # Convert to samply format and start samply:
+$ ckb-vm-samply-converter --input profile.txt --output profile.json
+$ samply load profile.json
+</code></pre><p>Using pprof, we can show that 60% of all work is spent on <code>_muldf3</code> and <code>_adddf3</code> functions:</p>
+<pre tabindex="0"><code>$ go tool pprof -sample_index=cycles -top -nodecount=10 build/raytracer profile.prof
+File: raytracer
+Type: cycles
+Showing nodes accounting for 153462660, 85.22% of 180081350 total
+Dropped 114 nodes (cum &lt;= 900406)
+Showing top 10 nodes out of 43
+      flat  flat%   sum%        cum   cum%
+  56762675 31.52% 31.52%   60686475 33.70%  _muldf3
+  51928409 28.84% 60.36%   55945287 31.07%  _adddf3
+  14798399  8.22% 68.57%   14798527  8.22%  memset
+   5923630  3.29% 71.86%    5923630  3.29%  memcpy
+   5445194  3.02% 74.89%   18402798 10.22%  vfprintf
+   5122025  2.84% 77.73%   86110622 47.82%  :hit(ray const&amp;, interval, hit_record&amp;) const
+   4617384  2.56% 80.30%    5252609  2.92%  sqrt
+   3393207  1.88% 82.18%    3393207  1.88%  _divdf3
+   2783023  1.55% 83.73%    7265416  4.03%  _fwritex
+   2688714  1.49% 85.22%    3581298  1.99%  _floatsidf
+</code></pre><p>It has been a recurring theme lately. In both the ported games from my previous posts and the ray tracer example here, <code>softfloat</code> has been the number one bottleneck. I can only expect this will be the case for the majority of games. Of course, switching to fixed-point math is indeed one solution, but can we do more than that? I&rsquo;m actually thinking about this. I want to work towards a design, where we can have real <a href="https://github.com/jrouwe/JoltPhysics">sophisticated 3D physics engine</a> (note there are 2 projects named Jolt: Jolt ZK VM and JoltPhysics, the 3D physics engine) running in a RISC-V VM (either direct execution or ZK), using floating point operations. The big question is how we can make <code>softfloat</code> fast, which will be the focus of my next post.</p>
+<h1 id="closing">Closing</h1>
+<p>Every ZK engine is different, they differ in VM semantics, they also differ in performance tradeoffs. It&rsquo;s quite fun diving into Jolt, comparing it against SP1 to see their differences and unique tradeoffs.</p>
+<p>The journey also does not end with SP1 and Jolt. <a href="https://github.com/openvm-org/openvm">OpenVM</a> from <a href="https://www.axiom.xyz/">Axiom</a> is another interesting solution. With <a href="https://docs-preview.openvm.dev/book/advanced-usage/creating-a-new-extension">first class extensions</a>, or precompiles, depending on where we are coming from, OpenVM can be a versatile choice for different kinds of applications. For example: what if we run OpenVM on CKB? CKB-VM is already capable of running heavy computations, by building an OpenVM verifier on CKB-VM with custom extensions, how will we balance programs running in OpenVM and proved on CKB-VM, vs extensions that truly run on CKB-VM? This could be another interesting story to dive into.</p>
+<p>In fact, when I was designing the whole experiment, I did consider OpenVM. I ended up with Jolt first, because Jolt utilizes 64-bit RISC-V registers now, while OpenVM for now is still on 32-bit registers. My future experiments would take full advantage of 64-bit registers, so Jolt is the natural one to start with. Given time, I&rsquo;d love to try OpenVM to see how it works in practice, I&rsquo;m also quite certain that all of that code would happily run on SP1 as well. It would be much fun to build on all those different VMs, exploring and comparing their performance tradeoffs, learning where each one is most suited.</p>
+
+</content>
+
+
+
+<p>
+  
+</p>
+
+  </main>
+  <footer>Made with <a href="https://github.com/janraasch/hugo-bearblog/">Hugo ʕ•ᴥ•ʔ Bear</a>
+</footer>
+
+  
+</body>
+
+</html>
