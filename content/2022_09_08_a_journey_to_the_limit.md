@@ -66,7 +66,7 @@ Time to run program: 886.551225ms
 In the above section, we do the following things:
 
 * Build the same code to do secp256k1 verification as used in the first benchmark, but tweak the code to run 10000 times
-* Install a binary to run RISC-V programs via CKB-VM's new [LLVM based AOT engine](https://github.com/xxuejie/ckb-vm-contrib/tree/main/src/llvm_aot)
+* Install a binary to run RISC-V programs via CKB-VM's new [LLVM based AOT engine](https://github.com/xxuejie/ckb-vm-contrib-old/tree/main/src/llvm_aot)
 * Use the LLVM AOT engine to run the secp256k1 verification code
 
 Log shows that it takes about 886.55 milliseconds to do 10000 secp256k1 verifications. If we do the math, this means the new LLVM AOT engine can do 1 secp256k1 verification in 88.655 microseconds, Which is merely **2.34x** of native speed! Now we can complete the benchmark:
@@ -140,7 +140,7 @@ That being said, there is still difference between the 2 AOT engines: the old AO
 
 ### AST Preprocessor
 
-Luckily, the [AST data structure](https://github.com/nervosnetwork/ckb-vm/blob/4575b0b423b726f3e98b8093481d1d0bfc9efbe7/src/instructions/ast.rs#L46) used in the old AOT engine is still usable. While a direct documentation on the AST is not available, an [AST interpreter function](https://github.com/xxuejie/ckb-vm-contrib/blob/65582d7d609180fd7ce923a8260e671d643aa9e6/src/ast_interpreter.rs#L10) combined with trait implementations on [u64 type](https://github.com/nervosnetwork/ckb-vm/blob/4575b0b423b726f3e98b8093481d1d0bfc9efbe7/src/instructions/register.rs#L413) provides a reference implementation on AST semantics. Like the old AOT module, an [AstMachine](https://github.com/xxuejie/ckb-vm-contrib/blob/65582d7d609180fd7ce923a8260e671d643aa9e6/src/llvm_aot/ast.rs#L146) is built so we can *execute* RISC-V instructions on the AstMachine, reducing RISC-V instruction semantics to simplified register & memory writes using simple AST values, much like the example below:
+Luckily, the [AST data structure](https://github.com/nervosnetwork/ckb-vm/blob/4575b0b423b726f3e98b8093481d1d0bfc9efbe7/src/instructions/ast.rs#L46) used in the old AOT engine is still usable. While a direct documentation on the AST is not available, an [AST interpreter function](https://github.com/xxuejie/ckb-vm-contrib-old/blob/65582d7d609180fd7ce923a8260e671d643aa9e6/src/ast_interpreter.rs#L10) combined with trait implementations on [u64 type](https://github.com/nervosnetwork/ckb-vm/blob/4575b0b423b726f3e98b8093481d1d0bfc9efbe7/src/instructions/register.rs#L413) provides a reference implementation on AST semantics. Like the old AOT module, an [AstMachine](https://github.com/xxuejie/ckb-vm-contrib-old/blob/65582d7d609180fd7ce923a8260e671d643aa9e6/src/llvm_aot/ast.rs#L146) is built so we can *execute* RISC-V instructions on the AstMachine, reducing RISC-V instruction semantics to simplified register & memory writes using simple AST values, much like the example below:
 
 ```
   Basic block (insts: 9) 0x101bc-0x101d6:
@@ -182,13 +182,13 @@ Which corresponds to the following original RISC-V instructions:
 
 From there, we can focus only on the AST semantics when we build the LLVM based code generation engine, no RISC-V semantics are required here.
 
-The [preprocessor](https://github.com/xxuejie/ckb-vm-contrib/blob/65582d7d609180fd7ce923a8260e671d643aa9e6/src/llvm_aot/preprocessor.rs) wraps this process with a few more things to work on:
+The [preprocessor](https://github.com/xxuejie/ckb-vm-contrib-old/blob/65582d7d609180fd7ce923a8260e671d643aa9e6/src/llvm_aot/preprocessor.rs) wraps this process with a few more things to work on:
 
 1. Use symbol table(if present) & inferred information(e.g: `jal` would mark the start of a function) to deduce all functions within an ELF object.
 2. For each function, locate all basic blocks(a sequence of instructions that ends with a branch instruction) within the function.
-3. For each basic block, run the instructions included on the AstMachine, gather generated [writes](https://github.com/xxuejie/ckb-vm-contrib/blob/65582d7d609180fd7ce923a8260e671d643aa9e6/src/llvm_aot/ast.rs#L14) for each target(could be register or memory), the value in each write, will be in an AST value format. Notice a RISC-V instruction might generate more than one writes, they will need to be committed atomically.
-4. Each basic block, depending on the last instruction, could also generate a [control change](https://github.com/xxuejie/ckb-vm-contrib/blob/65582d7d609180fd7ce923a8260e671d643aa9e6/src/llvm_aot/ast.rs#L63), based on RISC-V's convention, some branching instructions will be interpreted specially, such as calls, returns, etc.
-5. The preprocessor also does limited AST [simplification](https://github.com/xxuejie/ckb-vm-contrib/blob/65582d7d609180fd7ce923a8260e671d643aa9e6/src/llvm_aot/ast.rs#L416-L479) so as to simplify control changes.
+3. For each basic block, run the instructions included on the AstMachine, gather generated [writes](https://github.com/xxuejie/ckb-vm-contrib-old/blob/65582d7d609180fd7ce923a8260e671d643aa9e6/src/llvm_aot/ast.rs#L14) for each target(could be register or memory), the value in each write, will be in an AST value format. Notice a RISC-V instruction might generate more than one writes, they will need to be committed atomically.
+4. Each basic block, depending on the last instruction, could also generate a [control change](https://github.com/xxuejie/ckb-vm-contrib-old/blob/65582d7d609180fd7ce923a8260e671d643aa9e6/src/llvm_aot/ast.rs#L63), based on RISC-V's convention, some branching instructions will be interpreted specially, such as calls, returns, etc.
+5. The preprocessor also does limited AST [simplification](https://github.com/xxuejie/ckb-vm-contrib-old/blob/65582d7d609180fd7ce923a8260e671d643aa9e6/src/llvm_aot/ast.rs#L416-L479) so as to simplify control changes.
 
 After the `preprocess` function, we will have a set of functions consisting of basic blocks, each basic block will also contain a series of `writes` and `control` changes. Those shall be directly fed into the LLVM engine for actual code generation.
 
